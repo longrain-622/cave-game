@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CaveGame Pre-Alpha</title>
+    <link rel="icon" type="image/png" href="assets/images/icon.png">
+
+    <style>
+        @import url("css/global.css");
+        @import url("css/body.css");
+        @import url("css/contentStyle/content.css");
+        @import url("css/contentStyle/createWorld.css");
+        @import url("css/contentStyle/setting.css");
+        @import url("css/contentStyle/logo.css");
+        @import url("css/gameStyle/gameloading.css");
+        @import url("css/gameStyle/GameRoom.css");
+    </style>
+
+    <script src="vendor/jquery-3.7.1.min.js"></script>
+    <script type="importmap">
+    {
+        "imports": {
+        "pixi.js": "./node_modules/pixi.js/dist/pixi.mjs"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div class="content">
+        <div id="logo">
+            <p id="logoText"><span class="red-part">Si</span><span class="blue-part">n</span><span class="green-part">u</span><span class="yellow-part">xu</span></p>
+        </div>
+
+        <img id="bgimage" src="assets/images/dld/contentBG.png">
+
+        <img id="contentIcon" src="assets/images/icon.png">
+        <p id="iconText" data-i18n="app.iconText"></p>
+
+        <div id="whiteBlock1">
+            <ul id="blocktext1"><br>
+                <li data-i18n="menu.start" id="startText"></li><br>
+                <li data-i18n="menu.download" id="downloadText"></li><br>
+                <li data-i18n="menu.setting" id="setText"></li><br>
+                <li data-i18n="menu.view" id="viewText"></li><br>
+            </ul>
+        </div>
+
+        <div id="whiteBlock2">
+            <h2 id="lookTitle" style="text-align: center;" data-i18n="home.title"></h2>
+            <ol id="text1">
+                <li data-i18n="home.notice1"></li>
+                <li data-i18n="home.notice2"></li>
+                <li data-i18n="home.notice3"></li>
+            </ol>
+            <p id='text2' data-i18n="home.clickToStart"></p>
+
+            <div id="starting">
+                <img id="starting_steve" src="assets/images/games/player/steve.png">
+                <p id="starting_text1" data-i18n="starting.pressEnter"></p>
+            </div>
+
+            <div id="none">
+                <h2 style="text-align: center;" data-i18n="featureUnavailable.title"></h2>
+            </div>
+
+            <div id="setting">
+                <div class="header" data-i18n="setting.header"><h2></h2></div>
+                <div class="scroll">
+                    <div class="item">
+                        <span class="label" data-i18n="setting.touchKeys"></span>
+                        <label class="switch"><input type="checkbox" id="touchKeys"><span class="slider"></span></label>
+                    </div>
+                    <div class="item">
+                        <span class="label" data-i18n="setting.rotateScreen"></span>
+                        <label class="switch"><input type="checkbox" id="rotateScreen"><span class="slider"></span></label>
+                    </div>
+                    <div class="item">
+                        <span class="label" data-i18n="setting.language"></span>
+                        <select id="languageSelect" class="lang-select">
+                            <option value="zh-CN">中文 (简体)</option>
+                            <option value="en-UK">English</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="worldwindow">
+            <p id="createWorldTitle" data-i18n="worldCreation.title"></p>
+            <input id="worldNameInput" type="text" placeholder="New world">
+
+            <button class="gameDifficulty-btn" data-i18n="worldCreation.gameDifficulty0"></button>
+
+            <button class="create-btn" data-i18n="worldCreation.createButton"></button>
+            <button class="back-btn" data-i18n="worldCreation.cancelButton"></button>
+        </div>
+    </div>
+
+    <div class="GameRoom">
+        <div class="loadingPage">
+            <p id="loadingText" data-i18n="loadPage.text"></p>
+            <p id="loadingSpeaker" data-i18n-ignore="true"></p>
+        </div>
+        <canvas id="drawWorld"></canvas>
+        <canvas id="gamebackground"></canvas>
+        <canvas id="drawEntity"></canvas>
+        <canvas id="gui"></canvas>
+    </div>
+
+    <script type="module" src="js/contentRoom/logoAnim.js"></script>
+    <script type="module" src="js/contentRoom/content.js"></script>
+    <script type="module" src="js/contentRoom/setting.js"></script>
+
+    <script type="module" src="js/main.js"></script>
+
+    <script type="module" src="js/others/SetRoomSize.js"></script>
+    <script type="module" src="js/others/i18n.js"></script>
+</body>
+</html>

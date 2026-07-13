@@ -1,0 +1,96 @@
+/*创建或选择世界的窗口*/
+#worldwindow {
+    position: absolute; top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(250, 250, 255, 0.92);
+    color: white;
+    font-family: 'Unifont', monospace;
+    box-sizing: border-box;
+    z-index: 100;
+
+    background-image: url('../../assets/images/games/blocks/dirt.png');
+    background-repeat: repeat;
+    background-position: 0 0;
+
+    background-size: 64px 64px;
+
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+#worldwindow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* 黑色半透明叠加层 */
+  z-index: -1; /* 放在内容下面但背景上面 */
+}
+#worldwindow > * {
+  position: relative; /* 确保内容在叠加层之上 */
+  z-index: 1;
+}
+
+/* 创建新世界按钮 - 放大并平铺像素图 */
+#worldwindow .create-btn, #worldwindow .back-btn, #worldwindow .gameDifficulty-btn {
+    background-image: url('../../assets/images/games/blocks/stone.png');
+    background-repeat: repeat;
+    background-position: 0 0;
+
+    background-size: 48px 48px; /* ← 根据原图尺寸和想要放大倍数修改 */
+
+    image-rendering: pixelated; /* 保持像素锐利 */
+    image-rendering: crisp-edges;
+
+    /* 按钮固定尺寸（建议为背景图放大尺寸的整数倍，便于完整平铺） */
+    width: 60%;
+    height: 7%;
+    padding: 0;
+    border-radius: 0;
+
+    position: absolute;
+
+    color: white;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 rgb(68, 68, 68);
+}
+.create-btn{left: 20%;top: 80%;} .back-btn{left: 20%;top: 90%;}
+.gameDifficulty-btn{left: 20%;top: 35%;}
+
+#createWorldTitle {
+    color: white;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 black;
+
+    position: absolute;
+    left: 50%; top: 5%;
+    transform: translate(-50%, 0);
+}
+
+#worldNameInput {
+    position: absolute;
+    left: 20%;top: 20%;
+
+    width: 60%;
+    height: 7%;
+
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-indent: 6px;
+    color: white;
+
+    background-color: black;
+    border-radius: 0;
+    border: solid;
+    border-color: grey;
+    border-width: 2px;
+}#worldNameInput:focus {outline: none; /* 移除焦点轮廓 */}
+
+

@@ -1,0 +1,50 @@
+.loadingPage {
+    position: absolute; top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #000000;
+
+    background-image: url('../../assets/images/games/blocks/dirt.png');
+    background-repeat: repeat;
+    background-position: 0 0;
+
+    background-size: 64px 64px;
+
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    z-index: 100;
+
+    font-family: 'Unifont', monospace;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+}
+
+.loadingPage::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6); /* 黑色半透明叠加层 */
+  z-index: -1; /* 放在内容下面但背景上面 */
+}
+
+#loadingText {
+    font-size: 20px;
+    color: white;
+}
+
+#loadingSpeaker {
+    font-size: 16px;
+    color: #aaaaaa;
+    margin-top: 12px; /* 与上方文字拉开距离 */
+    text-align: center;
+    max-width: 80%; /* 防止过长文字溢出 */
+    line-height: 1.5;
+}

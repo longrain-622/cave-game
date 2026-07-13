@@ -1,0 +1,44 @@
+{
+  "app": {
+    "iconText": "CaveGame"
+  },
+  "menu": {
+    "start": "Start",
+    "download": "Download",
+    "setting": "Settings",
+    "view": "Gallery"
+  },
+  "home": {
+    "title": "Read Before Playing",
+    "notice1": "\"CaveGame\" is a 2D fan game of \"Minecraft\" developed by the Sinuxu team. The game is open-source, free, involves no commercial profit, and has no virtual currency system. It is dedicated to providing players with a pure and free creative and exploratory experience.",
+    "notice2": "We are an interest-driven team gathered by passion. The studio is currently non-profit, and all members participate based on their love for game development. To keep this passion alive, we sincerely invite like-minded friends to join Sinuxu — whether you are good at programming, art, design, or simply curious and motivated about game development. As long as you agree with the idea of \"working for love\", feel free to contact us and grow together through creation and fun.",
+    "notice3": "For security reasons, browsers impose strict restrictions on ES6 module loading under the file:// protocol, which may prevent the game from running.",
+    "clickToStart": "- Click anywhere to start -"
+  },
+  "starting": {
+    "pressEnter": "- Press [Enter] to create a world -"
+  },
+  "featureUnavailable": {
+    "title": "Feature Not Available!"
+  },
+  "setting": {
+    "header": "Settings",
+    "touchKeys": "Touch Controls",
+    "rotateScreen": "Rotate Screen While Playing",
+    "language": "Language"
+  },
+  "worldCreation": {
+    "title": "Create New World",
+    "worldNamePlaceholder": "New World",
+    "gameDifficulty0": "Difficulty: Peaceful",
+    "gameDifficulty1": "Difficulty: Easy",
+    "gameDifficulty2": "Difficulty: Normal",
+    "gameDifficulty3": "Difficulty: Hard",
+    "createButton": "Create New World",
+    "cancelButton": "Cancel"
+  },
+  "loadPage": {
+    "text": "Loading",
+    "ok": "Loading complete"
+  }
+}

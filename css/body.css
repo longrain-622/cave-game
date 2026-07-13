@@ -1,0 +1,12 @@
+html {
+    background-color: black;
+    height: 100%;          /*确保高度覆盖整个视口*/
+}
+
+body {
+    margin: 0; /*去掉默认边距*/
+    padding: 0;
+    background: #000; /* 黑边背景 */
+    display: flex;
+    min-height: 100vh; /*至少撑满视口高度*/
+}

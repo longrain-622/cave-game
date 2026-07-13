@@ -1,0 +1,33 @@
+{
+  "name": "cavegame",
+  "version": "Pre-Alpha",
+  "description": "A 2d pixel-style game just like Minecraft.",
+  "main": "main.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitee.com/longrain622/cave-game"
+  },
+  "keywords": [
+    "game",
+    "2d"
+  ],
+  "author": {
+    "name": "longrain",
+    "email": "3685585221@qq.com"
+  },
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "@typescript/typescript-win32-x64": "^7.0.1-rc",
+    "pixi.js": "^7.4.2",
+    "typescript": "^7.0.1-rc"
+  },
+  "devDependencies": {
+    "vite": "^8.0.16"
+  }
+}

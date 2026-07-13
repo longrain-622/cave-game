@@ -1,0 +1,11 @@
+{
+  "dead": {
+    "title": "You Died!",
+    "restart": "Respawn",
+    "back": "Title Screen"
+  },
+  "gameContent": {
+    "backToGame": "Return to Game",
+    "exitToContent": "Back to Title Screen"
+  }
+}

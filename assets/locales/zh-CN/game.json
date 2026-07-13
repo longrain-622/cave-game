@@ -1,0 +1,11 @@
+{
+  "dead": {
+    "title": "你死了！",
+    "restart": "重 生",
+    "back": "标题画面"
+  },
+  "gameContent": {
+    "backToGame": "回到游戏",
+    "exitToContent": "退回到标题画面"
+  }
+}

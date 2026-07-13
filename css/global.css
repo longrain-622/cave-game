@@ -1,0 +1,11 @@
+@font-face {
+  font-family: 'Unifont';
+  src: url('../assets/fonts/unifont.ttf') format('truetype');
+  /* 如果需要多种格式：
+     url('assets/fonts/unifont.woff2') format('woff2'),
+     url('assets/fonts/unifont.woff') format('woff');
+  */
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap; /* 可选，避免阻塞渲染 */
+}

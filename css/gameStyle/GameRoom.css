@@ -1,0 +1,15 @@
+.GameRoom {
+    background-color: #78A7FF;
+    overflow: hidden;
+    position: absolute;
+    left: 0; top: 0;
+}
+
+canvas {
+    background-color: transparent !important;
+}
+
+#gamebackground { z-index: 0; }
+#pixi { z-index: 1; }
+#drawEntity { z-index: 2; }
+#gui { z-index: 3; }

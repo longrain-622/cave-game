@@ -1,0 +1,147 @@
+.content {
+    width: 1280px;
+    height: 720px;
+    background-color: #78A7FF;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+
+    position: absolute; left: 0; top: 0;
+    overflow: hidden;
+
+    display: grid;
+    grid-template-columns: 2.5% 17.5% 2.5% 75% 2.5%;
+    grid-template-rows: 60px 1fr;
+    gap: 0;
+}
+
+/* 背景图片：保持绝对定位作为背景层 */
+#bgimage {
+    height: 100%;
+    width: auto;
+    filter: blur(5px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    object-fit: cover;
+}
+
+#contentIcon {
+    width: 4%;
+    height: auto;
+    position: absolute;
+    left: 1.25%;
+    top: 1%;
+    z-index: 1;
+}
+#iconText {
+    color: white;
+    position: absolute;
+    left: 6%;
+    top: 0;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    z-index: 1;
+}
+
+#whiteBlock1 {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    position: static;
+    z-index: 1;
+    grid-row: 2 / 3;
+    grid-column: 2 / 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 1rem 0;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#blocktext1 {
+    color: black;
+    font-size: 20px;
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    list-style: none;
+    margin: 0;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+}
+
+/* 菜单项悬停放大效果 */
+#startText, #downloadText, #setText, #viewText {
+    display: inline-block;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+#startText:hover, #downloadText:hover, #setText:hover, #viewText:hover {
+    transform: scale(1.2);
+}
+
+#blocktext1 li {
+    margin-bottom: 0;
+}
+#blocktext1 li:not(:last-child) {
+    margin-bottom: 0;
+}
+
+#whiteBlock2 {
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    position: static;
+    z-index: 1;
+    grid-row: 2 / 3;
+    grid-column: 4 / 5;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 1rem 0;
+    box-sizing: border-box;
+}
+
+#whiteBlock2 p,
+#whiteBlock2 li,
+#whiteBlock2 div:not(.absolute-child) {
+    margin-left: 16px;
+    margin-right: 16px;
+}
+
+#text1 {
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-size: 16px;
+    margin: 0 16px;
+}
+
+#text2 {
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-size: 14px;
+    text-align: center;
+    margin-top: auto;
+    margin-bottom: 16px;
+}
+
+#starting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+#starting_steve {
+    width: min(15%, 80px);
+    height: auto;
+    image-rendering: pixelated;
+}
+
+#starting_text1 {
+    font-size: 14px;
+    text-align: center;
+    margin: 0;
+}

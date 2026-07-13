@@ -1,0 +1,106 @@
+/* 仅作用于 #setting 内部，无 body 样式 */
+#setting {
+    width: auto; /* 由父容器决定宽度 */
+    max-width: 30rem;
+    margin: 1rem 16px; /* 左右保留 16px 页边距，与 #whiteBlock2 内文本对齐 */
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 1.5rem;
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    background: none;
+}
+#setting .header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem 1.2rem 0.5rem;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+#setting .header h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+#setting .scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem 0.8rem 1rem;
+}
+#setting .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+#setting .item:last-child {
+    border-bottom: none;
+}
+#setting .label {
+    font-size: 1rem;
+}
+/* 开关样式 */
+#setting .switch {
+    position: relative;
+    display: inline-block;
+    width: 2.8rem;
+    height: 1.6rem;
+}
+#setting .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+#setting .slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ccc;
+    border-radius: 1rem;
+    transition: 0.2s;
+}
+#setting .slider:before {
+    position: absolute;
+    content: "";
+    height: 1.3rem;
+    width: 1.3rem;
+    left: 0.15rem;
+    bottom: 0.15rem;
+    background: white;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+#setting .switch input:checked + .slider {
+    background: #3b82f6;
+}
+#setting .switch input:checked + .slider:before {
+    transform: translateX(1.2rem);
+}
+@media (max-width: 500px) {
+    #setting {
+        max-width: 100%;
+        margin: 0.5rem 16px;       /* 小屏幕时左右边距保持一致 */
+        border-radius: 1rem;
+    }
+    #setting .item { padding: 0.6rem 0; }
+}
+
+/* 语言下拉框样式 */
+#setting .lang-select {
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 2rem;
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s;
+}
+#setting .lang-select:hover {
+    border-color: #3b82f6;
+    background: white;
+}
