@@ -4,6 +4,7 @@ import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
 import { idOfBlock } from "./blockMechanism.js";
 import { mouse } from "../../mouse.js";
+import { lowest_point } from "../createWorld.js";
 
 export function grass_and_dirt(looking_block: number, look_x: number, look_y: number): number {
     if(getRandomInt(0, 256) !== 0 ||
@@ -44,9 +45,10 @@ export function inviconGrass(looking_block: number, lookx: number, looky: number
 }
 
 export function sand_gravity(looking_block: number, look_x: number, look_y: number): number {
-    if(looking_block === 5 && world[look_y+1][look_x] === -1) {
+    if(looking_block === 5 && world[look_y+1][look_x] <= -1) {
         entityBlock_array.push(new EntityBlock(5, look_x, look_y));
-        return -1;
+        if(look_y > lowest_point) {return idOfBlock.stone_dark}
+        else {return idOfBlock.air}
     }
     return looking_block;
 }
