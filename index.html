@@ -13,6 +13,7 @@
         @import url("css/contentStyle/createWorld.css");
         @import url("css/contentStyle/setting.css");
         @import url("css/contentStyle/logo.css");
+        @import url("css/contentStyle/toast.css");
         @import url("css/gameStyle/gameloading.css");
         @import url("css/gameStyle/GameRoom.css");
     </style>
@@ -95,6 +96,12 @@
             <button class="create-btn" data-i18n="worldCreation.createButton"></button>
             <button class="back-btn" data-i18n="worldCreation.cancelButton"></button>
         </div>
+
+        <div id="toast">
+            <p id="toast_text"></p>
+            <p id="toast_cancel" data-i18n="toast.cancel"></p>
+            <p id="toast_sure" data-i18n="toast.sure"></p>
+        </div>
     </div>
 
     <div class="GameRoom">
@@ -111,9 +118,7 @@
     <script type="module" src="js/contentRoom/logoAnim.js"></script>
     <script type="module" src="js/contentRoom/content.js"></script>
     <script type="module" src="js/contentRoom/setting.js"></script>
-
     <script type="module" src="js/main.js"></script>
-
     <script type="module" src="js/others/SetRoomSize.js"></script>
     <script type="module" src="js/others/i18n.js"></script>
 </body>

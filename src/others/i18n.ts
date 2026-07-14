@@ -2,7 +2,6 @@ import { apiObjects } from "../apiox/dom.js";
 import { apiMethod } from "../apiox/method.js";
 import { apioxEvent } from "../apiox/event.js";
 
-// js/others/i18n.js
 let i18nData: Record<string, any> | null = null;
 let lang: string = 'zh-CN';
 
@@ -41,7 +40,7 @@ function applyI18n() {
 
     // 处理 data-i18n（文本内容）
     apiMethod.selectAll('[data-i18n]').forEach(el => {
-        const path = el.getAttribute('data-i18n');
+        const path: string = el.getAttribute('data-i18n');
         const value = getByPath(i18nData, path);
         if (value !== undefined && value !== null) {
             el.textContent = value;
@@ -50,7 +49,7 @@ function applyI18n() {
 
     // 处理 data-i18n-placeholder（占位符）
     apiMethod.selectAll('[data-i18n-placeholder]').forEach(el => {
-        const path = el.getAttribute('data-i18n-placeholder');
+        const path: string = el.getAttribute('data-i18n-placeholder');
         const value = getByPath(i18nData, path);
         if (value !== undefined && value !== null) {
             (el as HTMLInputElement | HTMLTextAreaElement).placeholder = value;
@@ -71,7 +70,7 @@ export async function setLanguage(newLang: string) {
 apiObjects.win.applyI18nToElement = (element: Element) => {
     if (!i18nData) {return;}
     if (element.hasAttribute('data-i18n')) {
-        const path = element.getAttribute('data-i18n');
+        const path: string = element.getAttribute('data-i18n');
         const value = getByPath(i18nData, path);
         if (value !== undefined) {element.textContent = value;}
     }
@@ -89,12 +88,12 @@ apiObjects.win.t = (path) => {
 
 // 读取存储的语言偏好并启动
 function initLanguage() {
-    const savedLang = localStorage.getItem('cavegame_lang');
+    const savedLang: string = localStorage.getItem('cavegame_lang');
     if (savedLang && (savedLang === 'zh-CN' || savedLang === 'en')) {
         lang = savedLang;
     } else {
         // 根据浏览器语言自动选择
-        const browserLang = navigator.language;
+        const browserLang: string = navigator.language;
         lang = browserLang.startsWith('zh') ? 'zh-CN' : 'en';
     }
     loadI18n();

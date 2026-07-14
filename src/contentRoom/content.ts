@@ -33,6 +33,10 @@ const whiteBlock2 = new ApioxObject('whiteBlock2');
 const starting_steve = new ApioxObject('starting_steve');
 const create_btn = new ApioxObject(null, 'create-btn');
 const back_btn = new ApioxObject(null, 'back-btn');
+export const toast = new ApioxObject('toast');
+export const toastText = new ApioxObject('toast_text');
+export const toastCancel = new ApioxObject('toast_cancel');
+export const toastSure = new ApioxObject('toast_sure');
 
 //初始化游戏窗口 大小和显示
 content.domstyle('width', String(room.width) + 'px'); content.domstyle('height', String(room.height) + 'px');

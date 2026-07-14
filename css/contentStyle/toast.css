@@ -1,0 +1,62 @@
+/*弹窗容器 固定定位，居中*/
+#toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 280px;
+    max-width: 90vw;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 24px 20px 16px;
+    text-align: center;
+    z-index: 9999;
+    box-sizing: border-box;
+    display: none;
+}
+
+/*提示文字*/
+#toast_text {
+    margin: 0 0 20px 0;
+    font-size: 16px;
+    color: #000000;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+/*按钮容器*/
+#toast_sure,
+#toast_cancel {
+    display: inline-block;
+    padding: 8px 24px;
+    margin: 0 6px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+    border: none;
+    background: #f0f0f0;
+    color: #000000;
+}
+
+/* 确定按钮 - 突出样式 */
+#toast_sure {
+    background: #4a90d9;
+    color: #ffffff;
+}
+
+#toast_sure:hover {
+    background: #357abd;
+}
+
+/*取消按钮次要样式*/
+#toast_cancel {
+    background: #e0e0e0;
+    color: #000000;
+}
+
+#toast_cancel:hover {
+    background: #d0d0d0;
+}

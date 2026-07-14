@@ -4,6 +4,7 @@ import { ApioxCanvasContext } from "./canvas.js";
 export class ApioxObject {
     id: string; className: string;
     private element: HTMLElement;
+    private _listeners: Map<string, Map<Function, EventListener>> = new Map();
 
     constructor(id: string | null = null, className: string | null = null) {
         this.id = id; this.className = className;
@@ -47,6 +48,16 @@ export class ApioxObject {
     }
 
     removeit(): void {
+        //移除所有已注册的监听器
+        if (this._listeners) {
+            for (const [type, listenerMap] of this._listeners) {
+                for (const wrapped of listenerMap.values()) {
+                    this.element.removeEventListener(type, wrapped);
+                }
+            }
+            this._listeners.clear();
+        }
+
         if (this.element && this.element.parentNode) {
             this.element.remove();
         }
@@ -57,7 +68,6 @@ export class ApioxObject {
         listener: (this: ApioxObject, ev: ApioxAnyEvent) => void,
         options?: boolean | AddEventListenerOptions
     ): () => void {
-        // 根据事件类型选择合适的包装类
         const wrapEvent = (nativeEvent: Event): ApioxAnyEvent => {
             if (nativeEvent instanceof WheelEvent) {
                 return new ApioxWheelEvent(nativeEvent);
@@ -72,12 +82,36 @@ export class ApioxObject {
 
         const wrappedListener = (nativeEvent: Event) => {
             const wrappedEvent = wrapEvent(nativeEvent);
-            // 将 this 绑定到当前 ApioxObject 实例，回调的第一个参数是包装后的事件
             listener.call(this, wrappedEvent);
         };
 
         this.element.addEventListener(type, wrappedListener, options);
-        return () => this.element.removeEventListener(type, wrappedListener, options);
+
+        // 存储映射：类型 -> 原始监听器 -> 包装监听器
+        if (!this._listeners.has(type as string)) {
+            this._listeners.set(type as string, new Map());
+        }
+        const typeMap = this._listeners.get(type as string)!;
+        typeMap.set(listener, wrappedListener);
+
+        // 返回取消函数
+        return () => {
+            this.off(type as string, listener, options);
+        };
+    }
+
+    off(type: string, listener: Function, options?: boolean | AddEventListenerOptions): void {
+        const typeMap = this._listeners.get(type);
+        if (!typeMap) {return;}
+
+        const wrapped = typeMap.get(listener);
+        if (wrapped) {
+            this.element.removeEventListener(type, wrapped, options);
+            typeMap.delete(listener);
+            if (typeMap.size === 0) {
+                this._listeners.delete(type);
+            }
+        }
     }
 
     static wrap(el: HTMLElement): ApioxObject {
