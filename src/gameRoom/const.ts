@@ -2,10 +2,13 @@ import { apioxTime } from "../apiox/time.js";
 import { apioxEvent, ApioxKeyboardEvent, apioxEventBus } from "../apiox/event.js";
 
 //世界的长和宽，单位：方块
-const world_height = 256;
+const world_height: number = 256;
 
-const room: {width: number; height: number} = { //1280*720px
+const room: {
+    width: number; height: number
+} = {
     width: 1280, height: 720,
+    //1280*720px
 }
 
 const chunk: {
@@ -18,17 +21,10 @@ const chunk: {
     left_number: 0, //左侧区块数量
 }
 
-const setting: {phoneButton_isOpening: boolean; screenRotate_isOpening: boolean} = {
-    phoneButton_isOpening: false,
-    screenRotate_isOpening: false,
-}
-
 let world: number[][] = Array.from({ length: world_height }, (): number[] => []);
-/*-2橡木-1空气 0草1泥2石头3树叶*/
-const sealevel = world_height / 2;
+const sealevel: number = world_height / 2;
 
-//定义一些函数
-//一个生成随机数的函数
+//生成随机数
 function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -41,7 +37,7 @@ function place_meeting(x: number, y: number): boolean {
     else {return false;}
 }
 
-// 检测点和矩形的碰撞
+//检测点和矩形的碰撞
 function point_coll_rect(x: number, y: number, rect_x: number, rect_y: number, width: number, height: number): boolean {
     if(x >= rect_x && x <= rect_x + width && y >= rect_y && y <= rect_y + height) {
         return true;
@@ -137,9 +133,11 @@ function setMyVariable(type: 3, newValue: boolean): void;
 function setMyVariable(type: number, newValue: number[][] | boolean): void {
     switch(type) {
         case 0: world = newValue as number[][]; break;
-        //case 1: world[0].length = newValue; break;
+        /*
+        case 1: world[0].length = newValue; break;
         case 2: setting.phoneButton_isOpening = newValue as boolean; break;
         case 3: setting.screenRotate_isOpening = newValue as boolean; break;
+        */
     }
 }
 
@@ -147,7 +145,7 @@ function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
     const expectedLen: number = chunk.num * chunk.width;
 
     for (let i = 0; i < world_height; i++) {
-        // 截断污染：如果该行长度超过预期，说明被越界写入过
+        //截断污染：如果该行长度超过预期，说明被越界写入过
         if (world[i].length > expectedLen) {
             world[i].length = expectedLen;
         }
@@ -162,4 +160,3 @@ function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
 
 export { world_height, room, world, sealevel, chunk };
 export { getRandomInt, place_meeting, enableKeyDoubleClickDetection, point_coll_rect, distance, isOutOfBounds, setMyVariable, pushChunkToWorld, isOnScreen };
-export { setting };

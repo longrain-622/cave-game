@@ -9,8 +9,8 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": false,
-    "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "noUnusedLocals": true,
 
     "esModuleInterop": true,
     "skipLibCheck": true,

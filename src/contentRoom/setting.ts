@@ -1,7 +1,14 @@
-import { setMyVariable } from '../gameRoom/const.js';
 import { lang, setLanguage } from '../others/i18n.js';
 import { apioxEvent, ApioxAnyEvent } from '../apiox/event.js';
 import { ApioxObject } from '../apiox/dom.js';
+
+const setting: {
+    phoneButton_isOpening: boolean;
+    screenRotate_isOpening: boolean
+} = {
+    phoneButton_isOpening: false,
+    screenRotate_isOpening: false,
+}
 
 apioxEvent.listenGlobal('DOMContentLoaded', () => {
     const touchKeysCheckbox = new ApioxObject('touchKeys');
@@ -15,10 +22,10 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
         const isEnabled: boolean = target.domProperty('checked') as boolean;
 
         if (target.id === 'touchKeys') {
-            setMyVariable(2, isEnabled);
+            setting.phoneButton_isOpening = isEnabled;
             console.log(`phone button was ${isEnabled ? 'opened' : 'closed'}`);
         } else if (target.id === 'rotateScreen') {
-            setMyVariable(3, isEnabled);
+            setting.screenRotate_isOpening = isEnabled;
             console.log(`rotate screen is ${isEnabled ? 'opened' : 'closed'}`);
         }
     };
@@ -37,3 +44,5 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
         }
     });
 });
+
+export { setting };

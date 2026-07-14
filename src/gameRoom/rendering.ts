@@ -36,6 +36,19 @@ if (gameRoom) {
     gameRoom.appendChild(app.view as HTMLCanvasElement);
 }
 
+export const textStyle = new PIXI.TextStyle({
+    fontFamily: 'Unifont', //这里的名字必须与字体文件内部定义的名称一致
+    fontSize: 24,
+    fill: '#ffffff',
+    dropShadow: true, //启用阴影
+    dropShadowColor: 0x000000,
+    dropShadowAlpha: 0.8,
+    dropShadowBlur: 0, //模糊程度
+    dropShadowDistance: 2, //阴影偏移距离
+    dropShadowAngle: Math.PI / 4, //阴影角度（45度向下）
+    padding: 10,
+});
+
 export let isDrawing: boolean = false;
 const img = {
     destory: new Image(),

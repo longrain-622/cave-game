@@ -1,7 +1,7 @@
 {
   "name": "cavegame",
   "version": "Pre-Alpha",
-  "description": "A 2d pixel-style game just like Minecraft.",
+  "description": "A 2d pixel-style game.",
   "main": "main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",

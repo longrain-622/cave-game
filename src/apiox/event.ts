@@ -182,6 +182,26 @@ export const apioxEvent = {
         document.addEventListener(event, wrapped, { once: true }); //利用原生once
     },
 
+    /**
+     * 在 document 上分派自定义事件
+     * @param eventType 事件类型字符串
+     * @param detail 自定义数据（可选）
+     * @param options 额外选项（bubbles, cancelable）
+     * @returns 是否被取消（false 表示 preventDefault 被调用）
+     */
+    dispatchGlobal(
+        eventType: string,
+        detail?: any,
+        options?: { bubbles?: boolean; cancelable?: boolean }
+    ): boolean {
+        const event = new CustomEvent(eventType, {
+            detail,
+            bubbles: options?.bubbles ?? true,
+            cancelable: options?.cancelable ?? true,
+        });
+        return document.dispatchEvent(event);
+    },
+
     listenWindow<K extends keyof WindowEventMap>( //监听window
         event: K,
         listener: (e: ApioxEvent) => void
@@ -249,4 +269,34 @@ export const apioxEvent = {
     onKeyDoubleClick(listener: (detail: { key: string }) => void): () => void {
         return apioxEventBus.on('keydoubleclick', listener);
     },
+
+    dispatchKeyboard(
+        type: 'keydown' | 'keyup' | 'keypress',
+        key: string,
+        options?: {
+            code?: string;
+            keyCode?: number;
+            ctrlKey?: boolean;
+            shiftKey?: boolean;
+            altKey?: boolean;
+            metaKey?: boolean;
+            bubbles?: boolean;
+            cancelable?: boolean;
+            composed?: boolean;
+        }
+    ): boolean {
+        const event = new KeyboardEvent(type, {
+            key: key,
+            code: options?.code || 'Key' + key.toUpperCase(),
+            keyCode: options?.keyCode || key.toUpperCase().charCodeAt(0),
+            ctrlKey: options?.ctrlKey || false,
+            shiftKey: options?.shiftKey || false,
+            altKey: options?.altKey || false,
+            metaKey: options?.metaKey || false,
+            bubbles: options?.bubbles ?? true,
+            cancelable: options?.cancelable ?? true,
+            composed: options?.composed ?? true,
+        });
+        return document.dispatchEvent(event);
+    }
 };

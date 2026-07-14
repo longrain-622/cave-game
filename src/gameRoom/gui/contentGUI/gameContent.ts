@@ -5,6 +5,7 @@ import { lang } from "../../../others/i18n.js";
 import { guiApp } from "../application.js";
 import { room } from "../../const.js";
 import { buttonTextures } from "../application.js";
+import { textStyle } from "../../rendering.js";
 import * as PIXI from 'pixi.js';
 
 let gameContent = new PIXI.Container();
@@ -59,19 +60,6 @@ bottomBtn.on('pointerout', () => { //鼠标/指针离开
 gameContent.addChild(topBtn, bottomBtn);
 topBtn.visible = true;
 bottomBtn.visible = true;
-
-const textStyle = new PIXI.TextStyle({
-    fontFamily: 'Unifont', //这里的名字必须与字体文件内部定义的名称一致
-    fontSize: 24,
-    fill: '#ffffff',
-    dropShadow: true, //启用阴影
-    dropShadowColor: 0x000000,
-    dropShadowAlpha: 0.8,
-    dropShadowBlur: 0, //模糊程度
-    dropShadowDistance: 2, //阴影偏移距离
-    dropShadowAngle: Math.PI / 4, //阴影角度（45度向下）
-    padding: 10,
-});
 
 const txt = { //文本对象
     backToGame: new PIXI.Text('', textStyle),

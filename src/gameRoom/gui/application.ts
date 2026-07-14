@@ -1,5 +1,6 @@
 import { room } from "../const.js";
 import { gameRoom } from "../rendering.js";
+import { initTouchButtons } from "./gameGUI/mobileTouch.js";
 import * as PIXI from 'pixi.js';
 
 export const guiApp = new PIXI.Application({
@@ -16,8 +17,13 @@ guiApp.view.style.width = room.width + 'px';
 guiApp.view.style.height = room.height + 'px';
 guiApp.view.style.zIndex = '10';
 
+guiApp.view.style.touchAction = 'none'; //禁止浏览器默认触摸行为
+guiApp.view.style.pointerEvents = 'auto'; //确保指针事件开启
+
 await PIXI.Assets.init({ basePath: './assets/' });
 await PIXI.Assets.load('/assets/fonts/unifont.ttf');
+
+initTouchButtons(guiApp);
 
 //按钮图像
 export const buttonTextures = {
