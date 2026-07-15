@@ -1,5 +1,5 @@
 import { player } from './player.js';
-import { world, distance, getRandomInt } from './const.js';
+import { world, distance, getRandomInt, room } from './const.js';
 import { inventory, widgets, invenUI_isOpening } from './gui/gameGUI/inventory.js';
 import { Slots } from './gui/gameGUI/inventoryConfig.js';
 import { createDrop, lookDrops } from './dropped/droppedItem.js';
@@ -12,9 +12,10 @@ import { door_openOrClose } from './nature/blockMecha/bmFunction.js';
 import { lowest_point } from './nature/createWorld.js';
 import { idOfBlock } from './nature/blockMecha/blockMechanism.js';
 import './others/audioManager.js';
-import { apioxEvent } from '../apiox/event.js';
+import { apioxEvent, ApioxMouseEvent } from '../apiox/event.js';
+import { ApioxObject } from '../apiox/dom.js';
 
-const canvas = document.getElementById('drawWorld') as HTMLCanvasElement;
+const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
 let bgmStarted: boolean = false;
 
 //鼠标数据
@@ -38,14 +39,15 @@ const mouse: {
 };
 
 apioxEvent.onMouseMove(
-    (event): void => {
-        const rect: DOMRect = canvas.getBoundingClientRect();  //canvas 在屏幕上的实际显示区域
-        const scaleX: number = canvas.width / rect.width; //内部像素宽/显示宽
-        const scaleY: number = canvas.height / rect.height;
+    (event: ApioxMouseEvent): void => {
+        gameRoom.getRect();
 
-        // 计算鼠标在 canvas 内部的像素坐标
-        mouse.x = (event.clientX - rect.left) * scaleX;
-        mouse.y = (event.clientY - rect.top) * scaleY;
+        const scaleX: number = room.width / gameRoom.getRectWidth(); //内部像素宽/显示宽
+        const scaleY: number = room.height / gameRoom.getRectHeight();
+
+        //计算鼠标在 canvas 内部的像素坐标
+        mouse.x = (event.clientX - gameRoom.getRectLeft()) * scaleX;
+        mouse.y = (event.clientY - gameRoom.getRectTop()) * scaleY;
 
         if(distance(mouse.x, mouse.y, player.screen_x, player.screen_y) <= 256) {
             mouse.can_use = true;
@@ -53,7 +55,7 @@ apioxEvent.onMouseMove(
     }
 );
 apioxEvent.onMouseDown(
-    (event): void => {
+    (event: ApioxMouseEvent): void => {
         mouse.isDown = true;
         mouse.downingButton = event.button;
         if (event.button === 0) { //左键
@@ -106,7 +108,7 @@ apioxEvent.onMouseUp(
     }
 );
 
-function mouseAct() {
+function mouseAct(): void {
     mouse.world_x = Math.round((player.x + mouse.x - player.screen_x) / 64);
     mouse.world_y = Math.round((player.y + mouse.y - player.screen_y) / 64);
 

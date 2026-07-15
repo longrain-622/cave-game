@@ -3,12 +3,13 @@ import { ApioxCanvasContext } from "./canvas.js";
 
 export class ApioxObject {
     id: string; className: string;
+
     private element: HTMLElement;
     private _listeners: Map<string, Map<Function, EventListener>> = new Map();
+    private rect: DOMRect;
 
     constructor(id: string | null = null, className: string | null = null) {
         this.id = id; this.className = className;
-
         if(id !== null) {this.element = document.getElementById(id);}
         else if(className !== null) {
             const elements = document.getElementsByClassName(className);
@@ -19,6 +20,14 @@ export class ApioxObject {
             }
         } else {
             throw new Error('Either id or className must be provided');
+        }
+
+        if (this.element) {
+            this.rect = this.element.getBoundingClientRect();
+        } else {
+            throw new Error(
+                `[ApioxObject] cannot get the element (id="${id}", class="${className}")。\n`
+            );
         }
     }
 
@@ -40,10 +49,18 @@ export class ApioxObject {
         }
     }
 
+    getStyle(prop: string): string {
+        return this.element.style.getPropertyValue(prop);
+    }
+
     domProperty(prop: string, value: any=null): any {
         if(value !== null) {
             (this.element as any)[prop] = value;
         }
+        return (this.element as any)[prop];
+    }
+
+    getProperty(prop: any): any {
         return (this.element as any)[prop];
     }
 
@@ -160,6 +177,22 @@ export class ApioxObject {
     }
     hide(): void {
         this.element.style.display = 'none';
+    }
+
+    getRect(): void {
+        this.rect = this.element.getBoundingClientRect();
+    }
+    getRectWidth(): number {
+        return this.rect.width;
+    }
+    getRectHeight(): number {
+        return this.rect.height;
+    }
+    getRectLeft(): number {
+        return this.rect.left;
+    }
+    getRectTop(): number {
+        return this.rect.top;
     }
 }
 

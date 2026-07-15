@@ -66,7 +66,7 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
             }
 
             // 确定按钮
-            const onSure = () => {
+            const onSure = (): void => {
                 // 锁定横屏
                 const orientation = win.screen.orientation as any;
                 if (orientation?.lock) {

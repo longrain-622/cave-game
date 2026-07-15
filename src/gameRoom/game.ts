@@ -19,7 +19,7 @@ import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
 import { ApioxObject } from '../apiox/dom.js';
 
 //设置房间大小
-let gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
+export const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
 gameRoom.domstyle('width', String(room.width) + 'px');
 gameRoom.domstyle('height', String(room.height) + 'px');
 

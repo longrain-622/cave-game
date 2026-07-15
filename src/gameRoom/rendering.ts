@@ -6,7 +6,6 @@ import { mouse } from "./mouse.js";
 import { idOfBlock } from "./nature/blockMecha/blockMechanism.js";
 
 import * as PIXI from 'pixi.js';
-import { ApioxObject } from "../apiox/dom.js";
 import { apiMethod } from "../apiox/method.js";
 
 //@ts-ignore - defaultOptions
@@ -25,14 +24,9 @@ app.view.style.width = room.width + 'px';
 app.view.style.height = room.height + 'px';
 app.stage.sortableChildren = true;
 
-const underbg_container = new PIXI.Container();
-app.stage.addChildAt(underbg_container, 0); //放入最底层
-
 //将 Pixi 画布插入到游戏容器中，放置于其他 Canvas 之上
 const gameRoom = apiMethod.select('.GameRoom');
 if (gameRoom) {
-    const oldCanvas = new ApioxObject('drawPlayer');
-    if (oldCanvas) {oldCanvas.removeit();}
     gameRoom.appendChild(app.view as HTMLCanvasElement);
 }
 
