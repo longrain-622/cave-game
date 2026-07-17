@@ -4,6 +4,7 @@ import { idOfBlock } from "../nature/blockMecha/blockMechanism.js";
 import { isOutOfBounds, world } from "../const.js";
 import { mouse } from "../mouse.js";
 import { createDrop } from "./droppedItem.js";
+import * as PIXI from 'pixi.js';
 
 export enum idOfItem {
     beef = 512, chicken, mutton, porkchop, apple,
@@ -46,9 +47,25 @@ function checkAllLoaded() {
     imagesLoaded++;
     if (imagesLoaded === item_images.length) {
         item_isDrawing = true;
+        initItemTextures();
     }
 }
 item_images.forEach(img => img.addEventListener('load', checkAllLoaded));
+
+export const itemTextures: Record<number | string, PIXI.Texture> = {};
+function initItemTextures() {
+    itemTextures[idOfItem.beef] = PIXI.Texture.from(img_items.beef);
+    itemTextures[idOfItem.chicken] = PIXI.Texture.from(img_items.chicken);
+    itemTextures[idOfItem.mutton] = PIXI.Texture.from(img_items.mutton);
+    itemTextures[idOfItem.porkchop] = PIXI.Texture.from(img_items.porkchop);
+    itemTextures[idOfItem.apple] = PIXI.Texture.from(img_items.apple);
+    itemTextures[idOfItem.stick] = PIXI.Texture.from(img_items.stick);
+    itemTextures[idOfItem.wooden_pickaxe] = PIXI.Texture.from(img_items.wooden_pickaxe);
+    itemTextures[idOfItem.stone_pickaxe] = PIXI.Texture.from(img_items.stone_pickaxe);
+    itemTextures[idOfItem.coal] = PIXI.Texture.from(img_items.coal);
+    itemTextures[idOfItem.raw_iron] = PIXI.Texture.from(img_items.raw_iron);
+    itemTextures[idOfItem.oak_door] = PIXI.Texture.from(img_items.oak_door);
+}
 
 function checkItem(ctx: CanvasRenderingContext2D, drawingObj: number, x: number, y: number, width: number, height: number, sx=0, sy=0, sw=16, sh=16) {
     /*512=beef 513=chicken 514=mutton 515=porkchop*/

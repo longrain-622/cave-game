@@ -7,8 +7,8 @@ import '../others/audioManager.js';
 import { apioxTime } from '../../apiox/time.js';
 import { apioxEvent } from '../../apiox/event.js';
 
-const look_range: number = 32; // 渲染的范围的一半
-let animalArray: Animal[] = []; // 用来存储动物实例的数组
+const look_range: number = 32; //渲染的范围的一半
+let animalArray: Animal[] = []; //用来存储动物实例的数组
 const entityType_number: number = 4; //目前实体总量
 
 enum idOfAnimal {

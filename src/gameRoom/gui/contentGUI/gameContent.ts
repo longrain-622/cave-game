@@ -9,6 +9,7 @@ import { textStyle } from "../../rendering.js";
 import * as PIXI from 'pixi.js';
 
 let gameContent = new PIXI.Container();
+gameContent.zIndex = 10;
 let gameContent_isOpening: boolean = false;
 gameContent.visible = gameContent_isOpening;
 guiApp.stage.addChild(gameContent);

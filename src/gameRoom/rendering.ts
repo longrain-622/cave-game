@@ -1,6 +1,6 @@
 //rendering.ts
 import { room, isOutOfBounds, world } from "./const.js";
-import { initPlayerPixi, player } from "./player.js";
+import { player } from "./player.js";
 import { initSkyBackground } from "./nature/sky.js";
 import { mouse } from "./mouse.js";
 import { idOfBlock } from "./nature/blockMecha/blockMechanism.js";
@@ -92,9 +92,9 @@ function checkAllLoaded(): void {
     imagesLoaded++;
     if (imagesLoaded === images.length) {
         isDrawing = true;
+
         initSkyBackground();
         initBlockTextures();
-        initPlayerPixi(app.stage);
 
         //鼠标 UI 容器
         const mouseUIContainer = new PIXI.Container();
@@ -129,7 +129,7 @@ let cursorSprite: PIXI.Graphics;
 let destroySprite: PIXI.Sprite;
 let destroyFrames: PIXI.Texture[] = [];
 
-const blockTextures: Record<number | string, PIXI.Texture> = {};
+export const blockTextures: Record<number | string, PIXI.Texture> = {};
 function initBlockTextures() {
     blockTextures[idOfBlock.grass] = PIXI.Texture.from(img.grass);
     blockTextures[idOfBlock.dirt] = PIXI.Texture.from(img.dirt);

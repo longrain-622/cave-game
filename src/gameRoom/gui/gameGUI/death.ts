@@ -1,9 +1,9 @@
 import { player } from "../../player.js";
-import { point_coll_rect } from "../../const.js";
-import { mouse } from "../../mouse.js";
-import { ctx_gui, gui_isDrawing, canvas_gui, drawText, img_gui } from "./inventory.js";
+import { gui_isDrawing, img_gui, deathContainer } from "./inventory.js";
+import { textStyle } from "../../rendering.js";
 import { apiObjects } from "../../../apiox/dom.js";
 import { apioxEvent } from "../../../apiox/event.js";
+import * as PIXI from 'pixi.js';
 
 const death: {str: string[], click: boolean} = {
     str: [],
@@ -36,33 +36,78 @@ apioxEvent.listenGlobal('mouseup', () => {
     death.click = false;
 });
 
-function drawButton(text: string, x: number, y: number) {
-    const button_width = 640; //px
-    const button_height = button_width / 10;
-    const font_size = 32;
+// Pixi 元素
+let deathOverlay: PIXI.Graphics;
+let titleText: PIXI.Text;
+let buttonSprite: PIXI.Sprite;
+let buttonText: PIXI.Text;
+let deathInitialized = false;
 
-    if(point_coll_rect(mouse.x, mouse.y, x, y, button_width, button_height)) { //检测鼠标的聚焦
-        ctx_gui.drawImage(img_gui.widgets, 0, 86, 200, 20, x, y, button_width, button_height);
-        if(death.click) { //复活
-            death.click = false;
+function initDeathUI(): void {
+    if (deathInitialized) {return;}
+    deathContainer.removeChildren();
+
+    // 在函数内创建纹理，此时 img_gui 已可用
+    const widgetsTex = PIXI.Texture.from(img_gui.widgets);
+    const btnNormal = new PIXI.Texture(widgetsTex.baseTexture, new PIXI.Rectangle(0, 66, 200, 20));
+    const btnHover  = new PIXI.Texture(widgetsTex.baseTexture, new PIXI.Rectangle(0, 86, 200, 20));
+
+    // 半透明红色遮罩
+    deathOverlay = new PIXI.Graphics();
+    deathOverlay.beginFill(0xff0000, 0.5);
+    deathOverlay.drawRect(0, 0, window.innerWidth, window.innerHeight); // 或 room.width/height
+    deathOverlay.endFill();
+    deathContainer.addChild(deathOverlay);
+
+    // 标题
+    titleText = new PIXI.Text('', { ...textStyle, fontSize: 64, align: 'center' });
+    titleText.anchor.set(0.5, 0);
+    titleText.position.set(window.innerWidth / 2, window.innerHeight * 0.25);
+    deathContainer.addChild(titleText);
+
+    // 按钮
+    const buttonWidth = 640, buttonHeight = 64;
+    const btnX = (window.innerWidth - buttonWidth) / 2;
+    const btnY = 320;
+    buttonSprite = new PIXI.Sprite(btnNormal);
+    buttonSprite.width = buttonWidth;
+    buttonSprite.height = buttonHeight;
+    buttonSprite.position.set(btnX, btnY);
+    buttonSprite.interactive = true;
+    buttonSprite.buttonMode = true;
+    deathContainer.addChild(buttonSprite);
+
+    // 按钮文字
+    buttonText = new PIXI.Text('', { ...textStyle, fontSize: 32, align: 'center' });
+    buttonText.anchor.set(0.5, 0.5);
+    buttonText.position.set(btnX + buttonWidth / 2, btnY + buttonHeight / 2);
+    deathContainer.addChild(buttonText);
+
+    // 鼠标悬停切换纹理
+    buttonSprite.on('mouseover', () => { buttonSprite.texture = btnHover; });
+    buttonSprite.on('mouseout', () => { buttonSprite.texture = btnNormal; });
+    // 点击复活
+    buttonSprite.on('click', () => {
+        if (player.hp <= 0) {
             player.hp = 20;
             player.initXY();
+            deathContainer.visible = false;
         }
-    }
-    else {
-        ctx_gui.drawImage(img_gui.widgets, 0, 66, 200, 20, x, y, button_width, button_height);
-    }
+    });
 
-    drawText(text, x + button_width/2 - text.length*font_size/2, y + (button_height + font_size) / 2, font_size);
+    deathInitialized = true;
 }
 
 function drawDeadPage() {
-    if(player.hp <= 0 && gui_isDrawing) {
-        ctx_gui.fillStyle = 'rgba(255, 0, 0, 0.5)';
-        ctx_gui.fillRect(0, 0, canvas_gui.width, canvas_gui.height);
-
-        drawText(death.str[0], canvas_gui.width / 2 - 96, canvas_gui.height * 0.25, 64);
-        drawButton(death.str[1], 320, 320);
+    if (player.hp <= 0 && gui_isDrawing) {
+        initDeathUI();
+        deathContainer.visible = true;
+        // 更新文字（国际化）
+        titleText.text = death.str[0] || '';
+        buttonText.text = death.str[1] || '';
+        // 按钮点击逻辑已绑定
+    } else {
+        deathContainer.visible = false;
     }
 }
 

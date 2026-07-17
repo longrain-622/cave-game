@@ -86,7 +86,7 @@ export const recipes: RecipeShape[] = [
             [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
         ],
         outputId: idOfItem.oak_door,
-        outputCount: 1,
+        outputCount: 3,
         gridWidth: 2,
         gridHeight: 3
     },

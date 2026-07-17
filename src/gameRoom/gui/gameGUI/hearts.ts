@@ -1,11 +1,64 @@
 import { player } from "../../player.js";
-import { ctx_gui, gui_isDrawing, img_gui, widgets } from "./inventory.js";
+import { img_gui, widgets, heartContainer } from "./inventory.js";
+import * as PIXI from 'pixi.js';
 
-const heart = {
+const heart: {
+    lasthp: number; timer: number; drawWhite: boolean; drawWhite_phaser: number;
+} = {
     lasthp: 20,
     timer: 0,
     drawWhite: false,
     drawWhite_phaser: 1
+}
+
+// 心形纹理
+let heartTextures: {
+    empty: PIXI.Texture;
+    half: PIXI.Texture;
+    full: PIXI.Texture;
+    white: PIXI.Texture;
+} | null = null;
+// 10 个心形精灵
+let heartSprites: PIXI.Sprite[] = [];
+let bgSprites: PIXI.Sprite[] = [];
+let heartInitialized: boolean = false;
+
+function initHearts(): void {
+    if (heartInitialized) {return;}
+    heartContainer.removeChildren();
+
+    // 在函数内创建纹理，此时 img_gui 已可用
+    const iconTex: PIXI.Texture = PIXI.Texture.from(img_gui.icons);
+    heartTextures = {
+        empty: new PIXI.Texture(iconTex.baseTexture, new PIXI.Rectangle(16, 0, 9, 9)),
+        half: new PIXI.Texture(iconTex.baseTexture, new PIXI.Rectangle(61, 0, 9, 9)),
+        full: new PIXI.Texture(iconTex.baseTexture, new PIXI.Rectangle(52, 0, 9, 9)),
+        white: new PIXI.Texture(iconTex.baseTexture, new PIXI.Rectangle(25, 0, 9, 9)),
+    };
+
+    let draw_x: number = widgets.x;
+    const draw_y: number = widgets.y - 40;
+    for (let i = 0; i < 10; i++) {
+        const sprite = new PIXI.Sprite(heartTextures.full);
+        sprite.width = 32;
+        sprite.height = 32;
+        sprite.position.set(draw_x, draw_y);
+        sprite.zIndex = 1;
+
+        const bgSprite = new PIXI.Sprite(heartTextures.empty);
+        bgSprite.width = 32;
+        bgSprite.height = 32;
+        bgSprite.position.set(draw_x, draw_y);
+        bgSprite.zIndex = 0;
+
+        heartContainer.addChild(bgSprite);
+        bgSprites.push(bgSprite);
+
+        heartContainer.addChild(sprite);
+        heartSprites.push(sprite);
+        draw_x += 28;
+    }
+    heartInitialized = true;
 }
 
 function heartsAct(): void {
@@ -30,31 +83,30 @@ function heartsAct(): void {
     }
 }
 
-function drawHeart(): void { //绘制生命条
-    if(!gui_isDrawing) {return;}
-
-    let draw_x = widgets.x;
-    let draw_y = widgets.y - 40;
-
-    for(let i = 1; i <= 10; i++) {
-        if(heart.drawWhite_phaser % 2 === 0) {
-            ctx_gui.drawImage(img_gui.icons, 25, 0, 9, 9, draw_x, draw_y, 32, 32);
+function drawHeart(): void {
+    initHearts();
+    if (!heartTextures) {return;} // 防御
+    const isWhitePhase: boolean = (heart.drawWhite_phaser % 2 === 0);
+    for (let i = 0; i < 10; i++) {
+        const sprite: PIXI.Sprite = heartSprites[i];
+        const bgSprite: PIXI.Sprite = bgSprites[i];
+        if (isWhitePhase) {
+            bgSprite.texture = heartTextures.white;
+        } else {
+            bgSprite.texture = heartTextures.empty;
         }
-        else {
-            ctx_gui.drawImage(img_gui.icons, 16, 0, 9, 9, draw_x, draw_y, 32, 32);
+        if (player.hp >= 2 * (i + 1)) {
+            sprite.texture = heartTextures.full;
+            sprite.visible = true;
+        } else if (player.hp === 2 * (i + 1) - 1) {
+            sprite.texture = heartTextures.half;
+            sprite.visible = true;
+        } else {
+            sprite.visible = false;
         }
-
-        if(player.hp >= 2*i) {
-            ctx_gui.drawImage(img_gui.icons, 52, 0, 9, 9, draw_x, draw_y, 32, 32);
-        }
-        else if(player.hp === 2*i - 1) {
-            ctx_gui.drawImage(img_gui.icons, 61, 0, 9, 9, draw_x, draw_y, 32, 32);
-        }
-        draw_x += 28;
     }
+    //控制容器可见性
+    heartContainer.visible = true;
 }
 
 export { drawHeart, heartsAct };
-
-
-

@@ -1,6 +1,7 @@
 import { player } from './player.js';
 import { world, distance, getRandomInt, room } from './const.js';
-import { inventory, widgets, invenUI_isOpening } from './gui/gameGUI/inventory.js';
+import { inventory, widgets } from './gui/gameGUI/inventory.js';
+import { invenUI_isOpening } from './gui/uiState.js';
 import { Slots } from './gui/gameGUI/inventoryConfig.js';
 import { createDrop, lookDrops } from './dropped/droppedItem.js';
 import { calculateHardness } from './dropped/minetool.js';

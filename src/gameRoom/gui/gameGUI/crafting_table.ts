@@ -1,40 +1,147 @@
-import { iC_hand, invenConfig, ct_crafting, ct_get, Slots } from "./inventoryConfig.js";
-import { ctx_gui, img_gui, locateHighWhite, canvas_gui, inventory, drawIteminInventory, selecting, drawBackpackItems } from "./inventory.js";
+import { ct_crafting, ct_get, Slots } from "./inventoryConfig.js";
+import { img_gui, inventory, selecting, craftingTableContainer, drawBackpackItems } from "./inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../mouse.js";
 import { world, room } from "../../const.js";
+import { blockTextures, textStyle } from "../../rendering.js";
+import { itemTextures } from "../../dropped/items.js";
 import { apioxEvent, ApioxMouseEvent } from "../../../apiox/event.js";
+import * as PIXI from 'pixi.js';
 
 const craftingTable: {isOpening: boolean; width: number; height: number;} = {
     isOpening: false, width: 704, height: 664
 }
 
-// 工作台的合成网格（3x3）和输出槽
+//工作台的合成网格（3x3）和输出槽
 export const workbenchSlots: Slots[] = [];
 export const workbenchResultSlot = new Slots(-1, 0);
 const WORKBENCH_COLS = 3;
 const WORKBENCH_ROWS = 3;
 
-// 初始化 9 个空槽位
+//初始化 9 个空槽位
 for (let i = 0; i < WORKBENCH_COLS * WORKBENCH_ROWS; i++) {
     workbenchSlots.push(new Slots(-1, 0));
 }
 
-// 工作台高亮相关
+//工作台高亮相关
 let selectedWbType: 'crafting' | 'result' | null = null;
 let selectedWbIndex: number = -1;
+
+//Pixi UI 元素
+let wbBg: PIXI.Sprite; //工作台背景图
+let wbOverlay: PIXI.Graphics; //半透明黑色遮罩
+let wbSlotSprites: PIXI.Sprite[] = []; //9个合成格子图标
+let wbSlotTexts: PIXI.Text[] = []; //9个合成格子数量
+let wbResultSprite: PIXI.Sprite; //输出槽图标
+let wbResultText: PIXI.Text; //输出槽数量
+let wbHighlight: PIXI.Graphics; //高亮矩形
+let wbInitialized = false;
 
 // 更新工作台合成结果
 function updateWorkbenchResult() {
     updateResultForGrid(workbenchSlots, workbenchResultSlot, WORKBENCH_COLS, WORKBENCH_ROWS);
 }
 
-// 绘制工作台合成区域的高亮
+function updateSlotDisplay(sprite: PIXI.Sprite, text: PIXI.Text, slot: Slots): void {
+    if (!slot || slot.item === -1) {
+        sprite.visible = false;
+        text.visible = false;
+        return;
+    }
+    let tex: PIXI.Texture | null = null;
+    if (slot.item >= 0) tex = blockTextures[slot.item] || null;
+    else tex = itemTextures[slot.item] || null;
+    if (tex) {
+        sprite.texture = tex;
+        sprite.visible = true;
+    } else {
+        sprite.visible = false;
+    }
+    if (slot.num > 1) {
+        text.text = String(slot.num);
+        text.visible = true;
+    } else {
+        text.visible = false;
+    }
+}
+
+// 初始化工作台 UI（只执行一次）
+function initWorkbenchUI() {
+    if (wbInitialized) return;
+    craftingTableContainer.removeChildren();
+
+    // 遮罩
+    wbOverlay = new PIXI.Graphics();
+    wbOverlay.beginFill(0x000000, 0.5);
+    wbOverlay.drawRect(0, 0, room.width, room.height);
+    wbOverlay.endFill();
+    craftingTableContainer.addChild(wbOverlay);
+
+    // 背景
+    wbBg = new PIXI.Sprite(PIXI.Texture.from(img_gui.crafting_table));
+    wbBg.width = craftingTable.width;
+    wbBg.height = craftingTable.height;
+    const invenX = (room.width - craftingTable.width) / 2;
+    const invenY = (room.height - craftingTable.height) / 2;
+    wbBg.position.set(invenX, invenY);
+    craftingTableContainer.addChild(wbBg);
+
+    // 9个合成槽位（3x3）
+    for (let i = 0; i < 9; i++) {
+        const row = Math.floor(i / 3);
+        const col = i % 3;
+        const x = invenX + ct_crafting.startX + col * (ct_crafting.slotWidth + ct_crafting.paddingX) + 8;
+        const y = invenY + ct_crafting.startY + row * (ct_crafting.slotHeight + ct_crafting.paddingY) + 8;
+        const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
+        sprite.width = 48;
+        sprite.height = 48;
+        sprite.position.set(x, y);
+        sprite.visible = false;
+        craftingTableContainer.addChild(sprite);
+        wbSlotSprites.push(sprite);
+
+        const text = new PIXI.Text('', textStyle);
+        text.style.fontSize = 24;
+        text.anchor.set(1, 1);
+        text.position.set(x + 48 - 4, y + 48 - 4);
+        text.visible = false;
+        craftingTableContainer.addChild(text);
+        wbSlotTexts.push(text);
+    }
+
+    // 输出槽
+    const outX = invenX + ct_get.startX + 24;
+    const outY = invenY + ct_get.startY + 24;
+    wbResultSprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
+    wbResultSprite.width = 48;
+    wbResultSprite.height = 48;
+    wbResultSprite.position.set(outX, outY);
+    wbResultSprite.visible = false;
+    craftingTableContainer.addChild(wbResultSprite);
+
+    wbResultText = new PIXI.Text('', textStyle);
+    wbResultText.style.fontSize = 24;
+    wbResultText.anchor.set(1, 1);
+    wbResultText.position.set(outX + 48 - 4, outY + 48 - 4);
+    wbResultText.visible = false;
+    craftingTableContainer.addChild(wbResultText);
+
+    // 高亮图形
+    wbHighlight = new PIXI.Graphics();
+    wbHighlight.visible = false;
+    craftingTableContainer.addChild(wbHighlight);
+
+    wbInitialized = true;
+}
+
+//绘制工作台合成区域的高亮
 function drawWorkbenchHighlights(invenX: number, invenY: number) {
     selectedWbType = null;
     selectedWbIndex = -1;
+    wbHighlight.clear();
+    wbHighlight.visible = false;
 
-    // 处理合成网格 (3x3)
+    //合成网格 (3x3)
     const gridStartX = invenX + ct_crafting.startX;
     const gridStartY = invenY + ct_crafting.startY;
     const slotW = ct_crafting.slotWidth + ct_crafting.paddingX;
@@ -48,21 +155,25 @@ function drawWorkbenchHighlights(invenX: number, invenY: number) {
         if (idx < workbenchSlots.length) {
             selectedWbType = 'crafting';
             selectedWbIndex = idx;
-            ctx_gui.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx_gui.fillRect(gridStartX + col * slotW, gridStartY + row * slotH,
+            wbHighlight.beginFill(0xffffff, 0.3);
+            wbHighlight.drawRect(gridStartX + col * slotW, gridStartY + row * slotH,
                 ct_crafting.slotWidth, ct_crafting.slotHeight);
+            wbHighlight.endFill();
+            wbHighlight.visible = true;
         }
     }
 
-    // 处理输出槽 (1x1)
+    //输出槽
     const outStartX = invenX + ct_get.startX;
     const outStartY = invenY + ct_get.startY;
     if (mouse.x >= outStartX && mouse.x <= outStartX + ct_get.slotWidth &&
         mouse.y >= outStartY && mouse.y <= outStartY + ct_get.slotHeight) {
         selectedWbType = 'result';
         selectedWbIndex = 0;
-        ctx_gui.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx_gui.fillRect(outStartX, outStartY, ct_get.slotWidth, ct_get.slotHeight);
+        wbHighlight.beginFill(0xffffff, 0.3);
+        wbHighlight.drawRect(outStartX, outStartY, ct_get.slotWidth, ct_get.slotHeight);
+        wbHighlight.endFill();
+        wbHighlight.visible = true;
     }
 }
 
@@ -74,41 +185,30 @@ apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
 });
 
 function draw_craftingTable(): void {
-    if (!craftingTable.isOpening) {return;}
+    if (!craftingTable.isOpening) {
+        craftingTableContainer.visible = false;
+        return;
+    }
+    craftingTableContainer.visible = true;
+    initWorkbenchUI(); // 确保已初始化
 
     const invenX = (room.width - craftingTable.width) / 2;
     const invenY = (room.height - craftingTable.height) / 2;
 
-    ctx_gui.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    ctx_gui.fillRect(0, 0, canvas_gui.width, canvas_gui.height);
-    ctx_gui.drawImage(img_gui.crafting_table, 0, 0, 176, 166, invenX, invenY, craftingTable.width, craftingTable.height);
+    // 更新背景位置（如果尺寸变化，但一般不变）
+    wbBg.position.set(invenX, invenY);
 
-    //绘制工作台自己的合成网格和输出槽
+    // 更新合成槽位
     for (let i = 0; i < workbenchSlots.length; i++) {
-        const row = Math.floor(i / ct_crafting.cols);
-        const col = i % ct_crafting.cols;
-        const drawX = invenX + ct_crafting.startX + col * (ct_crafting.slotWidth + ct_crafting.paddingX);
-        const drawY = invenY + ct_crafting.startY + row * (ct_crafting.slotHeight + ct_crafting.paddingY);
-        drawIteminInventory(workbenchSlots[i], drawX + 8, drawY + 8, 48, 48, drawX + 48, drawY + 64);
+        updateSlotDisplay(wbSlotSprites[i], wbSlotTexts[i], workbenchSlots[i]);
+        // 位置已在初始化时固定
     }
-    const outX = invenX + ct_get.startX;
-    const outY = invenY + ct_get.startY;
-    drawIteminInventory(workbenchResultSlot, outX + 24, outY + 24, 48, 48, outX + 64, outY + 80);
+    updateSlotDisplay(wbResultSprite, wbResultText, workbenchResultSlot);
 
-    //绘制背包物品（热键栏+背包格子）
-    drawBackpackItems(invenX, invenY);
-
-    //高亮绘制（背包 + 工作台）
-    //背包高亮（会更新 selectedIndex）
-    locateHighWhite(invenConfig, invenX, invenY);
-    locateHighWhite(iC_hand, invenX, invenY);
-    //工作台自身高亮（会更新 selectedWbType 等）
+    // 绘制工作台高亮
     drawWorkbenchHighlights(invenX, invenY);
 
-    //绘制鼠标上拖拽的物品
-    if (selecting.item !== -1) {
-        drawIteminInventory(selecting, mouse.x - 24, mouse.y - 24, 48, 48, mouse.x + 16, mouse.y + 24);
-    }
+    drawBackpackItems(invenX, invenY);
 }
 
 // 导出工作台交互函数，供 inventory.ts 的全局事件调用
