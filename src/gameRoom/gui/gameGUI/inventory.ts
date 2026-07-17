@@ -7,7 +7,7 @@ import { craftingResultSlot, craftingSlots, updateCraftingResult, recipes, consu
 import { draw_craftingTable, craftingTable, handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType } from "./crafting_table.js";
 import { apioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent } from "../../../apiox/event.js";
 import { guiApp } from "../application.js";
-import { setInvenUIOpening } from "../uiState.js";
+import { uistate } from "../uiState.js";
 import { textStyle, blockTextures } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import * as PIXI from 'pixi.js';
@@ -334,8 +334,9 @@ guiImages.forEach(img => img.addEventListener('load', checkAllLoaded));
 
 apioxEvent.onKeyDown((ev: ApioxKeyboardEvent) => {
     if (ev.key === 'e') {
-        if (ev.repeat) {return;}
-        if (craftingTable.isOpening === true) {craftingTable.isOpening = false; return;}
+        if(ev.repeat) {return;}
+        if(uistate.anyui_isOpening() && !uistate.invenUI_isOpening) {return;}
+        if(craftingTable.isOpening === true) {craftingTable.isOpening = false; return;}
         inventory.isOpening = !inventory.isOpening;
     }
 
@@ -782,7 +783,7 @@ function pickupObj(item: number): void { //拾取物品
 
 function inventoryLoop() {
     if(player.hp > 0) {
-        setInvenUIOpening(inventory.isOpening || craftingTable.isOpening);
+        uistate.invenUI_isOpening = inventory.isOpening || craftingTable.isOpening;
         heartsAct();
         drawHeart();
         drawInventory();

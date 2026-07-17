@@ -1,7 +1,7 @@
 import { player } from './player.js';
 import { world, distance, getRandomInt, room } from './const.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
-import { invenUI_isOpening } from './gui/uiState.js';
+import { uistate } from './gui/uiState.js';
 import { Slots } from './gui/gameGUI/inventoryConfig.js';
 import { createDrop, lookDrops } from './dropped/droppedItem.js';
 import { calculateHardness } from './dropped/minetool.js';
@@ -77,14 +77,14 @@ apioxEvent.onMouseUp(
         mouse.isDown = false;
         const taking: Slots = inventory.items[widgets.select];
 
-        if(!invenUI_isOpening
+        if(!uistate.invenUI_isOpening
         && mouse.can_use
         && mouse.downingButton === 2
         && player.hp > 0) { //方块互动
             door_openOrClose();
         }
 
-        if(!invenUI_isOpening
+        if(!uistate.invenUI_isOpening
         && mouse.can_use
         && mouse.downingButton === 2
         && world[mouse.world_y][mouse.world_x] < 0
@@ -145,7 +145,7 @@ function mouseAct(): void {
         mouse.destory = 0;
     }
 
-    if(!invenUI_isOpening
+    if(!uistate.invenUI_isOpening
         && mouse.can_use 
         && player.hp > 0
         && mouse.isDown

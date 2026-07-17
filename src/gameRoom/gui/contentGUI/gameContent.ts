@@ -6,12 +6,12 @@ import { guiApp } from "../application.js";
 import { room } from "../../const.js";
 import { buttonTextures } from "../application.js";
 import { textStyle } from "../../rendering.js";
+import { uistate } from "../uiState.js";
 import * as PIXI from 'pixi.js';
 
 let gameContent = new PIXI.Container();
 gameContent.zIndex = 10;
-let gameContent_isOpening: boolean = false;
-gameContent.visible = gameContent_isOpening;
+gameContent.visible = uistate.gameContent_isOpening;
 guiApp.stage.addChild(gameContent);
 
 //黑色背景
@@ -95,12 +95,13 @@ gameContent.addChild(txt.backToTitle);
 
 apioxEvent.onKeyDown((e: ApioxKeyboardEvent): void => {
     if(e.key !== 'Escape') {return;}
-    if (e.repeat) {return;}
-    gameContent_isOpening = !gameContent_isOpening;
-    gameContent.visible = gameContent_isOpening;
+    if(e.repeat) {return;}
+    if(uistate.anyui_isOpening() && !uistate.gameContent_isOpening) {return;}
+    uistate.gameContent_isOpening = !uistate.gameContent_isOpening;
+    gameContent.visible = uistate.gameContent_isOpening;
 });
 topBtn.on('pointerdown', () => {
-    gameContent_isOpening = false;
+    uistate.gameContent_isOpening = false;
     gameContent.visible = false;
 });
 bottomBtn.on('pointerdown', () => {
