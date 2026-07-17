@@ -1,5 +1,5 @@
-import { ct_crafting, ct_get, Slots } from "./inventoryConfig.js";
-import { img_gui, inventory, selecting, craftingTableContainer, drawBackpackItems } from "./inventory.js";
+import { ct_crafting, ct_get, Slots, invenConfig, iC_hand } from "./inventoryConfig.js";
+import { img_gui, inventory, selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../mouse.js";
 import { world, room } from "../../const.js";
@@ -15,8 +15,8 @@ const craftingTable: {isOpening: boolean; width: number; height: number;} = {
 //工作台的合成网格（3x3）和输出槽
 export const workbenchSlots: Slots[] = [];
 export const workbenchResultSlot = new Slots(-1, 0);
-const WORKBENCH_COLS = 3;
-const WORKBENCH_ROWS = 3;
+const WORKBENCH_COLS: number = 3;
+const WORKBENCH_ROWS: number = 3;
 
 //初始化 9 个空槽位
 for (let i = 0; i < WORKBENCH_COLS * WORKBENCH_ROWS; i++) {
@@ -36,8 +36,9 @@ let wbResultSprite: PIXI.Sprite; //输出槽图标
 let wbResultText: PIXI.Text; //输出槽数量
 let wbHighlight: PIXI.Graphics; //高亮矩形
 let wbInitialized = false;
+const item_width: number = 48, item_height: number = 48; //绘制的物品长宽
 
-// 更新工作台合成结果
+//更新工作台合成结果
 function updateWorkbenchResult() {
     updateResultForGrid(workbenchSlots, workbenchResultSlot, WORKBENCH_COLS, WORKBENCH_ROWS);
 }
@@ -49,8 +50,8 @@ function updateSlotDisplay(sprite: PIXI.Sprite, text: PIXI.Text, slot: Slots): v
         return;
     }
     let tex: PIXI.Texture | null = null;
-    if (slot.item >= 0) tex = blockTextures[slot.item] || null;
-    else tex = itemTextures[slot.item] || null;
+    if (slot.item < 512) {tex = blockTextures[slot.item] || null;}
+    else {tex = itemTextures[slot.item] || null;}
     if (tex) {
         sprite.texture = tex;
         sprite.visible = true;
@@ -65,34 +66,37 @@ function updateSlotDisplay(sprite: PIXI.Sprite, text: PIXI.Text, slot: Slots): v
     }
 }
 
-// 初始化工作台 UI（只执行一次）
+//初始化工作台 UI（只执行一次）
 function initWorkbenchUI() {
-    if (wbInitialized) return;
+    if (wbInitialized) {return;}
     craftingTableContainer.removeChildren();
 
-    // 遮罩
+    //遮罩
     wbOverlay = new PIXI.Graphics();
     wbOverlay.beginFill(0x000000, 0.5);
     wbOverlay.drawRect(0, 0, room.width, room.height);
     wbOverlay.endFill();
     craftingTableContainer.addChild(wbOverlay);
 
-    // 背景
-    wbBg = new PIXI.Sprite(PIXI.Texture.from(img_gui.crafting_table));
+    const craftingTableAllTex: PIXI.BaseTexture = PIXI.Texture.from(img_gui.crafting_table).baseTexture;
+    const craftingTableTex: PIXI.Texture = new PIXI.Texture(craftingTableAllTex, new PIXI.Rectangle(0, 0, 176, 166));
+
+    //背景
+    wbBg = new PIXI.Sprite(craftingTableTex);
     wbBg.width = craftingTable.width;
     wbBg.height = craftingTable.height;
-    const invenX = (room.width - craftingTable.width) / 2;
-    const invenY = (room.height - craftingTable.height) / 2;
+    const invenX: number = (room.width - craftingTable.width) / 2;
+    const invenY: number = (room.height - craftingTable.height) / 2;
     wbBg.position.set(invenX, invenY);
     craftingTableContainer.addChild(wbBg);
 
-    // 9个合成槽位（3x3）
+    //9个合成槽位（3x3）
     for (let i = 0; i < 9; i++) {
-        const row = Math.floor(i / 3);
-        const col = i % 3;
-        const x = invenX + ct_crafting.startX + col * (ct_crafting.slotWidth + ct_crafting.paddingX) + 8;
-        const y = invenY + ct_crafting.startY + row * (ct_crafting.slotHeight + ct_crafting.paddingY) + 8;
-        const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
+        const row: number = Math.floor(i / 3);
+        const col: number = i % 3;
+        const x: number = invenX + ct_crafting.startX + col * (ct_crafting.slotWidth + ct_crafting.paddingX) + 8;
+        const y: number = invenY + ct_crafting.startY + row * (ct_crafting.slotHeight + ct_crafting.paddingY) + 8;
+        const sprite: PIXI.Sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
         sprite.width = 48;
         sprite.height = 48;
         sprite.position.set(x, y);
@@ -100,21 +104,21 @@ function initWorkbenchUI() {
         craftingTableContainer.addChild(sprite);
         wbSlotSprites.push(sprite);
 
-        const text = new PIXI.Text('', textStyle);
+        const text: PIXI.Text = new PIXI.Text('', textStyle);
         text.style.fontSize = 24;
         text.anchor.set(1, 1);
-        text.position.set(x + 48 - 4, y + 48 - 4);
+        text.position.set(x + item_width + 4, y + item_height + 4);
         text.visible = false;
         craftingTableContainer.addChild(text);
         wbSlotTexts.push(text);
     }
 
-    // 输出槽
-    const outX = invenX + ct_get.startX + 24;
-    const outY = invenY + ct_get.startY + 24;
+    //输出槽
+    const outX: number = invenX + ct_get.startX + item_width / 2;
+    const outY: number = invenY + ct_get.startY + item_height / 2;
     wbResultSprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
-    wbResultSprite.width = 48;
-    wbResultSprite.height = 48;
+    wbResultSprite.width = item_width;
+    wbResultSprite.height = item_height;
     wbResultSprite.position.set(outX, outY);
     wbResultSprite.visible = false;
     craftingTableContainer.addChild(wbResultSprite);
@@ -122,11 +126,11 @@ function initWorkbenchUI() {
     wbResultText = new PIXI.Text('', textStyle);
     wbResultText.style.fontSize = 24;
     wbResultText.anchor.set(1, 1);
-    wbResultText.position.set(outX + 48 - 4, outY + 48 - 4);
+    wbResultText.position.set(outX + item_width + 4, outY + item_height + 4);
     wbResultText.visible = false;
     craftingTableContainer.addChild(wbResultText);
 
-    // 高亮图形
+    //高亮图形
     wbHighlight = new PIXI.Graphics();
     wbHighlight.visible = false;
     craftingTableContainer.addChild(wbHighlight);
@@ -142,16 +146,16 @@ function drawWorkbenchHighlights(invenX: number, invenY: number) {
     wbHighlight.visible = false;
 
     //合成网格 (3x3)
-    const gridStartX = invenX + ct_crafting.startX;
-    const gridStartY = invenY + ct_crafting.startY;
-    const slotW = ct_crafting.slotWidth + ct_crafting.paddingX;
-    const slotH = ct_crafting.slotHeight + ct_crafting.paddingY;
+    const gridStartX: number = invenX + ct_crafting.startX;
+    const gridStartY: number = invenY + ct_crafting.startY;
+    const slotW: number = ct_crafting.slotWidth + ct_crafting.paddingX;
+    const slotH: number = ct_crafting.slotHeight + ct_crafting.paddingY;
 
     if (mouse.x >= gridStartX && mouse.x <= gridStartX + slotW * ct_crafting.cols &&
         mouse.y >= gridStartY && mouse.y <= gridStartY + slotH * ct_crafting.rows) {
-        const col = Math.floor((mouse.x - gridStartX) / slotW);
-        const row = Math.floor((mouse.y - gridStartY) / slotH);
-        const idx = row * ct_crafting.cols + col;
+        const col: number = Math.floor((mouse.x - gridStartX) / slotW);
+        const row: number = Math.floor((mouse.y - gridStartY) / slotH);
+        const idx: number = row * ct_crafting.cols + col;
         if (idx < workbenchSlots.length) {
             selectedWbType = 'crafting';
             selectedWbIndex = idx;
@@ -164,8 +168,8 @@ function drawWorkbenchHighlights(invenX: number, invenY: number) {
     }
 
     //输出槽
-    const outStartX = invenX + ct_get.startX;
-    const outStartY = invenY + ct_get.startY;
+    const outStartX: number = invenX + ct_get.startX;
+    const outStartY: number = invenY + ct_get.startY;
     if (mouse.x >= outStartX && mouse.x <= outStartX + ct_get.slotWidth &&
         mouse.y >= outStartY && mouse.y <= outStartY + ct_get.slotHeight) {
         selectedWbType = 'result';
@@ -190,25 +194,29 @@ function draw_craftingTable(): void {
         return;
     }
     craftingTableContainer.visible = true;
-    initWorkbenchUI(); // 确保已初始化
+    initWorkbenchUI(); //确保已初始化
 
-    const invenX = (room.width - craftingTable.width) / 2;
-    const invenY = (room.height - craftingTable.height) / 2;
+    const invenX: number = (room.width - craftingTable.width) / 2;
+    const invenY: number = (room.height - craftingTable.height) / 2;
 
-    // 更新背景位置（如果尺寸变化，但一般不变）
+    //更新背景位置（如果尺寸变化，但一般不变）
     wbBg.position.set(invenX, invenY);
 
-    // 更新合成槽位
+    //更新合成槽位
     for (let i = 0; i < workbenchSlots.length; i++) {
         updateSlotDisplay(wbSlotSprites[i], wbSlotTexts[i], workbenchSlots[i]);
-        // 位置已在初始化时固定
+        //位置已在初始化时固定
     }
     updateSlotDisplay(wbResultSprite, wbResultText, workbenchResultSlot);
 
-    // 绘制工作台高亮
+    //绘制工作台高亮
     drawWorkbenchHighlights(invenX, invenY);
+    locateHighWhite(invenConfig, invenX, invenY, wbHighlight);
+    locateHighWhite(iC_hand, invenX, invenY, wbHighlight);
 
     drawBackpackItems(invenX, invenY);
+
+    updateSelectingItem(); //绘制鼠标拖拽的物品（跟随鼠标）
 }
 
 // 导出工作台交互函数，供 inventory.ts 的全局事件调用

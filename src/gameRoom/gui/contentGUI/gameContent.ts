@@ -66,9 +66,13 @@ const txt = { //文本对象
     backToGame: new PIXI.Text('', textStyle),
     backToTitle: new PIXI.Text('', textStyle),
 }
+let fontSize: number = 48;
+txt.backToGame.style.fontSize = fontSize;
+txt.backToGame.style.fontSize = fontSize;
+fontSize = undefined;
 txt.backToGame.anchor.set(0.5);
 txt.backToTitle.anchor.set(0.5);
-let fontY_offset = 4;
+let fontY_offset: number = 4;
 txt.backToGame.position.set(topBtn.x, topBtn.y + fontY_offset); //位置与 topBtn 相同
 txt.backToTitle.position.set(bottomBtn.x, bottomBtn.y + fontY_offset); //位置与 bottomBtn 相同
 fontY_offset = undefined;

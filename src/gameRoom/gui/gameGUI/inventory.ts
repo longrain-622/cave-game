@@ -29,7 +29,7 @@ class Inventories {
         }
     }
 }
-const inventory = new Inventories(false, [], 704, 664); //新建一个背包对象
+const inventory: Inventories = new Inventories(false, [], 704, 664); //新建一个背包对象
 inventory.initSlots(36);
 
 //记录高亮格子对应的 inventory.items 索引（-1 表示没有高亮）
@@ -58,6 +58,7 @@ widgets.y = room.height - widgets.height;
 //pixiJS
 const invenX: number = (room.width - inventory.width) / 2;
 const invenY: number = (room.height - inventory.height) / 2;
+const item_width: number = 48, item_height: number = 48;
 const guiContainer = new PIXI.Container();
 //各 UI 模块容器
 const inventoryContainer = new PIXI.Container();
@@ -65,7 +66,8 @@ const heartContainer = new PIXI.Container();
 const craftingTableContainer = new PIXI.Container();
 const deathContainer = new PIXI.Container();
 const widgetContainer = new PIXI.Container();
-guiContainer.addChild(inventoryContainer, heartContainer, craftingTableContainer, deathContainer, widgetContainer);
+const floatContainer = new PIXI.Container();
+guiContainer.addChild(inventoryContainer, heartContainer, craftingTableContainer, deathContainer, widgetContainer, floatContainer);
 guiContainer.sortableChildren = true;
 //默认隐藏
 inventoryContainer.visible = false; inventoryContainer.zIndex = 2;
@@ -73,6 +75,7 @@ heartContainer.visible = true; heartContainer.zIndex = 0;
 craftingTableContainer.visible = false; craftingTableContainer.zIndex = 3;
 deathContainer.visible = false; deathContainer.zIndex = 4;
 widgetContainer.visible = true; widgetContainer.zIndex = 0;
+floatContainer.zIndex = 10;
 //背包 UI 元素
 //let widgetHighlight: PIXI.Sprite; //选中格子高亮（使用 widgets.png 中的选择框）
 let blackBg: PIXI.Graphics;
@@ -262,23 +265,29 @@ export function initInventoryUI() {
     bookSprite.visible = false;
     inventoryContainer.addChild(bookSprite);
 
-    //玩家预览（用多个 Sprite 组装）
+    // 玩家预览（用多个 Sprite 组装）
     playerPreviewContainer = new PIXI.Container();
     playerPreviewContainer.visible = false;
     const scale: number = 1.6;
     const offsetx: number = -4, offsety: number = 16;
     const baseX: number = invenX + 112 * scale + offsetx;
     const baseY: number = invenY + 28 * scale + offsety;
-    //这里可以使用 PIXI.Sprite 分别加载 player 图片的各个部位，略……
-
-    //为了简化，我们仅示意，实际可复用 img_gui.player 纹理并裁剪
-    //但此处只需添加一个 Sprite 占位，实际项目中需按原绘制方式拆开
-    const playerPreview = new PIXI.Sprite(PIXI.Texture.from(img_gui.player));
-    playerPreview.texture.frame = new PIXI.Rectangle(8, 8, 8, 8);
-    playerPreview.width = 32 * scale;
-    playerPreview.height = 32 * scale;
-    playerPreview.position.set(baseX, baseY);
-    playerPreviewContainer.addChild(playerPreview);
+    const playerBaseTex = PIXI.Texture.from(img_gui.player).baseTexture;//获取玩家纹理的基础纹理（避免帧覆盖）
+    function createPlayerPart(sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): PIXI.Sprite {
+        //辅助函数：创建身体部位的 Sprite
+        const tex = new PIXI.Texture(playerBaseTex, new PIXI.Rectangle(sx, sy, sw, sh));
+        const sprite = new PIXI.Sprite(tex);
+        sprite.position.set(dx, dy);
+        sprite.width = dw;
+        sprite.height = dh;
+        return sprite;
+    }
+    playerPreviewContainer.addChild(createPlayerPart(8, 8, 8, 8, baseX, baseY, 32 * scale, 32 * scale)); //头
+    playerPreviewContainer.addChild(createPlayerPart(20, 20, 8, 12, baseX, baseY + 32 * scale, 32 * scale, 48 * scale)); //身体
+    playerPreviewContainer.addChild(createPlayerPart(44, 20, 4, 12, baseX + 32 * scale, baseY + 32 * scale, 16 * scale, 48 * scale)); //右手
+    playerPreviewContainer.addChild(createPlayerPart(36, 52, 4, 12, baseX - 16 * scale, baseY + 32 * scale, 16 * scale, 48 * scale)); //左手
+    playerPreviewContainer.addChild(createPlayerPart(20, 52, 4, 12, baseX, baseY + 80 * scale, 16 * scale, 48 * scale)); //左腿
+    playerPreviewContainer.addChild(createPlayerPart(20, 52, 4, 12, baseX + 16 * scale, baseY + 80 * scale, 16 * scale, 48 * scale)); //右腿
     inventoryContainer.addChild(playerPreviewContainer);
 
     //高亮图形（透明矩形）
@@ -291,13 +300,13 @@ export function initInventoryUI() {
     selectingSprite.width = 48;
     selectingSprite.height = 48;
     selectingSprite.visible = false;
-    inventoryContainer.addChild(selectingSprite);
+    floatContainer.addChild(selectingSprite);
 
     selectingText = new PIXI.Text('', textStyle);
     selectingText.style.fontSize = 28;
     selectingText.anchor.set(1, 1);
     selectingText.visible = false;
-    inventoryContainer.addChild(selectingText);
+    floatContainer.addChild(selectingText);
 }
 
 const img_gui = {
@@ -646,7 +655,7 @@ function updateSelectingItem(): void {
     const sprX: number = mouse.x - selectingSprite.width / 2;
     const sprY: number = mouse.y - selectingSprite.height / 2;
     let tex = null;
-    if (selecting.item >= 0) tex = blockTextures[selecting.item] || null;
+    if (selecting.item < 512) {tex = blockTextures[selecting.item] || null;}
     else {tex = itemTextures[selecting.item] || null;}
     if (tex) {
         selectingSprite.texture = tex;
@@ -664,7 +673,7 @@ function updateSelectingItem(): void {
     }
 }
 
-function locateHighWhite(obj_IC: Inventory_config, inven_X: number, inven_Y: number): void {
+function locateHighWhite(obj_IC: Inventory_config, inven_X: number, inven_Y: number, graphics: PIXI.Graphics): void {
     highWhite.screenX = inven_X + obj_IC.startX;
     highWhite.screenY = inven_Y + obj_IC.startY;
 
@@ -678,10 +687,10 @@ function locateHighWhite(obj_IC: Inventory_config, inven_X: number, inven_Y: num
         highWhite.y = highWhite.screenY + row * (obj_IC.slotHeight + obj_IC.paddingY);
 
         //绘制高亮矩形（Pixi Graphics）
-        highlightGraphics.beginFill(0xffffff, 0.3);
-        highlightGraphics.drawRect(highWhite.x, highWhite.y, obj_IC.slotWidth, obj_IC.slotHeight);
-        highlightGraphics.endFill();
-        highlightGraphics.visible = true;
+        graphics.beginFill(0xffffff, 0.3);
+        graphics.drawRect(highWhite.x, highWhite.y, obj_IC.slotWidth, obj_IC.slotHeight);
+        graphics.endFill();
+        graphics.visible = true;
 
         if (obj_IC.rows === 3 && obj_IC.cols === 9) {
             selectedIndex = 9 + row * obj_IC.cols + col;
@@ -691,7 +700,7 @@ function locateHighWhite(obj_IC: Inventory_config, inven_X: number, inven_Y: num
     }
 }
 
-function locateHighWhiteForCrafting(obj_IC: Inventory_config, invenX: number, invenY: number, slotsArray: Slots[], type: "crafting" | "result"): void {
+function locateHighWhiteForCrafting(obj_IC: Inventory_config, invenX: number, invenY: number, slotsArray: Slots[], type: "crafting" | "result", graphics: PIXI.Graphics): void {
     const startX: number = invenX + obj_IC.startX;
     const startY: number = invenY + obj_IC.startY;
     const slotW: number = obj_IC.slotWidth + obj_IC.paddingX;
@@ -707,9 +716,9 @@ function locateHighWhiteForCrafting(obj_IC: Inventory_config, invenX: number, in
             selectedCraftingType = type;
             selectedCraftingIndex = idx;
             // 绘制高亮
-            highlightGraphics.beginFill(0xffffff, 0.3);
-            highlightGraphics.drawRect(startX + col * slotW, startY + row * slotH, obj_IC.slotWidth, obj_IC.slotHeight);
-            highlightGraphics.endFill();
+            graphics.beginFill(0xffffff, 0.3);
+            graphics.drawRect(startX + col * slotW, startY + row * slotH, obj_IC.slotWidth, obj_IC.slotHeight);
+            graphics.endFill();
         }
     }
 }
@@ -747,13 +756,13 @@ function drawInventory(): void {
     highlightGraphics.clear();
     highlightGraphics.visible = true;
     //检测普通背包格子
-    locateHighWhite(invenConfig, invenX, invenY); //背包主体
-    locateHighWhite(iC_hand, invenX, invenY); //背包内的热键栏
-    locateHighWhite(iC_clothe, invenX, invenY);
-    locateHighWhite(iC_otherHand, invenX, invenY);
+    locateHighWhite(invenConfig, invenX, invenY, highlightGraphics); //背包主体
+    locateHighWhite(iC_hand, invenX, invenY, highlightGraphics); //背包内的热键栏
+    locateHighWhite(iC_clothe, invenX, invenY, highlightGraphics);
+    locateHighWhite(iC_otherHand, invenX, invenY, highlightGraphics);
     //检测合成区域
-    locateHighWhiteForCrafting(iC_make, invenX, invenY, craftingSlots, 'crafting');
-    locateHighWhiteForCrafting(iC_get, invenX, invenY, [craftingResultSlot], 'result');
+    locateHighWhiteForCrafting(iC_make, invenX, invenY, craftingSlots, 'crafting', highlightGraphics);
+    locateHighWhiteForCrafting(iC_get, invenX, invenY, [craftingResultSlot], 'result', highlightGraphics);
 }
 
 function pickupObj(item: number): void { //拾取物品
@@ -809,7 +818,7 @@ export function drawBackpackItems(invenX: number, invenY: number): void {
         const y = invenY + iC_hand.startY + 8;
         updateSlotDisplay(wbSlotSprites[i], wbSlotTexts[i], inventory.items[i]);
         wbSlotSprites[i].position.set(x, y);
-        wbSlotTexts[i].position.set(x + 48 - 4, y + 48 - 4);
+        wbSlotTexts[i].position.set(x + item_width + 4, y + item_height + 4);
     }
 
     // 更新背包主体（27个，索引 9~35）
@@ -820,7 +829,7 @@ export function drawBackpackItems(invenX: number, invenY: number): void {
             const y = invenY + invenConfig.startY + row * (invenConfig.slotHeight + invenConfig.paddingY) + 8;
             updateSlotDisplay(wbSlotSprites[idx], wbSlotTexts[idx], inventory.items[idx]);
             wbSlotSprites[idx].position.set(x, y);
-            wbSlotTexts[idx].position.set(x + 48 - 4, y + 48 - 4);
+            wbSlotTexts[idx].position.set(x + item_width + 4, y + item_height + 4);
         }
     }
 }
@@ -900,5 +909,5 @@ export function handleBackpackContextMenu(): void {
     }
 }
 
-export { inventoryLoop, pickupObj, locateHighWhite, inventory, widgets, img_gui, gui_isDrawing, selecting };
-export { heartContainer, craftingTableContainer, deathContainer };
+export { inventoryLoop, pickupObj, locateHighWhite, updateSelectingItem, inventory, widgets, img_gui, gui_isDrawing, selecting, selectedIndex };
+export { heartContainer, craftingTableContainer, deathContainer, floatContainer };
