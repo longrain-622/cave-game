@@ -1,6 +1,7 @@
 import { player } from "../../player.js";
 import { gui_isDrawing, img_gui, deathContainer } from "./inventory.js";
 import { textStyle } from "../../rendering.js";
+import { room } from "../../const.js";
 import { apiObjects } from "../../../apiox/dom.js";
 import { apioxEvent } from "../../../apiox/event.js";
 import * as PIXI from 'pixi.js';
@@ -37,57 +38,65 @@ apioxEvent.listenGlobal('mouseup', () => {
 });
 
 // Pixi 元素
-let deathOverlay: PIXI.Graphics;
-let titleText: PIXI.Text;
-let buttonSprite: PIXI.Sprite;
-let buttonText: PIXI.Text;
-let deathInitialized = false;
+const deathPixi: {
+    deathOverlay: PIXI.Graphics,
+    titleText: PIXI.Text,
+    buttonSprite: PIXI.Sprite,
+    buttonText: PIXI.Text,
+    deathInitialized: boolean
+} = {
+    deathOverlay: new PIXI.Graphics(),
+    titleText: new PIXI.Text(),
+    buttonSprite: new PIXI.Sprite(),
+    buttonText: new PIXI.Text(),
+    deathInitialized: false,
+}
 
 function initDeathUI(): void {
-    if (deathInitialized) {return;}
+    if (deathPixi.deathInitialized) {return;}
     deathContainer.removeChildren();
 
     // 在函数内创建纹理，此时 img_gui 已可用
     const widgetsTex = PIXI.Texture.from(img_gui.widgets);
     const btnNormal = new PIXI.Texture(widgetsTex.baseTexture, new PIXI.Rectangle(0, 66, 200, 20));
-    const btnHover  = new PIXI.Texture(widgetsTex.baseTexture, new PIXI.Rectangle(0, 86, 200, 20));
+    const btnHover = new PIXI.Texture(widgetsTex.baseTexture, new PIXI.Rectangle(0, 86, 200, 20));
 
     // 半透明红色遮罩
-    deathOverlay = new PIXI.Graphics();
-    deathOverlay.beginFill(0xff0000, 0.5);
-    deathOverlay.drawRect(0, 0, window.innerWidth, window.innerHeight); // 或 room.width/height
-    deathOverlay.endFill();
-    deathContainer.addChild(deathOverlay);
+    deathPixi.deathOverlay = new PIXI.Graphics();
+    deathPixi.deathOverlay.beginFill(0xff0000, 0.5);
+    deathPixi.deathOverlay.drawRect(0, 0, room.width, room.height);
+    deathPixi.deathOverlay.endFill();
+    deathContainer.addChild(deathPixi.deathOverlay);
 
     // 标题
-    titleText = new PIXI.Text('', { ...textStyle, fontSize: 64, align: 'center' });
-    titleText.anchor.set(0.5, 0);
-    titleText.position.set(window.innerWidth / 2, window.innerHeight * 0.25);
-    deathContainer.addChild(titleText);
+    deathPixi.titleText = new PIXI.Text('', { ...textStyle, fontSize: 64, align: 'center' });
+    deathPixi.titleText.anchor.set(0.5, 0);
+    deathPixi.titleText.position.set(room.width / 2, room.height * 0.25);
+    deathContainer.addChild(deathPixi.titleText);
 
     // 按钮
     const buttonWidth = 640, buttonHeight = 64;
-    const btnX = (window.innerWidth - buttonWidth) / 2;
+    const btnX = (room.width - buttonWidth) / 2;
     const btnY = 320;
-    buttonSprite = new PIXI.Sprite(btnNormal);
-    buttonSprite.width = buttonWidth;
-    buttonSprite.height = buttonHeight;
-    buttonSprite.position.set(btnX, btnY);
-    buttonSprite.interactive = true;
-    buttonSprite.buttonMode = true;
-    deathContainer.addChild(buttonSprite);
+    deathPixi.buttonSprite = new PIXI.Sprite(btnNormal);
+    deathPixi.buttonSprite.width = buttonWidth;
+    deathPixi.buttonSprite.height = buttonHeight;
+    deathPixi.buttonSprite.position.set(btnX, btnY);
+    deathPixi.buttonSprite.interactive = true;
+    deathPixi.buttonSprite.buttonMode = true;
+    deathContainer.addChild(deathPixi.buttonSprite);
 
     // 按钮文字
-    buttonText = new PIXI.Text('', { ...textStyle, fontSize: 32, align: 'center' });
-    buttonText.anchor.set(0.5, 0.5);
-    buttonText.position.set(btnX + buttonWidth / 2, btnY + buttonHeight / 2);
-    deathContainer.addChild(buttonText);
+    deathPixi.buttonText = new PIXI.Text('', { ...textStyle, fontSize: 32, align: 'center' });
+    deathPixi.buttonText.anchor.set(0.5, 0.5);
+    deathPixi.buttonText.position.set(btnX + buttonWidth / 2, btnY + buttonHeight / 2);
+    deathContainer.addChild(deathPixi.buttonText);
 
     // 鼠标悬停切换纹理
-    buttonSprite.on('mouseover', () => { buttonSprite.texture = btnHover; });
-    buttonSprite.on('mouseout', () => { buttonSprite.texture = btnNormal; });
+    deathPixi.buttonSprite.on('mouseover', () => { deathPixi.buttonSprite.texture = btnHover; });
+    deathPixi.buttonSprite.on('mouseout', () => { deathPixi.buttonSprite.texture = btnNormal; });
     // 点击复活
-    buttonSprite.on('click', () => {
+    deathPixi.buttonSprite.on('click', () => {
         if (player.hp <= 0) {
             player.hp = 20;
             player.initXY();
@@ -95,7 +104,7 @@ function initDeathUI(): void {
         }
     });
 
-    deathInitialized = true;
+    deathPixi.deathInitialized = true;
 }
 
 function drawDeadPage() {
@@ -103,8 +112,8 @@ function drawDeadPage() {
         initDeathUI();
         deathContainer.visible = true;
         // 更新文字（国际化）
-        titleText.text = death.str[0] || '';
-        buttonText.text = death.str[1] || '';
+        deathPixi.titleText.text = death.str[0] || '';
+        deathPixi.buttonText.text = death.str[1] || '';
         // 按钮点击逻辑已绑定
     } else {
         deathContainer.visible = false;

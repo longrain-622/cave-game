@@ -46,7 +46,7 @@ class Animal {
         this.isDying = false;
     }
 
-    setY() { //初始化y坐标
+    setY(): void { //初始化y坐标
         let a: number = 0;
         while(world[a][Math.floor(this.x / 64)] === -1) {
             a++;
@@ -54,13 +54,13 @@ class Animal {
         this.y = a*64 - 256;
     }
 
-    beginMove() { //开始移动
+    beginMove(): void { //开始移动
         this.can_move = true;
         this.dir = getRandomInt(2, 4) - 3;
         while(this.dir === 0){this.dir = getRandomInt(2, 4) - 3;}
     }
 
-    injured(wouldJump: boolean, harm: number) { //动物受伤
+    injured(wouldJump: boolean, harm: number): void { //动物受伤
         if(wouldJump) {
             this.vsp = -10;
             this.can_jump = false;
@@ -72,7 +72,7 @@ class Animal {
 }
 
 // 创建实体
-function createAnimals() {
+function createAnimals(): void {
     let newAnimal: Animal;
 
     if (getRandomInt(1, 5) === 3 && animalArray.length < 8) {
@@ -102,7 +102,7 @@ function createAnimals() {
 apioxTime.setInt(createAnimals, 2000);
 
 // 实体的行为
-function animalActions() {
+function animalActions(): void {
     for (let k = 0; k < animalArray.length; k++) {
         const animal: Animal = animalArray[k];
 
@@ -190,7 +190,7 @@ function animalActions() {
     }
 }
 
-function killAnimal(which: Animal) {
+function killAnimal(which: Animal): void {
     if (which.isDying) {return;}  // 防止重复调用
     which.isDying = true;
     which.flashFrames = 0;      // 死亡时清除闪红
@@ -204,7 +204,7 @@ function killAnimal(which: Animal) {
     }
 }
 
-apioxEvent.listenGlobal('click', () => {
+apioxEvent.listenGlobal('click', (): void => {
     if(mouse.can_use) { //攻击动物
         for(let i = 0; i < animalArray.length; i++) {
             const animal = animalArray[i];
@@ -221,7 +221,7 @@ apioxEvent.listenGlobal('click', () => {
     }
 });
 
-function animalsLoop() {
+function animalsLoop(): void {
     animalActions();
 
     // 更新所有动物的闪烁帧数

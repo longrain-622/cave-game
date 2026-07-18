@@ -20,7 +20,7 @@ async function loadLoadingTip() {
 }
 loadLoadingTip();
 
-// 获取国际化文本
+//获取国际化文本
 apioxHttp.get<any>(`assets/locales/${lang}/ui.json`)
   .then(data => {
     loadText = data.loadPage.text;
@@ -31,11 +31,11 @@ apioxHttp.get<any>(`assets/locales/${lang}/ui.json`)
     loadingTextObj.domProperty('textContent', loadText);
   });
 
-// 动态点动画
+//动态点动画
 let dotCounter: number = 0;
 let dotTimer: number;
 
-function updateDots() {
+function updateDots(): void {
   dotCounter = (dotCounter + 1) % 4;
   const dots: string = '.'.repeat(dotCounter);
   loadingTextObj.domProperty('textContent', loadText + dots);
@@ -44,11 +44,11 @@ function updateDots() {
 dotTimer = apioxTime.setInt(updateDots, 100);
 
 // 导出完成加载的方法，供 loadingCheck 调用
-export function finishLoading() {
+export function finishLoading(): void {
   if(dotTimer !== undefined) {apioxTime.clearInt(dotTimer);}
   loadingTextObj.domProperty('textContent', loadedText);
   apioxTime.setOut(() => {
     const pageObj = new ApioxObject(null, 'loadingPage');
-    pageObj.domstyle('display', 'none');
+    pageObj.hide();
   }, 100);
 }
