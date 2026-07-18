@@ -733,6 +733,14 @@ function drawInventory(): void {
     //确保 UI 元素已初始化（只执行一次）
     if (!inventoryBg) {initInventoryUI();}
 
+    widgetSelectHighlight.position.set(widgets.x - 4 + widgets.select * 80, widgets.y - 4); //更新选中高亮位置（根据 widgets.select）
+    updateWidgetSlots();
+
+    if (!inventory.isOpening) {
+        inventoryContainer.visible = false;
+        return;
+    }
+
     // 重置所有高亮状态
     selectedCraftingType = null;
     selectedCraftingIndex = -1;
@@ -740,10 +748,6 @@ function drawInventory(): void {
 
     //设置容器可见性
     inventoryContainer.visible = inventory.isOpening;
-
-    widgetSelectHighlight.position.set(widgets.x - 4 + widgets.select * 80, widgets.y - 4); //更新选中高亮位置（根据 widgets.select）
-    updateWidgetSlots();
-    
     inventoryBg.visible = true; //显示背景和固定元素
     updateAllSlots(); //更新所有槽位
     updateCraftingSlots(); //更新合成区域

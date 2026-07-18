@@ -1,6 +1,6 @@
 import { ApioxObject } from "./dom.js";
 
-// ========== 包装类 ==========
+//包装类
 export class ApioxEvent { //基础事件包装
     readonly type: string;
     readonly timeStamp: number;
@@ -11,8 +11,8 @@ export class ApioxEvent { //基础事件包装
         this.type = native.type;
         this.timeStamp = native.timeStamp;
         // target / currentTarget 如果是 HTMLElement 则尝试用 id 构造 ApioxObject，否则为 null
-        this.target = native.target instanceof HTMLElement ? new ApioxObject(native.target.id) : null;
-        this.currentTarget = native.currentTarget instanceof HTMLElement ? new ApioxObject(native.currentTarget.id) : null;
+        this.target = native.target instanceof HTMLElement ? ApioxObject.wrap(native.target) : null;
+        this.currentTarget = native.currentTarget instanceof HTMLElement ? ApioxObject.wrap(native.currentTarget) : null;
     }
 
     preventDefault(): void { this.native.preventDefault(); }
@@ -124,7 +124,7 @@ export class ApioxKeyboardEvent {
     preventDefault(): void { this.native.preventDefault(); }
     stopPropagation(): void { this.native.stopPropagation(); }
 }
-// ========== 辅助包装函数 ==========
+//辅助包装函数
 function wrapEvent(listener: (e: ApioxEvent) => void): (e: Event) => void {
     return (native) => listener(new ApioxEvent(native));
 }
@@ -141,7 +141,7 @@ function wrapKeyboard(listener: (e: ApioxKeyboardEvent) => void): (e: KeyboardEv
     return (native) => listener(new ApioxKeyboardEvent(native));
 }
 
-// ========== 自定义事件总线 ==========
+//自定义事件总线
 type Listener<T = any> = (detail: T) => void;
 export type ApioxAnyEvent = ApioxEvent | ApioxMouseEvent | ApioxKeyboardEvent | ApioxWheelEvent;
 class ApioxEventBus {
@@ -160,7 +160,7 @@ class ApioxEventBus {
 }
 export const apioxEventBus = new ApioxEventBus();
 
-// ========== 对外 API ==========
+//对外 API
 export const apioxEvent = {
     listenGlobal<K extends keyof WindowEventMap>( //监听document
         event: K,
@@ -244,7 +244,7 @@ export const apioxEvent = {
         return () => document.removeEventListener('wheel', wrapped);
     },
 
-    // 键盘事件
+    //键盘事件
     onKeyDown(listener: (e: ApioxKeyboardEvent) => void): () => void {
         const wrapped = wrapKeyboard(listener);
         document.addEventListener('keydown', wrapped);
@@ -256,7 +256,7 @@ export const apioxEvent = {
         return () => document.removeEventListener('keyup', wrapped);
     },
 
-    // 为特定的 ApioxObject 添加键盘监听
+    //为特定的 ApioxObject 添加键盘监听
     listenKeyOn(
         obj: ApioxObject,
         type: 'keydown' | 'keyup',
@@ -265,7 +265,7 @@ export const apioxEvent = {
         return obj.on(type, listener as (ev: ApioxAnyEvent) => void);
     },
 
-    // 自定义事件（由 enableKeyDoubleClickDetection 触发）
+    //自定义事件（由 enableKeyDoubleClickDetection 触发）
     onKeyDoubleClick(listener: (detail: { key: string }) => void): () => void {
         return apioxEventBus.on('keydoubleclick', listener);
     },
