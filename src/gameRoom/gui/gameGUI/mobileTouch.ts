@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { textStyle } from '../../rendering.js';
+import { genericTextStyle } from '../../rendering.js';
 import { setting } from '../../../contentRoom/setting.js';
 import { ApioxAnyEvent, apioxEvent } from '../../../apiox/event.js';
 
@@ -66,7 +66,8 @@ export function initTouchButtons(app: PIXI.Application) {
         container.addChild(overlay); //放在文字之前
 
         //文字
-        const text: PIXI.Text = new PIXI.Text(btn.key.toUpperCase(), textStyle);
+        const text: PIXI.Text = new PIXI.Text(btn.key.toUpperCase(), genericTextStyle());
+        text.style.fontSize = 40;
         text.anchor.set(0.5);
         text.x = sizePx / 2;
         text.y = sizePx / 2;

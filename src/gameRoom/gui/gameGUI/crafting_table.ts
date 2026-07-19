@@ -3,7 +3,7 @@ import { img_gui, inventory, selecting, craftingTableContainer, drawBackpackItem
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../mouse.js";
 import { world, room } from "../../const.js";
-import { blockTextures, textStyle } from "../../rendering.js";
+import { blockTextures, genericTextStyle } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import { apioxEvent, ApioxMouseEvent } from "../../../apiox/event.js";
 import * as PIXI from 'pixi.js';
@@ -104,8 +104,8 @@ function initWorkbenchUI() {
         craftingTableContainer.addChild(sprite);
         wbSlotSprites.push(sprite);
 
-        const text: PIXI.Text = new PIXI.Text('', textStyle);
-        text.style.fontSize = 24;
+        const text: PIXI.Text = new PIXI.Text('', genericTextStyle());
+        text.style.fontSize = 28;
         text.anchor.set(1, 1);
         text.position.set(x + item_width + 4, y + item_height + 4);
         text.visible = false;
@@ -123,8 +123,8 @@ function initWorkbenchUI() {
     wbResultSprite.visible = false;
     craftingTableContainer.addChild(wbResultSprite);
 
-    wbResultText = new PIXI.Text('', textStyle);
-    wbResultText.style.fontSize = 24;
+    wbResultText = new PIXI.Text('', genericTextStyle());
+    wbResultText.style.fontSize = 28;
     wbResultText.anchor.set(1, 1);
     wbResultText.position.set(outX + item_width + 4, outY + item_height + 4);
     wbResultText.visible = false;

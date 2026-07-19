@@ -8,7 +8,7 @@ import { draw_craftingTable, craftingTable, handleWorkbenchClick, handleWorkbenc
 import { apioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent } from "../../../apiox/event.js";
 import { guiApp } from "../application.js";
 import { uistate } from "../uiState.js";
-import { textStyle, blockTextures } from "../../rendering.js";
+import { genericTextStyle, blockTextures } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import * as PIXI from 'pixi.js';
 
@@ -164,7 +164,7 @@ export function initInventoryUI() {
         widgetContainer.addChild(sprite);
         widgetSlotSprites.push(sprite);
 
-        const text = new PIXI.Text('', textStyle);
+        const text = new PIXI.Text('', genericTextStyle());
         text.style.fontSize = 28;
         text.anchor.set(1, 1);
         text.position.set(x + 54, y + 54);
@@ -190,7 +190,7 @@ export function initInventoryUI() {
         inventoryContainer.addChild(sprite);
         slotSprites.push(sprite);
 
-        const text = new PIXI.Text('', textStyle);
+        const text = new PIXI.Text('', genericTextStyle());
         text.style.fontSize = 28;
         text.anchor.set(1, 1);
         text.position.set(x + width + 4, y + height + 4);
@@ -211,7 +211,7 @@ export function initInventoryUI() {
             inventoryContainer.addChild(sprite);
             slotSprites.push(sprite);
 
-            const text = new PIXI.Text('', textStyle);
+            const text = new PIXI.Text('', genericTextStyle());
             text.style.fontSize = 28;
             text.anchor.set(1, 1);
             text.position.set(x + width + 4, y + height + 4);
@@ -235,7 +235,7 @@ export function initInventoryUI() {
         inventoryContainer.addChild(sprite);
         craftingSlotSprites.push(sprite);
 
-        const text: PIXI.Text = new PIXI.Text('', textStyle);
+        const text: PIXI.Text = new PIXI.Text('', genericTextStyle());
         text.style.fontSize = 28;
         text.anchor.set(1, 1);
         text.position.set(x + width + 4, y + height + 4);
@@ -254,7 +254,7 @@ export function initInventoryUI() {
     craftingResultSprite.visible = false;
     inventoryContainer.addChild(craftingResultSprite);
 
-    craftingResultText = new PIXI.Text('', textStyle);
+    craftingResultText = new PIXI.Text('', genericTextStyle());
     craftingResultText.style.fontSize = 28;
     craftingResultText.anchor.set(1, 1);
     craftingResultText.position.set(resX + width + 4, resY + height + 4);
@@ -307,7 +307,7 @@ export function initInventoryUI() {
     selectingSprite.visible = false;
     floatContainer.addChild(selectingSprite);
 
-    selectingText = new PIXI.Text('', textStyle);
+    selectingText = new PIXI.Text('', genericTextStyle());
     selectingText.style.fontSize = 28;
     selectingText.anchor.set(1, 1);
     selectingText.visible = false;
@@ -812,7 +812,7 @@ export function drawBackpackItems(invenX: number, invenY: number): void {
             craftingTableContainer.addChild(sprite);
             wbSlotSprites.push(sprite);
 
-            const text = new PIXI.Text('', textStyle);
+            const text = new PIXI.Text('', genericTextStyle());
             text.style.fontSize = 28;
             text.anchor.set(1, 1);
             text.visible = false;

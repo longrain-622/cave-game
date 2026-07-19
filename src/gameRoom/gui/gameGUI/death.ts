@@ -1,6 +1,6 @@
 import { player } from "../../player.js";
 import { gui_isDrawing, img_gui, deathContainer } from "./inventory.js";
-import { textStyle } from "../../rendering.js";
+import { genericTextStyle } from "../../rendering.js";
 import { room } from "../../const.js";
 import { apiObjects } from "../../../apiox/dom.js";
 import { apioxEvent } from "../../../apiox/event.js";
@@ -69,7 +69,7 @@ function initDeathUI(): void {
     deathContainer.addChild(deathPixi.deathOverlay);
 
     // 标题
-    deathPixi.titleText = new PIXI.Text('', { ...textStyle, fontSize: 64, align: 'center' });
+    deathPixi.titleText = new PIXI.Text('', { ...genericTextStyle(), fontSize: 64, align: 'center' });
     deathPixi.titleText.anchor.set(0.5, 0);
     deathPixi.titleText.position.set(room.width / 2, room.height * 0.25);
     deathContainer.addChild(deathPixi.titleText);
@@ -87,7 +87,7 @@ function initDeathUI(): void {
     deathContainer.addChild(deathPixi.buttonSprite);
 
     // 按钮文字
-    deathPixi.buttonText = new PIXI.Text('', { ...textStyle, fontSize: 32, align: 'center' });
+    deathPixi.buttonText = new PIXI.Text('', { ...genericTextStyle(), fontSize: 32, align: 'center' });
     deathPixi.buttonText.anchor.set(0.5, 0.5);
     deathPixi.buttonText.position.set(btnX + buttonWidth / 2, btnY + buttonHeight / 2);
     deathContainer.addChild(deathPixi.buttonText);

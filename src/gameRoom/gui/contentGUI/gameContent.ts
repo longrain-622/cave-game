@@ -5,7 +5,7 @@ import { lang } from "../../../others/i18n.js";
 import { guiApp } from "../application.js";
 import { room } from "../../const.js";
 import { buttonTextures } from "../application.js";
-import { textStyle } from "../../rendering.js";
+import { genericTextStyle } from "../../rendering.js";
 import { uistate } from "../uiState.js";
 import * as PIXI from 'pixi.js';
 
@@ -63,25 +63,27 @@ topBtn.visible = true;
 bottomBtn.visible = true;
 
 const txt = { //文本对象
-    backToGame: new PIXI.Text('', textStyle),
-    backToTitle: new PIXI.Text('', textStyle),
+    backToGame: new PIXI.Text('', genericTextStyle()),
+    backToTitle: new PIXI.Text('', genericTextStyle()),
 }
-let fontSize: number = 48;
-txt.backToGame.style.fontSize = fontSize;
-txt.backToGame.style.fontSize = fontSize;
-fontSize = undefined;
-txt.backToGame.anchor.set(0.5);
-txt.backToTitle.anchor.set(0.5);
-let fontY_offset: number = 4;
-txt.backToGame.position.set(topBtn.x, topBtn.y + fontY_offset); //位置与 topBtn 相同
-txt.backToTitle.position.set(bottomBtn.x, bottomBtn.y + fontY_offset); //位置与 bottomBtn 相同
-fontY_offset = undefined;
+
+/*设置文本样式*/ {
+    const fontSize: number = 24;
+    txt.backToGame.style.fontSize = fontSize;
+    txt.backToGame.style.fontSize = fontSize;
+    txt.backToGame.anchor.set(0.5);
+    txt.backToTitle.anchor.set(0.5);
+    const fontY_offset: number = 4;
+    txt.backToGame.position.set(topBtn.x, topBtn.y + fontY_offset); //位置与 topBtn 相同
+    txt.backToTitle.position.set(bottomBtn.x, bottomBtn.y + fontY_offset); //位置与 bottomBtn 相同
+}
 
 async function loadGameContentTexts() {
     try {
         const data = await apioxHttp.get<{ gameContent: { backToGame: string; exitToContent: string } }>(`/assets/locales/${lang}/game.json`);
         const specificOrder = ['backToGame', 'exitToContent'] as const;
         const [backText, exitText] = specificOrder.map(key => data.gameContent[key]);
+
         txt.backToGame.text = backText;
         txt.backToTitle.text = exitText;
     } catch (error) {
