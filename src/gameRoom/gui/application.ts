@@ -16,9 +16,9 @@ guiApp.view.style.top = '0';
 guiApp.view.style.width = room.width + 'px';
 guiApp.view.style.height = room.height + 'px';
 guiApp.view.style.zIndex = '10';
-
 guiApp.view.style.touchAction = 'none'; //禁止浏览器默认触摸行为
 guiApp.view.style.pointerEvents = 'auto'; //确保指针事件开启
+guiApp.stage.sortableChildren = true;
 
 await PIXI.Assets.init({ basePath: './assets/' });
 await PIXI.Assets.load('/assets/fonts/unifont.ttf');
@@ -30,7 +30,7 @@ export const buttonTextures = {
     fullTexture: null as PIXI.Texture | null,
     normal: null as PIXI.Texture | null,
     hover: null as PIXI.Texture | null,
-    
+
     async init() {
         this.fullTexture = await PIXI.Assets.load('/assets/images/games/gui/widgets.png');
         this.normal = new PIXI.Texture(this.fullTexture.baseTexture, new PIXI.Rectangle(0, 66, 200, 20));

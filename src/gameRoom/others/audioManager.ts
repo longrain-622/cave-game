@@ -17,6 +17,7 @@ function playBlockSound(blockId: number): void {
             break;
         case idOfBlock.oak: case idOfBlock.planks: case idOfBlock.crafting_table:
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
+        case idOfBlock.chest:
             soundManager.play('woodbreak' + String(getRandomInt(1, 3)));
             break;
         case idOfBlock.leaves:

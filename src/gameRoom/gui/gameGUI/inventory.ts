@@ -67,14 +67,15 @@ const craftingTableContainer = new PIXI.Container();
 const deathContainer = new PIXI.Container();
 const widgetContainer = new PIXI.Container();
 const floatContainer = new PIXI.Container();
-guiContainer.addChild(inventoryContainer, heartContainer, craftingTableContainer, deathContainer, widgetContainer, floatContainer);
+guiContainer.addChild(inventoryContainer, heartContainer, craftingTableContainer, deathContainer, floatContainer);
 guiContainer.sortableChildren = true;
+guiContainer.zIndex = 9;
 //默认隐藏
 inventoryContainer.visible = false; inventoryContainer.zIndex = 2;
 heartContainer.visible = true; heartContainer.zIndex = 0;
 craftingTableContainer.visible = false; craftingTableContainer.zIndex = 3;
 deathContainer.visible = false; deathContainer.zIndex = 4;
-widgetContainer.visible = true; widgetContainer.zIndex = 0;
+widgetContainer.visible = true; //widgetContainer E guiApp
 floatContainer.zIndex = 10;
 //背包 UI 元素
 //let widgetHighlight: PIXI.Sprite; //选中格子高亮（使用 widgets.png 中的选择框）
@@ -103,9 +104,13 @@ let wbInitialized = false;
 
 export function initInventoryUI() {
     //如果已经添加过，避免重复
-    if (!guiContainer.parent) {
+    if(!guiContainer.parent) {
         guiApp.stage.addChild(guiContainer);
         guiContainer.addChild(inventoryContainer, heartContainer, craftingTableContainer, deathContainer);
+    }
+    if(!widgetContainer.parent) {
+        guiApp.stage.addChild(widgetContainer);
+        widgetContainer.zIndex = 8;
     }
 
     //清空容器避免重复初始化

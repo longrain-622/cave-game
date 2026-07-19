@@ -3,6 +3,7 @@ import { player } from '../../player.js';
 import { sand_gravity, cactus_and_deadBush, grass_and_dirt, inviconGrass, door } from './bmFunction.js';
 
 export enum idOfBlock {
+    chest = -9,
     stone_dark = -8,
     oak_door_bottom_open = -7, oak_door_top_open = -6,
     deadBush = -5, cactus = -4, invicon_grass = -3,
@@ -29,40 +30,47 @@ export class Blocks {
 }
 
 //-1硬度表示无法挖掘
-const dirt_hardness: number = 5;
-const stone_hardness: number = 64;
-const oak_hardness: number = 18;
-const planks_hardness: number = 22;
+const hardness: {
+    dirt: number; stone: number;
+    oak: number; planks: number;
+} = {
+    dirt: 5,
+    stone: 64,
+    oak: 18,
+    planks: 22,
+};
 
-//const air = new Blocks(idOfBlock.air, 0);
-const grass = new Blocks(idOfBlock.grass, dirt_hardness);
-const dirt = new Blocks(idOfBlock.dirt, dirt_hardness);
-const stone = new Blocks(idOfBlock.stone, stone_hardness);
-const oak = new Blocks(idOfBlock.oak, oak_hardness);
-const leaves = new Blocks(idOfBlock.leaves, 0);
-const cobblestone = new Blocks(idOfBlock.cobblestone, stone_hardness);
-const sand = new Blocks(idOfBlock.sand, dirt_hardness - 1);
-const snowGrass = new Blocks(idOfBlock.snowGrass, dirt_hardness);
-const sandstone = new Blocks(idOfBlock.sandstone, stone_hardness);
-const planks = new Blocks(idOfBlock.planks, planks_hardness);
-const crafting_table = new Blocks(idOfBlock.crafting_table, planks_hardness);
-const iron_ore = new Blocks(idOfBlock.iron_ore, stone_hardness + 4);
-const coal_ore = new Blocks(idOfBlock.coal_ore, stone_hardness + 2);
-const invicon_grass = new Blocks(idOfBlock.invicon_grass, 0);
-const cactus = new Blocks(idOfBlock.cactus, 4);
-const deadBush = new Blocks(idOfBlock.deadBush, 0);
-const oak_door_bottom = new Blocks(idOfBlock.oak_door_bottom, planks_hardness);
-const oak_door_top = new Blocks(idOfBlock.oak_door_top, planks_hardness);
-const oak_door_bottom_open = new Blocks(idOfBlock.oak_door_bottom_open, planks_hardness);
-const oak_door_top_open = new Blocks(idOfBlock.oak_door_top_open, planks_hardness);
-const stone_dark = new Blocks(idOfBlock.stone_dark, -1);
+const block = {
+    grass: new Blocks(idOfBlock.grass, hardness.dirt),
+    dirt: new Blocks(idOfBlock.dirt, hardness.dirt),
+    stone: new Blocks(idOfBlock.stone, hardness.stone),
+    oak: new Blocks(idOfBlock.oak, hardness.oak),
+    leaves: new Blocks(idOfBlock.leaves, 0),
+    cobblestone: new Blocks(idOfBlock.cobblestone, hardness.stone),
+    sand: new Blocks(idOfBlock.sand, hardness.dirt - 1),
+    snowGrass: new Blocks(idOfBlock.snowGrass, hardness.dirt),
+    sandstone: new Blocks(idOfBlock.sandstone, hardness.stone),
+    planks: new Blocks(idOfBlock.planks, hardness.planks),
+    crafting_table: new Blocks(idOfBlock.crafting_table, hardness.planks),
+    iron_ore: new Blocks(idOfBlock.iron_ore, hardness.stone + 4),
+    coal_ore: new Blocks(idOfBlock.coal_ore, hardness.stone + 2),
+    invicon_grass: new Blocks(idOfBlock.invicon_grass, 0),
+    cactus: new Blocks(idOfBlock.cactus, 4),
+    deadBush: new Blocks(idOfBlock.deadBush, 0),
+    oak_door_bottom: new Blocks(idOfBlock.oak_door_bottom, hardness.planks),
+    oak_door_top: new Blocks(idOfBlock.oak_door_top, hardness.planks),
+    oak_door_bottom_open: new Blocks(idOfBlock.oak_door_bottom_open, hardness.planks),
+    oak_door_top_open: new Blocks(idOfBlock.oak_door_top_open, hardness.planks),
+    stone_dark: new Blocks(idOfBlock.stone_dark, -1),
+    chest: new Blocks(idOfBlock.chest, hardness.planks),
+};
 
 const blocksArray: Blocks[] = [
-    grass, dirt, stone, oak, leaves, cobblestone,
-    sand, snowGrass, sandstone, planks, crafting_table, iron_ore, coal_ore,
-    invicon_grass, cactus, deadBush,
-    oak_door_bottom, oak_door_top, oak_door_bottom_open, oak_door_top_open,
-    stone_dark
+    block.grass, block.dirt, block.stone, block.oak, block.leaves, block.cobblestone,
+    block.sand, block.snowGrass, block.sandstone, block.planks, block.crafting_table, block.iron_ore, block.coal_ore,
+    block.invicon_grass, block.cactus, block.deadBush,
+    block.oak_door_bottom, block.oak_door_top, block.oak_door_bottom_open, block.oak_door_top_open,
+    block.stone_dark, block.chest
 ];
 blocksArray.sort((a, b) => a.id - b.id);
 

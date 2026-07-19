@@ -90,6 +90,17 @@ export const recipes: RecipeShape[] = [
         gridWidth: 2,
         gridHeight: 3
     },
+    { //箱子
+        cells: [
+            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
+            [{ itemId: idOfBlock.planks, amount: 1 }, null, { itemId: idOfBlock.planks, amount: 1 }],
+            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
+        ],
+        outputId: idOfBlock.chest,
+        outputCount: 1,
+        gridWidth: 3,
+        gridHeight: 3
+    },
 ];
 
 // 匹配配方，返回最大可合成次数

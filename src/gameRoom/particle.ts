@@ -94,7 +94,7 @@ function drawParticles(): void {
 
         let sx: number = 0; let sy: number = 0;
         switch(obj.type) {
-            case idOfBlock.invicon_grass: case idOfBlock.deadBush:
+            case idOfBlock.invicon_grass: case idOfBlock.deadBush: case idOfBlock.chest:
                 sx = 8; sy = 12;
                 break;
             case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
