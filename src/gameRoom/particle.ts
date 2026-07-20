@@ -92,7 +92,7 @@ function drawParticles(): void {
         const screenY: number = player.screen_y + obj.y - player.y;
         if(!isOnScreen(screenX, screenY, obj.width, obj.height)) {continue;}
 
-        let sx: number = 0; let sy: number = 0;
+        let sx: number = 0, sy: number = 0;
         switch(obj.type) {
             case idOfBlock.invicon_grass: case idOfBlock.deadBush: case idOfBlock.chest:
                 sx = 8; sy = 12;

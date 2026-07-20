@@ -1,36 +1,32 @@
 import { idOfItem } from "../../dropped/items.js";
 
-class Inventory_config {
-    cols: number; rows: number;
-    slotWidth: number; slotHeight: number;
-    startX: number; startY: number;
-    paddingX: number; paddingY:number;
-
-    constructor(cols: number=9, rows: number=3,
-    slotWidth: number=64, slotHeight: number=64,
-    startX: number, startY: number,
-    paddingX: number=8, paddingY: number=8) {
-        this.cols = cols; //列数（36个槽位，如果是4x9）
-        this.rows = rows;
-        this.slotWidth = slotWidth; //每个格子的宽度（像素）
-        this.slotHeight = slotHeight;
-        this.startX = startX; //第一个格子相对于背包图片左上角的X偏移
-        this.startY = startY; //第一个格子相对于背包图片左上角的Y偏移
-        this.paddingX = paddingX; //格子之间的水平间距
-        this.paddingY = paddingY;
-    }
+interface InventoryConfig {
+    cols: number; //列数
+    rows: number;
+    slotWidth: number; slotHeight: number; //每个格子的宽度px
+    startX: number; startY: number; //第一个格子相对于背包图片左上角的偏移
+    paddingX: number; paddingY: number; //格子之间的间距
+}
+const defaultConfig: InventoryConfig = {
+    cols: 9, rows: 3,
+    slotWidth: 64, slotHeight: 64,
+    startX: 0, startY: 0,
+    paddingX: 8, paddingY: 8
+};
+function createConfig(overrides: Partial<InventoryConfig>): InventoryConfig {
+    return { ...defaultConfig, ...overrides };
 }
 
-export const invenConfig = new Inventory_config(9, 3, 64, 64, 32, 336, 8, 8);
-export const iC_hand = new Inventory_config(9, 1, 64, 64, 32, 568, 8, 8);
-export const iC_clothe = new Inventory_config(1, 4, 64, 64, 32, 32, 8, 8);
-export const iC_otherHand = new Inventory_config(1, 1, 64, 64, 308, 248);
-export const iC_make = new Inventory_config(2, 2, 64, 64, 392, 72, 8, 8);
-export const iC_get = new Inventory_config(1, 1, 64, 64, 616, 112);
+export const invenConfig = createConfig({startX: 32, startY: 336});
+export const iC_hand = createConfig({rows: 1, startX: 32, startY: 568});
+export const iC_clothe = createConfig({cols: 1, rows: 4, startX: 32, startY: 32});
+export const iC_otherHand = createConfig({cols: 1, rows: 1, startX: 308, startY: 248});
+export const iC_make = createConfig({cols: 2, rows: 2, startX: 392, startY: 72});
+export const iC_get = createConfig({cols: 1, rows: 1, startX: 616, startY: 112});
 
 //crafting table
-export const ct_crafting = new Inventory_config(3, 3, 64, 64, 120, 68);
-export const ct_get = new Inventory_config(1, 1, 96, 96, 480, 124);
+export const ct_crafting = createConfig({cols: 3, rows: 3, startX: 120, startY: 68});
+export const ct_get =createConfig({cols: 1, rows: 1, slotWidth: 96, slotHeight: 96, startX: 480, startY: 124});
 
 //槽位类
 class Slots {
@@ -60,4 +56,29 @@ class Slots {
     }
 }
 
-export { Slots, Inventory_config };
+export const img_gui = {
+    inventory: new Image(),
+    widgets: new Image(),
+    player: new Image(),
+    icons: new Image(),
+    crafting_table: new Image(),
+    chest: new Image(),
+}
+img_gui.inventory.src = 'assets/images/games/gui/container/inventory.png';
+img_gui.widgets.src = 'assets/images/games/gui/widgets.png';
+img_gui.player.src = 'assets/images/games/player/players.png';
+img_gui.icons.src = 'assets/images/games/gui/hearts/icons.png';
+img_gui.crafting_table.src = 'assets/images/games/gui/container/craftingtable.png';
+img_gui.chest.src = 'assets/images/games/gui/shulker_box.png';
+const guiImages = [img_gui.inventory, img_gui.widgets, img_gui.player, img_gui.icons, img_gui.crafting_table, img_gui.chest];
+export let gui_isDrawing: boolean = false;
+let imagesLoaded: number = 0;
+function checkAllLoaded() {
+    imagesLoaded++;
+    if (imagesLoaded === guiImages.length) {
+        gui_isDrawing = true;
+    }
+}
+guiImages.forEach(img => img.addEventListener('load', checkAllLoaded));
+
+export { Slots, InventoryConfig };

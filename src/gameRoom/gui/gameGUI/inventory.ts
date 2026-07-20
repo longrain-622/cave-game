@@ -1,5 +1,5 @@
 import { room } from "../../const.js";
-import { Inventory_config, invenConfig, iC_hand, Slots, iC_make, iC_get, iC_clothe, iC_otherHand } from "./inventoryConfig.js";
+import { img_gui, gui_isDrawing, InventoryConfig, invenConfig, iC_hand, Slots, iC_make, iC_get, iC_clothe, iC_otherHand } from "./inventoryConfig.js";
 import { mouse } from "../../mouse.js";
 import { drawHeart, heartsAct } from "./hearts.js";
 import { player } from "../../player.js";
@@ -10,6 +10,7 @@ import { guiApp } from "../application.js";
 import { uistate } from "../uiState.js";
 import { genericTextStyle, blockTextures } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
+import { draw_chest } from "./chest.js";
 import * as PIXI from 'pixi.js';
 
 //背包物品栏类
@@ -314,34 +315,12 @@ export function initInventoryUI() {
     floatContainer.addChild(selectingText);
 }
 
-const img_gui = {
-    inventory: new Image(),
-    widgets: new Image(),
-    player: new Image(),
-    icons: new Image(),
-    crafting_table: new Image(),
-}
-img_gui.inventory.src = 'assets/images/games/gui/container/inventory.png';
-img_gui.widgets.src = 'assets/images/games/gui/widgets.png';
-img_gui.player.src = 'assets/images/games/player/players.png';
-img_gui.icons.src = 'assets/images/games/gui/hearts/icons.png';
-img_gui.crafting_table.src = 'assets/images/games/gui/container/craftingtable.png';
-const guiImages = [img_gui.inventory, img_gui.widgets, img_gui.player, img_gui.icons, img_gui.crafting_table];
-let gui_isDrawing: boolean = false;
-let imagesLoaded: number = 0;
-function checkAllLoaded() {
-    imagesLoaded++;
-    if (imagesLoaded === guiImages.length) {
-        gui_isDrawing = true;
-    }
-}
-guiImages.forEach(img => img.addEventListener('load', checkAllLoaded));
-
 apioxEvent.onKeyDown((ev: ApioxKeyboardEvent) => {
     if (ev.key === 'e') {
         if(ev.repeat) {return;}
-        if(uistate.anyui_isOpening() && !uistate.invenUI_isOpening) {return;}
-        if(craftingTable.isOpening === true) {craftingTable.isOpening = false; return;}
+        if(uistate.anyui_isOpening() && (!uistate.invenUI_isOpening)) {return;}
+        if(craftingTable.isOpening) {craftingTable.isOpening = false; return;}
+        if(uistate.chest_isOpening) {uistate.chest_isOpening = false; return;}
         inventory.isOpening = !inventory.isOpening;
     }
 
@@ -679,7 +658,7 @@ function updateSelectingItem(): void {
     }
 }
 
-function locateHighWhite(obj_IC: Inventory_config, inven_X: number, inven_Y: number, graphics: PIXI.Graphics): void {
+function locateHighWhite(obj_IC: InventoryConfig, inven_X: number, inven_Y: number, graphics: PIXI.Graphics): void {
     highWhite.screenX = inven_X + obj_IC.startX;
     highWhite.screenY = inven_Y + obj_IC.startY;
 
@@ -706,7 +685,7 @@ function locateHighWhite(obj_IC: Inventory_config, inven_X: number, inven_Y: num
     }
 }
 
-function locateHighWhiteForCrafting(obj_IC: Inventory_config, invenX: number, invenY: number, slotsArray: Slots[], type: "crafting" | "result", graphics: PIXI.Graphics): void {
+function locateHighWhiteForCrafting(obj_IC: InventoryConfig, invenX: number, invenY: number, slotsArray: Slots[], type: "crafting" | "result", graphics: PIXI.Graphics): void {
     const startX: number = invenX + obj_IC.startX;
     const startY: number = invenY + obj_IC.startY;
     const slotW: number = obj_IC.slotWidth + obj_IC.paddingX;
@@ -797,6 +776,7 @@ function inventoryLoop() {
         drawHeart();
         drawInventory();
         draw_craftingTable();
+        draw_chest();
     }
 }
 

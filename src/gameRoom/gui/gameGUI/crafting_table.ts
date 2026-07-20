@@ -1,11 +1,10 @@
 import { ct_crafting, ct_get, Slots, invenConfig, iC_hand } from "./inventoryConfig.js";
-import { img_gui, inventory, selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
+import { img_gui, selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../mouse.js";
-import { world, room } from "../../const.js";
+import { room } from "../../const.js";
 import { blockTextures, genericTextStyle } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
-import { apioxEvent, ApioxMouseEvent } from "../../../apiox/event.js";
 import * as PIXI from 'pixi.js';
 
 const craftingTable: {isOpening: boolean; width: number; height: number;} = {
@@ -180,13 +179,6 @@ function drawWorkbenchHighlights(invenX: number, invenY: number) {
         wbHighlight.visible = true;
     }
 }
-
-apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
-    if(ev.button !== 2 || inventory.isOpening) {return;}
-    if(world[mouse.world_y][mouse.world_x] === 9 && craftingTable.isOpening === false) {
-        craftingTable.isOpening = true;
-    }
-});
 
 function draw_craftingTable(): void {
     if (!craftingTable.isOpening) {
