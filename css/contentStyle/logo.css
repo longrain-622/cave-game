@@ -5,25 +5,9 @@
 
     z-index: 100;
 
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
-    
-    /* 默认直接隐藏，防止未播放动画时闪烁 */
-    opacity: 0;
-    pointer-events: none;
-}
-
-#logo.animate {
-    animation: logoFadeOut 4s ease-out forwards;
-    opacity: 1; /* 让动画初始可见 */
-    pointer-events: auto;
-}
-
-@keyframes logoFadeOut {
-    0% { opacity: 1; }
-    30% { opacity: 1; }   /* 停留 0.3 倍时长 */
-    100% { opacity: 0; pointer-events: none; }
 }
 
 #logoText {

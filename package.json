@@ -1,6 +1,6 @@
 {
   "name": "cavegame",
-  "version": "Pre-Alpha",
+  "version": "1.0.0-alpha.1",
   "description": "A 2d pixel-style game.",
   "main": "main.ts",
   "scripts": {
@@ -23,11 +23,10 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
-    "@typescript/typescript-win32-x64": "^7.0.1-rc",
-    "pixi.js": "^7.4.2",
-    "typescript": "^7.0.1-rc"
+    "pixi.js": "^7.4.2"
   },
   "devDependencies": {
+    "typescript": "^7.0.2",
     "vite": "^8.0.16"
   }
 }
