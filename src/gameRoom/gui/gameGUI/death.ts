@@ -1,5 +1,6 @@
 import { player } from "../../player.js";
-import { gui_isDrawing, img_gui, deathContainer } from "./inventory.js";
+import { gui_isDrawing, deathContainer } from "./inventory.js";
+import { img_gui } from "./inventoryConfig.js";
 import { genericTextStyle } from "../../rendering.js";
 import { room } from "../../const.js";
 import { apiObjects } from "../../../apiox/dom.js";

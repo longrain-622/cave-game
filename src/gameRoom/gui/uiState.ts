@@ -1,35 +1,47 @@
 import { world } from "../const.js";
 import { apioxEvent, ApioxMouseEvent } from "../../apiox/event.js";
 import { mouse } from "../mouse.js";
-import { craftingTable } from "./gameGUI/crafting_table.js";
 import { idOfBlock } from "../nature/blockMecha/blockMechanism.js";
 
 interface Uistate {
-    invenUI_isOpening: boolean;
+    inventory_isOpening: boolean;
+    craftingTable_isOpening: boolean;
     gameContent_isOpening: boolean;
     chest_isOpening: boolean;
     furnace_isOpening: boolean;
 
-    anyui_isOpening: Function;
-    anyui_isOpening_except: Function;
+    invenUI_isOpening: Function; //与物品栏相关的ui的打开状态
+    anyui_isOpening: Function; //是否有ui打开
+    anyui_isOpening_except: Function; //除了xxx关闭以外是否有其他ui打开
 }
 
 export const uistate: Uistate = {
-    invenUI_isOpening: false,
+    inventory_isOpening: false,
+    craftingTable_isOpening: false,
     gameContent_isOpening: false,
     chest_isOpening: false,
     furnace_isOpening: false,
+
+    invenUI_isOpening(): boolean {
+        return (
+            this.inventory_isOpening ||
+            this.craftingTable_isOpening ||
+            this.chest_isOpening ||
+            this.furnace_isOpening
+        );
+    },
     
     anyui_isOpening(): boolean {
         return (
-            this.invenUI_isOpening ||
+            this.inventory_isOpening ||
+            this.craftingTable_isOpening ||
             this.gameContent_isOpening ||
             this.chest_isOpening ||
             this.furnace_isOpening
         );
     },
 
-    anyui_isOpening_except(which_isOpening: boolean): boolean {
+    anyui_isOpening_except(which_isOpening: boolean): boolean { //
         return (
             this.anyui_isOpening() &&
             (!which_isOpening)
@@ -42,9 +54,9 @@ apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
     if(ev.button !== 2) {return;}
     switch(world[mouse.world_y][mouse.world_x]) {
         case idOfBlock.crafting_table:
-            if(uistate.anyui_isOpening_except(craftingTable.isOpening)) {return;}
-            if(!craftingTable.isOpening) {
-                craftingTable.isOpening = true;
+            if(uistate.anyui_isOpening_except(uistate.craftingTable_isOpening)) {return;}
+            if(!uistate.craftingTable_isOpening) {
+                uistate.craftingTable_isOpening = true;
             }
             break;
         case idOfBlock.chest:

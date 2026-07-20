@@ -1,14 +1,15 @@
-import { ct_crafting, ct_get, Slots, invenConfig, iC_hand } from "./inventoryConfig.js";
-import { img_gui, selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
+import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, img_gui } from "./inventoryConfig.js";
+import { selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../mouse.js";
 import { room } from "../../const.js";
 import { blockTextures, genericTextStyle } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
+import { uistate } from "../uiState.js";
 import * as PIXI from 'pixi.js';
 
-const craftingTable: {isOpening: boolean; width: number; height: number;} = {
-    isOpening: false, width: 704, height: 664
+const craftingTable: {width: number; height: number;} = {
+    width: 704, height: 664
 }
 
 //工作台的合成网格（3x3）和输出槽
@@ -181,7 +182,7 @@ function drawWorkbenchHighlights(invenX: number, invenY: number) {
 }
 
 function draw_craftingTable(): void {
-    if (!craftingTable.isOpening) {
+    if (!uistate.craftingTable_isOpening) {
         craftingTableContainer.visible = false;
         return;
     }

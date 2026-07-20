@@ -119,12 +119,12 @@ apioxEvent.onKeyDoubleClick((detail) => {
     }
 });
 apioxEvent.onKeyDown((e) => {
-    if (uistate.invenUI_isOpening) {return;}
+    if (uistate.invenUI_isOpening()) {return;}
     switch(e.key) {
         case 'a': player.face = -1; player.left = 1; break;
         case 'd': player.face = 1; player.right = 1; break;
         case 'w':
-            if(player.can_jump && !uistate.invenUI_isOpening) {
+            if(player.can_jump && !uistate.invenUI_isOpening()) {
                 player.vsp = player.jumpspeed;
                 player.can_jump = false;
             }
@@ -138,7 +138,7 @@ apioxEvent.onKeyUp((e) => {
     }
 });
 apioxEvent.listenGlobal('mousedown', () => {
-    if(!uistate.invenUI_isOpening && mouse.can_use) { //玩家手部旋转触发
+    if(!uistate.invenUI_isOpening() && mouse.can_use) { //玩家手部旋转触发
         player.needRotateHand = true;
     }
 });
@@ -237,7 +237,7 @@ function updatePlayerRender(): void {
 }
 
 function playerLoop(): void {
-    if(!uistate.invenUI_isOpening && player.hp > 0){ //打开背包无法移动
+    if(!uistate.invenUI_isOpening() && player.hp > 0){ //打开背包无法移动
         playerMove();
     }
     if(player.hp > 0) {playerJump();}

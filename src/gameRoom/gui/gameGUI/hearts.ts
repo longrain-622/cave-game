@@ -1,5 +1,6 @@
 import { player } from "../../player.js";
-import { img_gui, widgets, heartContainer } from "./inventory.js";
+import { widgets, heartContainer } from "./inventory.js";
+import { img_gui } from "./inventoryConfig.js";
 import * as PIXI from 'pixi.js';
 
 const heart: {

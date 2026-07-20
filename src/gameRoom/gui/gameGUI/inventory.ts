@@ -4,7 +4,7 @@ import { mouse } from "../../mouse.js";
 import { drawHeart, heartsAct } from "./hearts.js";
 import { player } from "../../player.js";
 import { craftingResultSlot, craftingSlots, updateCraftingResult, recipes, consumeCraftingMaterials } from "./crafting.js";
-import { draw_craftingTable, craftingTable, handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType } from "./crafting_table.js";
+import { draw_craftingTable, handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType } from "./crafting_table.js";
 import { apioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent } from "../../../apiox/event.js";
 import { guiApp } from "../application.js";
 import { uistate } from "../uiState.js";
@@ -15,12 +15,11 @@ import * as PIXI from 'pixi.js';
 
 //背包物品栏类
 class Inventories {
-    isOpening: boolean;
     items: Slots[]; //存储槽位对象的数组
     width: number; height: number; //屏幕上绘制的宽高
 
-    constructor(isOpening: boolean, items: Slots[], width: number, height: number) {
-        this.isOpening = isOpening; this.items = items;
+    constructor(items: Slots[], width: number, height: number) {
+        this.items = items;
         this.width = width; this.height = height;
     }
 
@@ -30,7 +29,7 @@ class Inventories {
         }
     }
 }
-const inventory: Inventories = new Inventories(false, [], 704, 664); //新建一个背包对象
+const inventory: Inventories = new Inventories([], 704, 664); //新建一个背包对象
 inventory.initSlots(36);
 
 //记录高亮格子对应的 inventory.items 索引（-1 表示没有高亮）
@@ -318,10 +317,10 @@ export function initInventoryUI() {
 apioxEvent.onKeyDown((ev: ApioxKeyboardEvent) => {
     if (ev.key === 'e') {
         if(ev.repeat) {return;}
-        if(uistate.anyui_isOpening() && (!uistate.invenUI_isOpening)) {return;}
-        if(craftingTable.isOpening) {craftingTable.isOpening = false; return;}
+        if(uistate.craftingTable_isOpening) {uistate.craftingTable_isOpening = false; return;}
         if(uistate.chest_isOpening) {uistate.chest_isOpening = false; return;}
-        inventory.isOpening = !inventory.isOpening;
+        if(uistate.anyui_isOpening_except(uistate.inventory_isOpening)) {return;}
+        uistate.inventory_isOpening = !uistate.inventory_isOpening;
     }
 
     //键盘选取物品栏的物品
@@ -341,7 +340,7 @@ apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
 //左键部分
 if(e.button === 0) {
     // 工作台优先
-    if (craftingTable.isOpening) {
+    if (uistate.craftingTable_isOpening) {
         handleWorkbenchClick(); //尝试处理工作台合成区域
         if (selectedWbType === null) { //未命中工作台区域 操作背包
             handleBackpackClick();
@@ -349,7 +348,7 @@ if(e.button === 0) {
         return;
     }
 
-    if (!inventory.isOpening) {return;}
+    if (!uistate.inventory_isOpening) {return;}
 
     // 优先处理合成区域
     if (selectedCraftingType !== null) {
@@ -461,7 +460,7 @@ if(e.button === 0) {
     //右键部分
 if(e.button === 2) {
     e.preventDefault();
-    if (craftingTable.isOpening) {
+    if (uistate.craftingTable_isOpening) {
         handleWorkbenchContextMenu();
         if (selectedWbType === null) {
             handleBackpackContextMenu();
@@ -469,7 +468,7 @@ if(e.button === 2) {
         return;
     }
 
-    if (!inventory.isOpening) {return;}
+    if (!uistate.inventory_isOpening) {return;}
 
     //优先处理合成区域
     if (selectedCraftingType !== null) {
@@ -720,7 +719,7 @@ function drawInventory(): void {
     widgetSelectHighlight.position.set(widgets.x - 4 + widgets.select * 80, widgets.y - 4); //更新选中高亮位置（根据 widgets.select）
     updateWidgetSlots();
 
-    if (!inventory.isOpening) {
+    if (!uistate.inventory_isOpening) {
         inventoryContainer.visible = false;
         return;
     }
@@ -731,7 +730,8 @@ function drawInventory(): void {
     selectedIndex = -1;
 
     //设置容器可见性
-    inventoryContainer.visible = inventory.isOpening;
+    inventoryContainer.visible = uistate.inventory_isOpening;
+    floatContainer.visible = uistate.invenUI_isOpening();
     inventoryBg.visible = true; //显示背景和固定元素
     updateAllSlots(); //更新所有槽位
     updateCraftingSlots(); //更新合成区域
@@ -771,7 +771,6 @@ function pickupObj(item: number): void { //拾取物品
 
 function inventoryLoop() {
     if(player.hp > 0) {
-        uistate.invenUI_isOpening = inventory.isOpening || craftingTable.isOpening;
         heartsAct();
         drawHeart();
         drawInventory();
@@ -899,5 +898,5 @@ export function handleBackpackContextMenu(): void {
     }
 }
 
-export { inventoryLoop, pickupObj, locateHighWhite, updateSelectingItem, inventory, widgets, img_gui, gui_isDrawing, selecting, selectedIndex };
-export { heartContainer, craftingTableContainer, deathContainer, floatContainer };
+export { inventoryLoop, pickupObj, locateHighWhite, updateSelectingItem, inventory, widgets, gui_isDrawing, selecting, selectedIndex };
+export { heartContainer, craftingTableContainer, deathContainer };
