@@ -160,6 +160,119 @@ class ApioxEventBus {
 }
 export const apioxEventBus = new ApioxEventBus();
 
+//DOM 事件分发器
+type AnyListener = (e: any) => void;
+
+class DomEventManager {
+    //存储结构：target -> eventType -> Set<回调函数>
+    private targets = new Map<EventTarget, Map<string, Set<AnyListener>>>();
+
+    /**
+     * 注册监听
+     * @param target 目标（document 或 window）
+     * @param eventType 事件类型
+     * @param listener 用户回调（已包装为接受原生事件的函数）
+     * @returns 取消监听的函数
+     */
+    addListener(
+        target: EventTarget,
+        eventType: string,
+        listener: AnyListener
+    ): () => void {
+        //获取或创建 target 对应的 Map
+        if (!this.targets.has(target)) {
+            this.targets.set(target, new Map());
+        }
+        const typeMap = this.targets.get(target)!;
+
+        //获取或创建 eventType 对应的 Set
+        if (!typeMap.has(eventType)) {
+            typeMap.set(eventType, new Set());
+        }
+        const listeners = typeMap.get(eventType)!;
+
+        //如果这个事件类型之前没有监听器，则首次注册原生监听
+        if (listeners.size === 0) {
+            target.addEventListener(eventType, this.getNativeHandler(target, eventType));
+        }
+
+        listeners.add(listener);
+
+        //返回取消函数
+        return () => {
+            this.removeListener(target, eventType, listener);
+        };
+    }
+
+    /**
+     * 移除监听
+     */
+    removeListener(
+        target: EventTarget,
+        eventType: string,
+        listener: AnyListener
+    ): void {
+        const typeMap = this.targets.get(target);
+        if (!typeMap) {return;}
+        const listeners = typeMap.get(eventType);
+        if (!listeners) {return;}
+
+        listeners.delete(listener);
+
+        // 如果该事件类型没有监听器了，移除原生监听（可选）
+        if (listeners.size === 0) {
+            target.removeEventListener(eventType, this.getNativeHandler(target, eventType));
+            typeMap.delete(eventType);
+            if (typeMap.size === 0) {
+                this.targets.delete(target);
+            }
+        }
+    }
+
+    /**
+     * 获取或创建原生事件处理器（单例模式）
+     * 每个 (target, eventType) 只需一个原生监听
+     */
+    private getNativeHandler(target: EventTarget, eventType: string): AnyListener {
+        // 使用闭包缓存，确保同一个 (target, eventType) 返回同一个函数引用
+        // 此处利用 Map 存储 handler 引用（简化版，可在类上增加 handlerCache）
+        if (!this._handlerCache) {
+            this._handlerCache = new Map<string, AnyListener>();
+        }
+        const key = this.getKey(target, eventType);
+        if (!this._handlerCache.has(key)) {
+            const handler = (nativeEvent: Event) => {
+                const typeMap = this.targets.get(target);
+                if (!typeMap) {return;}
+                const listeners = typeMap.get(eventType);
+                if (!listeners) {return;}
+                // 遍历执行所有回调（注意：这里传入的是原生事件，你的包装在注册时已经完成）
+                for (const cb of listeners) {
+                    try {
+                        cb(nativeEvent);
+                    } catch (e) {
+                        console.error(`Error in event listener for ${eventType}:`, e);
+                    }
+                }
+            };
+            this._handlerCache.set(key, handler);
+        }
+        return this._handlerCache.get(key)!;
+    }
+
+    private _handlerCache?: Map<string, AnyListener>;
+
+    private getKey(target: EventTarget, eventType: string): string {
+        // 区分 document 和 window（以及可能的其他元素）
+        const id = target === document ? 'document' :
+                target === window ? 'window' :
+                (target as any).id || 'unknown';
+        return `${id}:${eventType}`;
+    }
+}
+
+export const domEventManager = new DomEventManager();
+
 //对外 API
 export const apioxEvent = {
     listenGlobal<K extends keyof WindowEventMap>( //监听document
@@ -167,8 +280,8 @@ export const apioxEvent = {
         listener: (e: ApioxEvent) => void
     ): () => void {
         const wrapped = wrapEvent(listener);
-        document.addEventListener(event, wrapped);
-        return () => document.removeEventListener(event, wrapped);
+        domEventManager.addListener(document, event, wrapped);
+        return () => domEventManager.removeListener(document, event, wrapped);
     },
 
     listenGlobalOnce<K extends keyof WindowEventMap>(
@@ -207,53 +320,53 @@ export const apioxEvent = {
         listener: (e: ApioxEvent) => void
     ): () => void {
         const wrapped = wrapEvent(listener);
-        window.addEventListener(event, wrapped);
-        return () => window.removeEventListener(event, wrapped);
+        domEventManager.addListener(window, event, wrapped);
+        return () => domEventManager.removeListener(window, event, wrapped);
     },
 
     //鼠标事件
     onClick(listener: (e: ApioxMouseEvent) => void): () => void {
         const wrapped = wrapMouse(listener);
-        document.addEventListener('click', wrapped);
-        return () => document.removeEventListener('click', wrapped);
+        domEventManager.addListener(document, 'click', wrapped);
+        return () => domEventManager.removeListener(document, 'click', wrapped);
     },
     onMouseMove(listener: (e: ApioxMouseEvent) => void): () => void {
         const wrapped = wrapMouse(listener);
-        document.addEventListener('mousemove', wrapped);
-        return () => document.removeEventListener('mousemove', wrapped);
+        domEventManager.addListener(document, 'mousemove', wrapped);
+        return () => domEventManager.removeListener(document, 'mousemove', wrapped);
     },
     onMouseDown(listener: (e: ApioxMouseEvent) => void): () => void {
         const wrapped = wrapMouse(listener);
-        document.addEventListener('mousedown', wrapped);
-        return () => document.removeEventListener('mousedown', wrapped);
+        domEventManager.addListener(document, 'mousedown', wrapped);
+        return () => domEventManager.removeListener(document, 'mousedown', wrapped);
     },
     onMouseUp(listener: (e: ApioxMouseEvent) => void): () => void {
         const wrapped = wrapMouse(listener);
-        document.addEventListener('mouseup', wrapped);
-        return () => document.removeEventListener('mouseup', wrapped);
+        domEventManager.addListener(document, 'mouseup', wrapped);
+        return () => domEventManager.removeListener(document, 'mouseup', wrapped);
     },
     onContextMenu(listener: (e: ApioxMouseEvent) => void): () => void {
         const wrapped = wrapMouse(listener);
-        document.addEventListener('contextmenu', wrapped);
-        return () => document.removeEventListener('contextmenu', wrapped);
+        domEventManager.addListener(document, 'contextmenu', wrapped);
+        return () => domEventManager.removeListener(document, 'contextmenu', wrapped);
     },
 
     onWheel(listener: (e: ApioxWheelEvent) => void): () => void {
         const wrapped = wrapWheel(listener);
-        document.addEventListener('wheel', wrapped);
-        return () => document.removeEventListener('wheel', wrapped);
+        domEventManager.addListener(document, 'wheel', wrapped);
+        return () => domEventManager.removeListener(document, 'wheel', wrapped);
     },
 
     //键盘事件
     onKeyDown(listener: (e: ApioxKeyboardEvent) => void): () => void {
         const wrapped = wrapKeyboard(listener);
-        document.addEventListener('keydown', wrapped);
-        return () => document.removeEventListener('keydown', wrapped);
+        domEventManager.addListener(document, 'keydown', wrapped);
+        return () => domEventManager.removeListener(document, 'keydown', wrapped);
     },
     onKeyUp(listener: (e: ApioxKeyboardEvent) => void): () => void {
         const wrapped = wrapKeyboard(listener);
-        document.addEventListener('keyup', wrapped);
-        return () => document.removeEventListener('keyup', wrapped);
+        domEventManager.addListener(document, 'keyup', wrapped);
+        return () => domEventManager.removeListener(document, 'keyup', wrapped);
     },
 
     //为特定的 ApioxObject 添加键盘监听

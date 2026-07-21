@@ -2,11 +2,13 @@ import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, img_gui } from "./inv
 import { selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../mouse.js";
-import { room } from "../../const.js";
+import { room, world } from "../../const.js";
 import { blockTextures, genericTextStyle } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import { uistate } from "../uiState.js";
+import { idOfBlock } from "../../nature/blockMecha/blockMechanism.js";
 import * as PIXI from 'pixi.js';
+import { apioxEvent, ApioxMouseEvent } from "../../../apiox/event.js";
 
 const craftingTable: {width: number; height: number;} = {
     width: 704, height: 664
@@ -22,6 +24,16 @@ const WORKBENCH_ROWS: number = 3;
 for (let i = 0; i < WORKBENCH_COLS * WORKBENCH_ROWS; i++) {
     workbenchSlots.push(new Slots(-1, 0));
 }
+
+apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
+    if(ev.button !== 2) {return;}
+    if(world[mouse.world_y][mouse.world_x] === idOfBlock.crafting_table) {
+        if(uistate.anyui_isOpening_except(uistate.craftingTable_isOpening)) {return;}
+        if(!uistate.craftingTable_isOpening) {
+            uistate.craftingTable_isOpening = true;
+        }
+    }
+});
 
 //工作台高亮相关
 let selectedWbType: 'crafting' | 'result' | null = null;

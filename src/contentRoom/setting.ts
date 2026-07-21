@@ -5,10 +5,11 @@ import { detectPlatform } from '../apiox/method.js';
 import { win } from '../apiox/global.js';
 import { toast, toastCancel, toastSure, toastText } from './content.js';
 
-const setting: {
+interface SettingConfig {
     phoneButton_isOpening: boolean;
     screenRotate_isOpening: boolean;
-} = {
+}
+const setting: SettingConfig = {
     phoneButton_isOpening: false,
     screenRotate_isOpening: false,
 }

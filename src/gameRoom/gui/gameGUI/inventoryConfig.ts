@@ -17,16 +17,18 @@ function createConfig(overrides: Partial<InventoryConfig>): InventoryConfig {
     return { ...defaultConfig, ...overrides };
 }
 
+//inventory
 export const invenConfig = createConfig({startX: 32, startY: 336});
 export const iC_hand = createConfig({rows: 1, startX: 32, startY: 568});
 export const iC_clothe = createConfig({cols: 1, rows: 4, startX: 32, startY: 32});
 export const iC_otherHand = createConfig({cols: 1, rows: 1, startX: 308, startY: 248});
 export const iC_make = createConfig({cols: 2, rows: 2, startX: 392, startY: 72});
 export const iC_get = createConfig({cols: 1, rows: 1, startX: 616, startY: 112});
-
 //crafting table
 export const ct_crafting = createConfig({cols: 3, rows: 3, startX: 120, startY: 68});
-export const ct_get =createConfig({cols: 1, rows: 1, slotWidth: 96, slotHeight: 96, startX: 480, startY: 124});
+export const ct_get = createConfig({cols: 1, rows: 1, slotWidth: 96, slotHeight: 96, startX: 480, startY: 124});
+//chest
+export const chestConfig = createConfig({startX: 32, startY: 72});
 
 //槽位类
 class Slots {

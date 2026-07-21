@@ -10,7 +10,7 @@ import { guiApp } from "../application.js";
 import { uistate } from "../uiState.js";
 import { genericTextStyle, blockTextures } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
-import { draw_chest } from "./chest.js";
+import { draw_chest, handleChestClick, handleChestContextMenu, getChestSelectedIndex, handleChestBackpackClick, handleChestBackpackContextMenu } from "./chest.js";
 import * as PIXI from 'pixi.js';
 
 //背包物品栏类
@@ -59,7 +59,7 @@ widgets.y = room.height - widgets.height;
 const invenX: number = (room.width - inventory.width) / 2;
 const invenY: number = (room.height - inventory.height) / 2;
 const item_width: number = 48, item_height: number = 48;
-const guiContainer = new PIXI.Container();
+export const guiContainer = new PIXI.Container();
 //各 UI 模块容器
 const inventoryContainer = new PIXI.Container();
 const heartContainer = new PIXI.Container();
@@ -339,12 +339,22 @@ apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
 
 //左键部分
 if(e.button === 0) {
-    // 工作台优先
+    //工作台优先
     if (uistate.craftingTable_isOpening) {
         handleWorkbenchClick(); //尝试处理工作台合成区域
         if (selectedWbType === null) { //未命中工作台区域 操作背包
             handleBackpackClick();
         }
+        return;
+    }
+
+    if (uistate.chest_isOpening) {
+        handleChestClick(selecting);
+        if (getChestSelectedIndex() !== -1) {
+            return; // 命中了箱子槽位，已处理
+        }
+        // 未命中箱子槽位，尝试处理背包
+        handleChestBackpackClick();
         return;
     }
 
@@ -465,6 +475,15 @@ if(e.button === 2) {
         if (selectedWbType === null) {
             handleBackpackContextMenu();
         }
+        return;
+    }
+
+    if (uistate.chest_isOpening) {
+        handleChestContextMenu(selecting);
+        if (getChestSelectedIndex() !== -1) {
+            return;
+        }
+        handleChestBackpackContextMenu();
         return;
     }
 
@@ -731,7 +750,6 @@ function drawInventory(): void {
 
     //设置容器可见性
     inventoryContainer.visible = uistate.inventory_isOpening;
-    floatContainer.visible = uistate.invenUI_isOpening();
     inventoryBg.visible = true; //显示背景和固定元素
     updateAllSlots(); //更新所有槽位
     updateCraftingSlots(); //更新合成区域
@@ -773,6 +791,7 @@ function inventoryLoop() {
     if(player.hp > 0) {
         heartsAct();
         drawHeart();
+        floatContainer.visible = uistate.invenUI_isOpening();
         drawInventory();
         draw_craftingTable();
         draw_chest();
@@ -896,6 +915,10 @@ export function handleBackpackContextMenu(): void {
             }
         }
     }
+}
+
+export function setSelectedIndex(newVal: number): void {
+    selectedIndex = newVal;
 }
 
 export { inventoryLoop, pickupObj, locateHighWhite, updateSelectingItem, inventory, widgets, gui_isDrawing, selecting, selectedIndex };
