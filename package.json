@@ -2,7 +2,7 @@
   "name": "cavegame",
   "version": "1.0.0-alpha.1",
   "description": "A 2d pixel-style game.",
-  "main": "main.ts",
+  "main": "./src/main.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vite --host",
@@ -23,9 +23,11 @@
   "license": "MIT",
   "type": "commonjs",
   "dependencies": {
+    "localforage": "^1.10.0",
     "pixi.js": "^7.4.2"
   },
   "devDependencies": {
+    "@types/localforage": "^0.0.33",
     "typescript": "^7.0.2",
     "vite": "^8.0.16"
   }

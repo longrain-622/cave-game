@@ -76,7 +76,7 @@ function initDeathUI(): void {
     deathContainer.addChild(deathPixi.titleText);
 
     // 按钮
-    const buttonWidth = 640, buttonHeight = 64;
+    const buttonWidth = 600, buttonHeight = 60;
     const btnX = (room.width - buttonWidth) / 2;
     const btnY = 320;
     deathPixi.buttonSprite = new PIXI.Sprite(btnNormal);
@@ -88,9 +88,10 @@ function initDeathUI(): void {
     deathContainer.addChild(deathPixi.buttonSprite);
 
     // 按钮文字
-    deathPixi.buttonText = new PIXI.Text('', { ...genericTextStyle(), fontSize: 32, align: 'center' });
-    deathPixi.buttonText.anchor.set(0.5, 0.5);
-    deathPixi.buttonText.position.set(btnX + buttonWidth / 2, btnY + buttonHeight / 2);
+    const fontY_offset = 4;
+    deathPixi.buttonText = new PIXI.Text('', { ...genericTextStyle(), fontSize: 24, align: 'center' });
+    deathPixi.buttonText.anchor.set(0.5);
+    deathPixi.buttonText.position.set(btnX + buttonWidth / 2, btnY + buttonHeight / 2 + fontY_offset);
     deathContainer.addChild(deathPixi.buttonText);
 
     // 鼠标悬停切换纹理

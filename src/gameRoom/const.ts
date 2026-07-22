@@ -1,8 +1,11 @@
 import { apioxTime } from "../apiox/time.js";
 import { apioxEvent, ApioxKeyboardEvent, apioxEventBus } from "../apiox/event.js";
+import { ApioxObject } from "../apiox/dom.js";
 
-//世界的长和宽，单位：方块
+//世界的属性等
 const world_height: number = 256;
+const worldNameInput = new ApioxObject();
+const worldName: string = worldNameInput.getProperty('value');
 
 const room: {
     width: number; height: number
@@ -158,5 +161,5 @@ function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
     }
 }
 
-export { world_height, room, world, sealevel, chunk };
+export { world_height, room, world, sealevel, chunk, worldName };
 export { getRandomInt, place_meeting, enableKeyDoubleClickDetection, point_coll_rect, distance, isOutOfBounds, setMyVariable, pushChunkToWorld, isOnScreen };

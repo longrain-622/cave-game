@@ -124,3 +124,16 @@ export const apioxTime = {
         cancelAnimationFrame(frameId);
     },
 };
+
+interface ApioxDate {
+    year: number; month: number; day: number;
+    hour: number; minute: number; second: number;
+}
+
+export function getDate(): ApioxDate {
+    const theDate = new Date();
+    return {
+        year: theDate.getFullYear(), month: theDate.getMonth(), day: theDate.getDay(),
+        hour: theDate.getHours(), minute: theDate.getMinutes(), second: theDate.getSeconds(),
+    };
+}

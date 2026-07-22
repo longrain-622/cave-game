@@ -10,11 +10,11 @@ import { createDrop } from '../../dropped/droppedItem.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../apiox/event.js';
 
-interface Chest { //记录每个箱子的信息
+export interface Chest { //记录每个箱子的信息
     world_x: number; world_y: number;
     fold: Slots[]; //所装物品
 }
-let chests: Chest[] = [];
+export let chests: Chest[] = [];
 let currentChest: Chest | null = null;
 
 function lookChest(look_x: number, look_y: number): Chest {
@@ -429,9 +429,14 @@ export function handleChestBackpackContextMenu(): void {
 }
 
 //箱子被破坏时的处理
-//破坏箱子后未关闭 GUI 状态 (待修复)
 export function breakChest(chest_world_x: number, chest_world_y: number): void {
     if(world[chest_world_y][chest_world_x] === idOfBlock.chest && chests.length > 0) {
+        //破坏箱子后关闭 GUI 状态
+        if (uistate.chest_isOpening) {
+            uistate.chest_isOpening = false;
+            currentChest = null;
+        }
+
         const target = chests.find(obj => (obj.world_x === chest_world_x && obj.world_y === chest_world_y));
         if(!target) {return;}
         chests.splice(chests.indexOf(target), 1);
