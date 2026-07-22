@@ -12,6 +12,7 @@ import { idOfItem, putDoor, useItem } from './dropped/items.js';
 import { door_openOrClose } from './nature/blockMecha/bmFunction.js';
 import { lowest_point } from './nature/createWorld.js';
 import { idOfBlock } from './nature/blockMecha/blockMechanism.js';
+import { breakChest } from './gui/gameGUI/chest.js';
 import './others/audioManager.js';
 import { apioxEvent, ApioxMouseEvent } from '../apiox/event.js';
 import { ApioxObject } from '../apiox/dom.js';
@@ -110,6 +111,11 @@ apioxEvent.onMouseUp(
     }
 );
 
+//处理特殊情况的挖掘
+function specialMouseBreak(mine_mousex: number, mine_mousey: number) {
+    breakChest(mine_mousex, mine_mousey);
+}
+
 export function mouseAct(): void {
     mouse.world_x = Math.round((player.x + mouse.x - player.screen_x) / 64);
     mouse.world_y = Math.round((player.y + mouse.y - player.screen_y) / 64);
@@ -172,6 +178,7 @@ export function mouseAct(): void {
             }
 
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); //生成掉落物
+            specialMouseBreak(mine_mousex, mine_mousey);
             if(mine_mousey > lowest_point) {targetBlock = idOfBlock.stone_dark;} else {targetBlock = idOfBlock.air;}
             world[mine_mousey][mine_mousex] = targetBlock;
         }

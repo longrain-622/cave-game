@@ -2,10 +2,11 @@ import { img_gui, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from
 import { handleBackpackClick, handleBackpackContextMenu, inventory, setSelectedIndex, updateSelectingItem, guiContainer } from './inventory.js';
 import { genericTextStyle, blockTextures } from '../../rendering.js';
 import { itemTextures } from '../../dropped/items.js';
-import { room, world } from '../../const.js';
+import { getRandomInt, room, world } from '../../const.js';
 import { mouse } from '../../mouse.js';
 import { uistate } from '../uiState.js';
 import { idOfBlock } from '../../nature/blockMecha/blockMechanism.js';
+import { createDrop } from '../../dropped/droppedItem.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../apiox/event.js';
 
@@ -342,7 +343,7 @@ export function draw_chest(): void {
 
 //交互处理函数
 export function handleChestClick(selecting: Slots): void {
-    if (chestGui.selectedIndex === -1 || !currentChest) return;
+    if (chestGui.selectedIndex === -1 || !currentChest) {return;}
     const target = currentChest.fold[chestGui.selectedIndex];
     const mouseHas = (selecting.item !== -1);
     const targetHas = (target.item !== -1);
@@ -377,7 +378,7 @@ export function handleChestClick(selecting: Slots): void {
 }
 
 export function handleChestContextMenu(selecting: Slots): void {
-    if (chestGui.selectedIndex === -1 || !currentChest) return;
+    if (chestGui.selectedIndex === -1 || !currentChest) {return;}
     const target = currentChest.fold[chestGui.selectedIndex];
     const mouseHas = (selecting.item !== -1);
     const targetHas = (target.item !== -1);
@@ -386,7 +387,7 @@ export function handleChestContextMenu(selecting: Slots): void {
         selecting.item = target.item;
         selecting.num = 1;
         target.num -= 1;
-        if (target.num === 0) target.item = -1;
+        if (target.num === 0) {target.item = -1;}
         return;
     }
     if (mouseHas) {
@@ -424,5 +425,22 @@ export function handleChestBackpackContextMenu(): void {
     if (chestGui.backpackSelectedIndex !== -1) {
         setSelectedIndex(chestGui.backpackSelectedIndex);
         handleBackpackContextMenu();
+    }
+}
+
+//箱子被破坏时的处理
+//破坏箱子后未关闭 GUI 状态 (待修复)
+export function breakChest(chest_world_x: number, chest_world_y: number): void {
+    if(world[chest_world_y][chest_world_x] === idOfBlock.chest && chests.length > 0) {
+        const target = chests.find(obj => (obj.world_x === chest_world_x && obj.world_y === chest_world_y));
+        if(!target) {return;}
+        chests.splice(chests.indexOf(target), 1);
+
+        for(let i = 0; i < target.fold.length; i++) {
+            if(target.fold[i].item === -1) {continue;}
+            for(let k = 0; k < target.fold[i].num; k++) {
+                createDrop(target.fold[i].item, chest_world_x * 64 + getRandomInt(0, 64), chest_world_y * 64 + getRandomInt(0, 64));
+            }
+        }
     }
 }
