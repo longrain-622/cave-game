@@ -38,6 +38,12 @@ export const toastText = new ApioxObject('toast_text');
 export const toastCancel = new ApioxObject('toast_cancel');
 export const toastSure = new ApioxObject('toast_sure');
 
+// editWorld 界面元素
+const editWorld = new ApioxObject('editWorld');
+const editWorldBtnQuit = new ApioxObject('editWorldBtnQuit');
+const editWorldBtnCreate = new ApioxObject('editWorldBtnCreate');
+export const wolrdCreator = new ApioxObject('wolrdCreator');
+
 //初始化游戏窗口 大小和显示
 content.domstyle('width', String(room.width) + 'px'); content.domstyle('height', String(room.height) + 'px');
 gameRoom.domstyle('width', String(room.width) + 'px'); gameRoom.domstyle('height', String(room.height) + 'px');
@@ -72,8 +78,12 @@ apioxEvent.onKeyDown((e) => {
 starting_steve.on('click', (): void => {
     if(start === 1 && choose === 0) {worldwindow.show();}
 });
-back_btn.on('click', (): void => { worldwindow.hide(); }); //关闭
+back_btn.on('click', (): void => { wolrdCreator.hide(); editWorld.show(); }); //返回 editWorld
 create_btn.on('click', (): void => { _room_ = 1; gameRoom.show(); content.hide(); }); //进入游戏
+
+// editWorld 按钮事件
+editWorldBtnQuit.on('click', (): void => { worldwindow.hide(); }); //关闭世界窗口
+editWorldBtnCreate.on('click', (): void => { editWorld.hide(); wolrdCreator.show(); }); //进入创建世界界面
 
 function updateDifficultyTexts(): void {
     gameDifficulties = [

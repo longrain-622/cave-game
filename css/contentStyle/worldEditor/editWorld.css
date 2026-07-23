@@ -1,0 +1,64 @@
+/* 选择世界 - 编辑世界窗口 */
+#editWorld {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#editWorldTitle {
+    color: white;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 black;
+
+    position: absolute;
+    left: 50%; top: 5%;
+    transform: translate(-50%, 0);
+}
+
+#editWorld .editWorld-btn {
+    background-image: url('../../../assets/images/games/blocks/stone.png');
+    background-repeat: repeat;
+    background-position: 0 0;
+
+    background-size: 48px 48px;
+
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    width: 35%;
+    height: 7%;
+    padding: 0;
+    border-radius: 0;
+
+    position: absolute;
+
+    color: white;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 rgb(68, 68, 68);
+}
+
+#editWorldBtnGetin   { left: 13%; top: 80%; }
+#editWorldBtnCreate  { left: 52%; top: 80%; }
+#editWorldBtnDelete  { left: 13%; top: 90%; }
+#editWorldBtnQuit    { left: 52%; top: 90%; }
+
+#editWorld-blackbg {
+    position: absolute;
+    left: 0; top: 15%;
+    width: 100%; height: 60%;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    background-image: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.6) 0%,
+        transparent 5%,
+        transparent 95%,
+        rgba(0, 0, 0, 0.6) 100%
+    );
+}

@@ -10,7 +10,8 @@
         @import url("css/global.css");
         @import url("css/body.css");
         @import url("css/contentStyle/content.css");
-        @import url("css/contentStyle/createWorld.css");
+        @import url("css/contentStyle/worldEditor/createWorld.css");
+        @import url("css/contentStyle/worldEditor/editWorld.css");
         @import url("css/contentStyle/setting.css");
         @import url("css/contentStyle/logo.css");
         @import url("css/contentStyle/toast.css");
@@ -23,7 +24,7 @@
     {
         "imports": {
             "pixi.js": "./node_modules/pixi.js/dist/pixi.mjs",
-            "localforage.js": "npm:localforage"
+            "localforage": "./node_modules/localforage/dist/localforage.js"
         }
     }
     </script>
@@ -89,13 +90,23 @@
         </div>
 
         <div id="worldwindow">
-            <p id="createWorldTitle" data-i18n="worldCreation.title"></p>
-            <input id="worldNameInput" type="text" placeholder="New world">
+            <div id="editWorld">
+                <p id="editWorldTitle" data-i18n="editWorld.title"></p>
+                <div id="editWorld-blackbg"></div>
+                <button class="editWorld-btn" id="editWorldBtnGetin" data-i18n="editWorld.btn_getin"></button>
+                <button class="editWorld-btn" id="editWorldBtnCreate" data-i18n="editWorld.btn_createone"></button>
+                <button class="editWorld-btn" id="editWorldBtnDelete" data-i18n="editWorld.btn_delete"></button>
+                <button class="editWorld-btn" id="editWorldBtnQuit" data-i18n="editWorld.btn_quit"></button>
+	            </div>
+            <div id="wolrdCreator">
+                <p id="createWorldTitle" data-i18n="worldCreation.title"></p>
+                <input id="worldNameInput" type="text" placeholder="New world">
 
-            <button class="gameDifficulty-btn" data-i18n="worldCreation.gameDifficulty0"></button>
+                <button class="gameDifficulty-btn" data-i18n="worldCreation.gameDifficulty0"></button>
 
-            <button class="create-btn" data-i18n="worldCreation.createButton"></button>
-            <button class="back-btn" data-i18n="worldCreation.cancelButton"></button>
+                <button class="create-btn" data-i18n="worldCreation.createButton"></button>
+                <button class="back-btn" data-i18n="worldCreation.cancelButton"></button>
+            </div>
         </div>
 
         <div id="toast">

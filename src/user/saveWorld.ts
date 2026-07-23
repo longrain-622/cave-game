@@ -6,7 +6,10 @@ import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";
 import { Slots } from "../gameRoom/gui/gameGUI/inventoryConfig.js";
 import { Chest, chests } from "../gameRoom/gui/gameGUI/chest.js";
 import { entityBlock_array, EntityBlock } from "../gameRoom/nature/entityBlock.js";
-import localforage from "localforage.js";
+import "localforage";
+
+// localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
+declare const localforage: any;
 
 //玩家的所有信息
 interface PlayerArchive {
@@ -155,7 +158,7 @@ export async function saveGameToLocal() {
 
 export async function loadGameFromLocal(): Promise<WorldArchive | null> {
     try {
-        const archive = await localforage.getItem<WorldArchive>('latestSave');
+        const archive = await localforage.getItem('latestSave');
         return archive;
     } catch (error) {
         console.error('cannot read your world!', error);

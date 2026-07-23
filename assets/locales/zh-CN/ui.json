@@ -27,6 +27,13 @@
     "rotateScreen": "游戏时翻转屏幕",
     "language": "界面语言"
   },
+  "editWorld": {
+    "title": "选择世界",
+    "btn_getin": "进入选中的世界",
+    "btn_createone": "创建新的世界",
+    "btn_delete": "删除",
+    "btn_quit": "取消"
+  },
   "worldCreation": {
     "title": "创建新的世界",
     "worldNamePlaceholder": "新的世界",

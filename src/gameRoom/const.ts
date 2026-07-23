@@ -4,7 +4,7 @@ import { ApioxObject } from "../apiox/dom.js";
 
 //世界的属性等
 const world_height: number = 256;
-const worldNameInput = new ApioxObject();
+const worldNameInput = new ApioxObject('worldNameInput');
 const worldName: string = worldNameInput.getProperty('value');
 
 const room: {
