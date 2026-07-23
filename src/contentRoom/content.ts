@@ -1,7 +1,8 @@
 import { getRandomInt, room } from '../gameRoom/const.js';
-import { ApioxObject, apiObjects } from '../apiox/dom.js';
+import { ApioxObject } from '../apiox/dom.js';
 import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
+import { worldwindow, create_btn } from './editWorld.js';
 
 export let _room_: number = 0; //当前房间
 
@@ -10,17 +11,13 @@ let choose: number = 0; //左边菜单所选的选项
 let last_choose: number = choose - 1;
 let face: number = 0; //背景图片移动状态，0左1右-1静止
 let timer: number = 0;
-let gameDifficulty: number = 0; //世界大小 0小1中2大3超大
-let gameDifficulties: string[] = []; //存储i18n的数组
 
 //获取元素
 export const gameRoom = new ApioxObject(null, 'GameRoom');
 export const content = new ApioxObject(null, 'content');
-const gameDifficulty_btn = new ApioxObject(null, 'gameDifficulty-btn');
 const starting = new ApioxObject('starting');
 const none = new ApioxObject('none');
 const setting = new ApioxObject('setting');
-const worldwindow = new ApioxObject('worldwindow');
 const lookTitle = new ApioxObject('lookTitle');
 const text1 = new ApioxObject('text1');
 const text2 = new ApioxObject('text2');
@@ -31,18 +28,10 @@ const viewText = new ApioxObject('viewText');
 //const whiteBlock1 = new ApioxObject('whiteBlock1');
 const whiteBlock2 = new ApioxObject('whiteBlock2');
 const starting_steve = new ApioxObject('starting_steve');
-const create_btn = new ApioxObject(null, 'create-btn');
-const back_btn = new ApioxObject(null, 'back-btn');
 export const toast = new ApioxObject('toast');
 export const toastText = new ApioxObject('toast_text');
 export const toastCancel = new ApioxObject('toast_cancel');
 export const toastSure = new ApioxObject('toast_sure');
-
-// editWorld 界面元素
-const editWorld = new ApioxObject('editWorld');
-const editWorldBtnQuit = new ApioxObject('editWorldBtnQuit');
-const editWorldBtnCreate = new ApioxObject('editWorldBtnCreate');
-export const wolrdCreator = new ApioxObject('wolrdCreator');
 
 //初始化游戏窗口 大小和显示
 content.domstyle('width', String(room.width) + 'px'); content.domstyle('height', String(room.height) + 'px');
@@ -60,7 +49,6 @@ bgimg.domstyle('top', '0');
 starting.hide();
 none.hide();
 setting.hide();
-worldwindow.hide();
 
 //点击任意空白处开始
 apioxEvent.listenGlobalOnce('click', (): void => {
@@ -78,40 +66,7 @@ apioxEvent.onKeyDown((e) => {
 starting_steve.on('click', (): void => {
     if(start === 1 && choose === 0) {worldwindow.show();}
 });
-back_btn.on('click', (): void => { wolrdCreator.hide(); editWorld.show(); }); //返回 editWorld
 create_btn.on('click', (): void => { _room_ = 1; gameRoom.show(); content.hide(); }); //进入游戏
-
-// editWorld 按钮事件
-editWorldBtnQuit.on('click', (): void => { worldwindow.hide(); }); //关闭世界窗口
-editWorldBtnCreate.on('click', (): void => { editWorld.hide(); wolrdCreator.show(); }); //进入创建世界界面
-
-function updateDifficultyTexts(): void {
-    gameDifficulties = [
-        (apiObjects.win as any).t('worldCreation.gameDifficulty0'),
-        (apiObjects.win as any).t('worldCreation.gameDifficulty1'),
-        (apiObjects.win as any).t('worldCreation.gameDifficulty2'),
-        (apiObjects.win as any).t('worldCreation.gameDifficulty3')
-    ];
-    // 刷新按钮上显示的文本 保持当前难度索引
-    if (gameDifficulties[gameDifficulty] !== undefined) {
-        gameDifficulty_btn.domProperty('textContent', gameDifficulties[gameDifficulty]);
-    }
-}
-apiObjects.win.addEventListener('i18nReady', () => { //监听国际化数据加载完成事件（由 i18n.ts 派发）
-    updateDifficultyTexts();
-});
-if ((apiObjects.win as any).t) { //如果 i18n 在 content.ts 执行前已经加载完成，则立即更新
-    updateDifficultyTexts();
-}
-gameDifficulty_btn.on('click', function() {
-    //难度按钮点击
-    gameDifficulty++;
-    if (gameDifficulty > 3) { gameDifficulty = 0; }
-    const newText: string = gameDifficulties[gameDifficulty];
-    if (newText !== undefined) {
-        gameDifficulty_btn.domProperty('textContent', newText);
-    }
-});
 
 //左边主菜单内容的选择
 startText.on('click', (): void => { if(start === 1){choose = 0;} });

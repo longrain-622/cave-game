@@ -9,7 +9,7 @@ import { entityBlock_array, EntityBlock } from "../gameRoom/nature/entityBlock.j
 import "localforage";
 
 // localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
-declare const localforage: any;
+declare const localforage: LocalForage;
 
 //玩家的所有信息
 interface PlayerArchive {
@@ -158,7 +158,7 @@ export async function saveGameToLocal() {
 
 export async function loadGameFromLocal(): Promise<WorldArchive | null> {
     try {
-        const archive = await localforage.getItem('latestSave');
+        const archive = await localforage.getItem<WorldArchive>('latestSave');
         return archive;
     } catch (error) {
         console.error('cannot read your world!', error);
