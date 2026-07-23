@@ -18,6 +18,7 @@ declare module 'pixi.js' {
     interface Container {
         sortableChildren: boolean;
         zIndex: number;
+        eventMode: string;
     };
 
     interface BaseTexture {

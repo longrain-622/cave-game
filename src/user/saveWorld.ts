@@ -11,6 +11,13 @@ import "localforage";
 // localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
 declare const localforage: LocalForage;
 
+//存储索引中用到的条目元信息
+interface SaveEntry {
+    key: string;
+    name: string;
+    lastTime: string;
+}
+
 //玩家的所有信息
 interface PlayerArchive {
     hp: number;
@@ -147,7 +154,20 @@ export function saveWorld(): WorldArchive {
 export async function saveGameToLocal() {
     try {
         const archive = saveWorld();
-        await localforage.setItem('latestSave', archive);
+        const key = 'save_' + (archive.name || 'UnnamedWorld');
+        await localforage.setItem(key, archive);
+
+        //更新存档索引
+        const index = await localforage.getItem<SaveEntry[]>('saveIndex') || [];
+        const existingIdx = index.findIndex(e => e.key === key);
+        const entry: SaveEntry = { key, name: archive.name, lastTime: archive.lastTime };
+        if (existingIdx >= 0) {
+            index[existingIdx] = entry;
+        } else {
+            index.push(entry);
+        }
+        await localforage.setItem('saveIndex', index);
+
         console.log('Game save Victory!');
         return true;
     } catch (error) {
@@ -156,12 +176,22 @@ export async function saveGameToLocal() {
     }
 }
 
-export async function loadGameFromLocal(): Promise<WorldArchive | null> {
+export async function loadGameFromLocal(key: string): Promise<WorldArchive | null> {
     try {
-        const archive = await localforage.getItem<WorldArchive>('latestSave');
+        const archive = await localforage.getItem<WorldArchive>(key);
         return archive;
     } catch (error) {
         console.error('cannot read your world!', error);
         return null;
+    }
+}
+
+/** 获取所有存档条目的元信息列表 */
+export async function getAllSaveEntries(): Promise<SaveEntry[]> {
+    try {
+        return await localforage.getItem<SaveEntry[]>('saveIndex') || [];
+    } catch (error) {
+        console.error('cannot read save index!', error);
+        return [];
     }
 }
