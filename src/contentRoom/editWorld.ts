@@ -1,6 +1,7 @@
 import { ApioxObject, apiObjects } from '../apiox/dom.js';
 import { apiMethod } from '../apiox/method.js';
 import { room } from '../gameRoom/const.js';
+import { contentTextStyle } from './content.js';
 import * as PIXI from 'pixi.js';
 import "localforage";
 
@@ -92,16 +93,17 @@ try {
         }
     };
 
+    // 与绘制有关的参数
     const ROW_MARGIN = 20;
-    const ROW_HEIGHT = 60;
+    const ROW_HEIGHT = 72;
     const ROW_GAP = 8;
     const TEXT_LEFT = 12;
-    const NAME_Y = 6;
-    const TIME_Y = 32;
-    const NAME_FONT_SIZE = 24;
-    const TIME_FONT_SIZE = 24;
+    const NAME_FONT_SIZE = 20;
+    const TIME_FONT_SIZE = 18;
+    const NAME_Y = ROW_HEIGHT - NAME_FONT_SIZE - TIME_FONT_SIZE - 6;
+    const TIME_Y = ROW_HEIGHT - TIME_FONT_SIZE - 2;
 
-    // --- 滚动条 ---
+    // 滚动条
     let scrollY = 0;
     let maxScroll = 0;
     const SB_W = 16;
@@ -185,14 +187,14 @@ try {
     //滚动条触摸控制
     {
         eventBg.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
-            if (maxScroll <= 0) return;
+            if (maxScroll <= 0) {return;}
             // 只处理直接点击在 eventBg 本身的情况（即点击空白区域）
-            if (event.target !== eventBg) return;
+            if (event.target !== eventBg) {return;}
 
             const x = event.global.x;
             const y = event.global.y;
             const sx = archiveApp.screen.width - SB_W - SB_M;
-            if (x < sx || x > sx + SB_W) return; // 不在滚动条轨道内
+            if (x < sx || x > sx + SB_W) {return;} // 不在滚动条轨道内
 
             const vh = archiveApp.screen.height;
             const totalH = ctr.children.length * (ROW_HEIGHT + ROW_GAP) + 8;
@@ -200,7 +202,7 @@ try {
             const thumbY = (scrollY / maxScroll) * (vh - thH);
 
             // 如果点击在滑块上则忽略（由滑块自己的拖拽处理）
-            if (y >= thumbY && y <= thumbY + thH) return;
+            if (y >= thumbY && y <= thumbY + thH) {return;}
 
             // 计算滚动比例并跳转
             const ratio = y / (vh - thH);
@@ -221,23 +223,17 @@ try {
             row.eventMode = 'static';
             row.cursor = 'pointer';
             row.position.set(ROW_MARGIN, y);
+            row.hitArea = new PIXI.Rectangle(0, 0, rowWidth, ROW_HEIGHT);
 
             const bg = new PIXI.Graphics(); //未选中时不绘制任何背景
             row.addChild(bg);
 
-            const nameText = new PIXI.Text(entry.name, {
-                fontFamily: 'Unifont',
-                fontSize: NAME_FONT_SIZE,
-                fill: '#ffffff',
-            });
+            const nameText = new PIXI.Text(entry.name, contentTextStyle(NAME_FONT_SIZE));
             nameText.position.set(TEXT_LEFT, NAME_Y);
             row.addChild(nameText);
 
-            const timeText = new PIXI.Text(entry.lastTime, {
-                fontFamily: 'Unifont',
-                fontSize: TIME_FONT_SIZE,
-                fill: '#aaaaaa',
-            });
+            const timeText = new PIXI.Text(entry.lastTime, contentTextStyle(TIME_FONT_SIZE));
+            timeText.style.fill = '#aaaaaa';
             timeText.position.set(TEXT_LEFT, TIME_Y);
             row.addChild(timeText);
 

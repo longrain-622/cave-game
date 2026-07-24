@@ -4,8 +4,18 @@ import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
 import { worldwindow, create_btn } from './editWorld.js';
 import { setWorldName } from '../gameRoom/const.js';
+import * as PIXI from 'pixi.js';
 
 export let _room_: number = 0; //当前房间
+
+export function contentTextStyle(fontSize: number=20): PIXI.TextStyle {
+    return new PIXI.TextStyle({
+        fontFamily: 'Unifont',
+        fontSize: fontSize,
+        fill: '#ffffff',
+        padding: 10,
+    });
+}
 
 let start: number = 0;
 let choose: number = 0; //左边菜单所选的选项
