@@ -3,6 +3,7 @@ import { ApioxObject } from '../apiox/dom.js';
 import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
 import { worldwindow, create_btn } from './editWorld.js';
+import { setWorldName } from '../gameRoom/const.js';
 
 export let _room_: number = 0; //当前房间
 
@@ -32,6 +33,7 @@ export const toast = new ApioxObject('toast');
 export const toastText = new ApioxObject('toast_text');
 export const toastCancel = new ApioxObject('toast_cancel');
 export const toastSure = new ApioxObject('toast_sure');
+const worldNameInput = new ApioxObject('worldNameInput');
 
 //初始化游戏窗口 大小和显示
 content.domstyle('width', String(room.width) + 'px'); content.domstyle('height', String(room.height) + 'px');
@@ -66,7 +68,11 @@ apioxEvent.onKeyDown((e) => {
 starting_steve.on('click', (): void => {
     if(start === 1 && choose === 0) {worldwindow.show();}
 });
-create_btn.on('click', (): void => { _room_ = 1; gameRoom.show(); content.hide(); }); //进入游戏
+create_btn.on('click', (): void => {
+    const inputVal: string = worldNameInput.getProperty('value');
+    if (inputVal !== '') { setWorldName(inputVal); }
+    _room_ = 1; gameRoom.show(); content.hide();
+}); //进入游戏
 
 //左边主菜单内容的选择
 startText.on('click', (): void => { if(start === 1){choose = 0;} });

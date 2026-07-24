@@ -11,11 +11,14 @@ declare const localforage: LocalForage;
 const gameDifficulty_btn = new ApioxObject(null, 'gameDifficulty-btn');
 let gameDifficulty: number = 0;
 let gameDifficulties: string[] = [];
+let selectedKey: string | null = null;
+let archiveRefresh: (() => Promise<void>) | null = null;
 
 const worldwindow = new ApioxObject('worldwindow');
 const editWorld = new ApioxObject('editWorld');
 const editWorldBtnQuit = new ApioxObject('editWorldBtnQuit');
 const editWorldBtnCreate = new ApioxObject('editWorldBtnCreate');
+const editWorldBtnDelete = new ApioxObject('editWorldBtnDelete');
 export const wolrdCreator = new ApioxObject('wolrdCreator');
 const create_btn = new ApioxObject(null, 'create-btn');
 const back_btn = new ApioxObject(null, 'back-btn');
@@ -80,6 +83,15 @@ try {
     const ctr = new PIXI.Container();
     archiveApp.stage.addChild(ctr);
 
+    archiveRefresh = async () => {
+        try {
+            const entries = await localforage.getItem<Array<{ key: string; name: string; lastTime: string }>>('saveIndex') || [];
+            renderArchiveList(entries);
+        } catch (e) {
+            console.warn('editworld.ts cannot refresh world list', e);
+        }
+    };
+
     const ROW_MARGIN = 20;
     const ROW_HEIGHT = 60;
     const ROW_GAP = 8;
@@ -88,6 +100,96 @@ try {
     const TIME_Y = 32;
     const NAME_FONT_SIZE = 24;
     const TIME_FONT_SIZE = 24;
+
+    // --- 滚动条 ---
+    let scrollY = 0;
+    let maxScroll = 0;
+    const SB_W = 8;
+    const SB_M = 4;
+
+    // 全屏透明背景用于捕获空白区域的鼠标事件
+    const eventBg = new PIXI.Graphics();
+    eventBg.beginFill(0x000000, 0.001);
+    eventBg.drawRect(0, 0, archiveApp.screen.width, archiveApp.screen.height);
+    eventBg.endFill();
+    eventBg.eventMode = 'static';
+    eventBg.cursor = 'default';
+    archiveApp.stage.addChildAt(eventBg, 0);
+
+    // 滚动条图形（保持在最上层）
+    const scrollTrack = new PIXI.Graphics();
+    const scrollThumb = new PIXI.Graphics();
+    scrollTrack.zIndex = 100;
+    scrollThumb.zIndex = 100;
+    archiveApp.stage.addChild(scrollTrack);
+    archiveApp.stage.addChild(scrollThumb);
+
+    // 拖拽状态
+    let dragData: { startY: number; startScroll: number } | null = null;
+
+    function updateScrollbar(): void {
+        const vh = archiveApp.screen.height;
+        const totalH = ctr.children.length * (ROW_HEIGHT + ROW_GAP) + 8;
+        maxScroll = Math.max(0, totalH - vh);
+
+        scrollTrack.clear();
+        scrollThumb.clear();
+        scrollThumb.eventMode = 'none';
+
+        if (maxScroll <= 0) return;
+
+        const sx = archiveApp.screen.width - SB_W - SB_M;
+
+        // 轨道
+        scrollTrack.beginFill(0x222222, 0.4);
+        scrollTrack.drawRect(sx, 0, SB_W, vh);
+        scrollTrack.endFill();
+
+        // 滑块
+        const thH = Math.max(24, vh * (vh / totalH));
+        const thY = (scrollY / maxScroll) * (vh - thH);
+        scrollThumb.beginFill(0x999999, 0.8);
+        scrollThumb.drawRoundedRect(sx, thY, SB_W, thH, 2);
+        scrollThumb.endFill();
+        scrollThumb.eventMode = 'static';
+        scrollThumb.cursor = 'pointer';
+
+        scrollThumb.off('pointerdown');
+        scrollThumb.on('pointerdown', (e: any) => {
+            dragData = { startY: e.globalY, startScroll: scrollY };
+            e.stopPropagation();
+        });
+    }
+
+    // 滚轮滚动（内容区域 + 空白区域）
+    function handleWheel(e: any): void {
+        if (maxScroll <= 0) return;
+        const step = e.deltaY > 0 ? ROW_HEIGHT : -ROW_HEIGHT;
+        scrollY = Math.max(0, Math.min(maxScroll, scrollY + step));
+        ctr.position.y = -Math.floor(scrollY);
+        updateScrollbar();
+    }
+
+    ctr.eventMode = 'static';
+    ctr.on('wheel', handleWheel);
+    eventBg.on('wheel', handleWheel);
+
+    // 拖拽滑块
+    archiveApp.stage.on('pointermove', (e: any) => {
+        if (!dragData) return;
+        const vh = archiveApp.screen.height;
+        const totalH = ctr.children.length * (ROW_HEIGHT + ROW_GAP) + 8;
+        const maxS = Math.max(0, totalH - vh);
+        if (maxS <= 0) return;
+        const thH = Math.max(24, vh * (vh / totalH));
+        const dy = e.globalY - dragData.startY;
+        scrollY = Math.max(0, Math.min(maxS, dragData.startScroll + (dy / (vh - thH)) * maxS));
+        ctr.position.y = -Math.floor(scrollY);
+        updateScrollbar();
+    });
+
+    archiveApp.stage.on('pointerup', () => { dragData = null; });
+    archiveApp.stage.on('pointerupoutside', () => { dragData = null; });
 
     function renderArchiveList(entries: Array<{ key: string; name: string; lastTime: string }>): void {
         ctr.removeChildren();
@@ -128,6 +230,12 @@ try {
             ctr.addChild(row);
             y += ROW_HEIGHT + ROW_GAP;
         }
+        // 滚动状态同步
+        const totalH = ctr.children.length * (ROW_HEIGHT + ROW_GAP) + 8;
+        const maxS = Math.max(0, totalH - archiveApp.screen.height);
+        scrollY = Math.min(scrollY, maxS);
+        ctr.position.y = -Math.floor(scrollY);
+        updateScrollbar();
     }
 
     //异步初始化：加载字体 + 读取存档
@@ -146,6 +254,7 @@ try {
     })();
 
     function selectArchive(key: string, ctr: PIXI.Container): void {
+        selectedKey = key;
         for (const child of ctr.children) {
             const row = child as PIXI.Container;
             const bg = (row as any)._bg as PIXI.Graphics;
@@ -156,7 +265,7 @@ try {
             if (isSelected) {
                 //选中态：深色底色 + 厚黑边框
                 bg.lineStyle(2, 0x808080, 1);
-                bg.beginFill(0x000000, 0.3);
+                bg.beginFill(0x000000, 0.4);
                 bg.drawRect(0, 0, rw, ROW_HEIGHT);
                 bg.endFill();
             }
@@ -166,5 +275,19 @@ try {
 } catch (e) {
     console.warn('editworld.ts PIXI init failed, archive list unavailable', e);
 }
+
+editWorldBtnDelete.on('click', async () => {
+    if (!selectedKey) return;
+    try {
+        await localforage.removeItem(selectedKey);
+        const index = await localforage.getItem<Array<{ key: string; name: string; lastTime: string }>>('saveIndex') || [];
+        const updated = index.filter(e => e.key !== selectedKey);
+        await localforage.setItem('saveIndex', updated);
+        selectedKey = null;
+        if (archiveRefresh) {await archiveRefresh();}
+    } catch (e) {
+        console.warn('editworld.ts delete world failed', e);
+    }
+});
 
 export { worldwindow, create_btn };

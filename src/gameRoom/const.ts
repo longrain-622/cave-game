@@ -1,11 +1,10 @@
 import { apioxTime } from "../apiox/time.js";
 import { apioxEvent, ApioxKeyboardEvent, apioxEventBus } from "../apiox/event.js";
-import { ApioxObject } from "../apiox/dom.js";
 
 //世界的属性等
 const world_height: number = 256;
-const worldNameInput = new ApioxObject('worldNameInput');
-const worldName: string = worldNameInput.getProperty('value');
+let worldName: string = "New World";
+export function setWorldName(val: string) { worldName = val; }
 
 const room: {
     width: number; height: number

@@ -133,7 +133,7 @@ interface ApioxDate {
 export function getDate(): ApioxDate {
     const theDate = new Date();
     return {
-        year: theDate.getFullYear(), month: theDate.getMonth(), day: theDate.getDay(),
+        year: theDate.getFullYear(), month: theDate.getMonth() + 1, day: theDate.getDate(),
         hour: theDate.getHours(), minute: theDate.getMinutes(), second: theDate.getSeconds(),
     };
 }
