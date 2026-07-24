@@ -61,6 +61,12 @@ declare module 'pixi.js' {
         add(alias: string, src: string): void;
         add(assets: Array<{ alias: string; src: string }>): void;
     };
+
+    interface FederatedPointerEvent {
+        target: PIXI.Graphics;
+        global: {x: number; y: number};
+        stopPropagation: Function;
+    }
 }
 
 declare namespace PIXI {

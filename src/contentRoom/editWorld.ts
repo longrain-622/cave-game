@@ -40,13 +40,13 @@ function updateDifficultyTexts(): void {
         gameDifficulty_btn.domProperty('textContent', gameDifficulties[gameDifficulty]);
     }
 }
-apiObjects.win.addEventListener('i18nReady', () => {
+apiObjects.win.addEventListener('i18nReady', (): void => {
     updateDifficultyTexts();
 });
 if ((apiObjects.win as any).t) {
     updateDifficultyTexts();
 }
-gameDifficulty_btn.on('click', function() {
+gameDifficulty_btn.on('click', (): void => {
     gameDifficulty++;
     if (gameDifficulty > 3) { gameDifficulty = 0; }
     const newText: string = gameDifficulties[gameDifficulty];
@@ -104,8 +104,8 @@ try {
     // --- 滚动条 ---
     let scrollY = 0;
     let maxScroll = 0;
-    const SB_W = 8;
-    const SB_M = 4;
+    const SB_W = 16;
+    const SB_M = 0;
 
     // 全屏透明背景用于捕获空白区域的鼠标事件
     const eventBg = new PIXI.Graphics();
@@ -117,11 +117,8 @@ try {
     archiveApp.stage.addChildAt(eventBg, 0);
 
     // 滚动条图形（保持在最上层）
-    const scrollTrack = new PIXI.Graphics();
     const scrollThumb = new PIXI.Graphics();
-    scrollTrack.zIndex = 100;
     scrollThumb.zIndex = 100;
-    archiveApp.stage.addChild(scrollTrack);
     archiveApp.stage.addChild(scrollThumb);
 
     // 拖拽状态
@@ -132,24 +129,18 @@ try {
         const totalH = ctr.children.length * (ROW_HEIGHT + ROW_GAP) + 8;
         maxScroll = Math.max(0, totalH - vh);
 
-        scrollTrack.clear();
         scrollThumb.clear();
         scrollThumb.eventMode = 'none';
 
-        if (maxScroll <= 0) return;
+        if (maxScroll <= 0) {return;}
 
         const sx = archiveApp.screen.width - SB_W - SB_M;
-
-        // 轨道
-        scrollTrack.beginFill(0x222222, 0.4);
-        scrollTrack.drawRect(sx, 0, SB_W, vh);
-        scrollTrack.endFill();
 
         // 滑块
         const thH = Math.max(24, vh * (vh / totalH));
         const thY = (scrollY / maxScroll) * (vh - thH);
         scrollThumb.beginFill(0x999999, 0.8);
-        scrollThumb.drawRoundedRect(sx, thY, SB_W, thH, 2);
+        scrollThumb.drawRect(sx, thY, SB_W, thH);
         scrollThumb.endFill();
         scrollThumb.eventMode = 'static';
         scrollThumb.cursor = 'pointer';
@@ -163,7 +154,7 @@ try {
 
     // 滚轮滚动（内容区域 + 空白区域）
     function handleWheel(e: any): void {
-        if (maxScroll <= 0) return;
+        if (maxScroll <= 0) {return;}
         const step = e.deltaY > 0 ? ROW_HEIGHT : -ROW_HEIGHT;
         scrollY = Math.max(0, Math.min(maxScroll, scrollY + step));
         ctr.position.y = -Math.floor(scrollY);
@@ -176,11 +167,11 @@ try {
 
     // 拖拽滑块
     archiveApp.stage.on('pointermove', (e: any) => {
-        if (!dragData) return;
+        if (!dragData) {return;}
         const vh = archiveApp.screen.height;
         const totalH = ctr.children.length * (ROW_HEIGHT + ROW_GAP) + 8;
         const maxS = Math.max(0, totalH - vh);
-        if (maxS <= 0) return;
+        if (maxS <= 0) {return;}
         const thH = Math.max(24, vh * (vh / totalH));
         const dy = e.globalY - dragData.startY;
         scrollY = Math.max(0, Math.min(maxS, dragData.startScroll + (dy / (vh - thH)) * maxS));
@@ -190,6 +181,35 @@ try {
 
     archiveApp.stage.on('pointerup', () => { dragData = null; });
     archiveApp.stage.on('pointerupoutside', () => { dragData = null; });
+
+    //滚动条触摸控制
+    {
+        eventBg.on('pointerdown', (event: PIXI.FederatedPointerEvent) => {
+            if (maxScroll <= 0) return;
+            // 只处理直接点击在 eventBg 本身的情况（即点击空白区域）
+            if (event.target !== eventBg) return;
+
+            const x = event.global.x;
+            const y = event.global.y;
+            const sx = archiveApp.screen.width - SB_W - SB_M;
+            if (x < sx || x > sx + SB_W) return; // 不在滚动条轨道内
+
+            const vh = archiveApp.screen.height;
+            const totalH = ctr.children.length * (ROW_HEIGHT + ROW_GAP) + 8;
+            const thH = Math.max(24, vh * (vh / totalH));
+            const thumbY = (scrollY / maxScroll) * (vh - thH);
+
+            // 如果点击在滑块上则忽略（由滑块自己的拖拽处理）
+            if (y >= thumbY && y <= thumbY + thH) return;
+
+            // 计算滚动比例并跳转
+            const ratio = y / (vh - thH);
+            scrollY = Math.max(0, Math.min(maxScroll, ratio * maxScroll));
+            ctr.position.y = -Math.floor(scrollY);
+            updateScrollbar();
+            event.stopPropagation(); // 阻止进一步冒泡（可选）
+        });
+    }
 
     function renderArchiveList(entries: Array<{ key: string; name: string; lastTime: string }>): void {
         ctr.removeChildren();
@@ -277,7 +297,7 @@ try {
 }
 
 editWorldBtnDelete.on('click', async () => {
-    if (!selectedKey) return;
+    if (!selectedKey) {return;}
     try {
         await localforage.removeItem(selectedKey);
         const index = await localforage.getItem<Array<{ key: string; name: string; lastTime: string }>>('saveIndex') || [];
