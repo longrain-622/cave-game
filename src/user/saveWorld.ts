@@ -64,9 +64,26 @@ interface WorldArchive {
     entityBlocks: EntityBlockArchive[];
 }
 
-export function saveWorld(): WorldArchive {
+function isSameName(worldName: string, existingNames?: Set<string>): string {
+    if (existingNames && existingNames.has(worldName)) {
+        let counter = 1;
+        let newName = worldName + ` - copy (${counter})`;
+        while (existingNames.has(newName)) {
+            counter++;
+            newName = worldName + ` - copy (${counter})`;
+        }
+        return newName;
+    } else {
+        return worldName;
+    }
+}
+
+function saveWorld(existingNames?: Set<string>): WorldArchive {
+    // 防重名机制：如果 worldName 已存在于 existingNames 中，自动添加 " - copy"
+    const resolvedName = isSameName(worldName, existingNames);
+
     const targetWorld: WorldArchive = {
-        name: '',
+        name: resolvedName,
         lastTime: '',
         world: world,
         player: { hp: 20, x: 256, y: 256 },
@@ -75,7 +92,6 @@ export function saveWorld(): WorldArchive {
         chests: [],
         entityBlocks: [],
     };
-    targetWorld.name = worldName;
 
     //保存的时间
     const nowDate = getDate();
@@ -86,8 +102,8 @@ export function saveWorld(): WorldArchive {
 
     //玩家信息
     targetWorld.player.hp = player.hp;
-    targetWorld.player.x = player.y;
     targetWorld.player.x = player.x;
+    targetWorld.player.y = player.y;
 
     //动物信息
     for (let i = 0; i < animalArray.length; i++) {
@@ -153,12 +169,16 @@ export function saveWorld(): WorldArchive {
 
 export async function saveGameToLocal() {
     try {
-        const archive = saveWorld();
+        // 读取已存在的存档索引，收集所有已用的名字（用于防重名检测）
+        let index = await localforage.getItem<SaveEntry[]>('saveIndex') || [];
+        const existingNames = new Set(index.map(e => e.name));
+
+        const archive = saveWorld(existingNames);
         const key = 'save_' + (archive.name || 'UnnamedWorld');
         await localforage.setItem(key, archive);
 
         //更新存档索引
-        const index = await localforage.getItem<SaveEntry[]>('saveIndex') || [];
+        index = await localforage.getItem<SaveEntry[]>('saveIndex') || [];
         const existingIdx = index.findIndex(e => e.key === key);
         const entry: SaveEntry = { key, name: archive.name, lastTime: archive.lastTime };
         if (existingIdx >= 0) {
