@@ -20,15 +20,15 @@ const editWorld = new ApioxObject('editWorld');
 const editWorldBtnQuit = new ApioxObject('editWorldBtnQuit');
 const editWorldBtnCreate = new ApioxObject('editWorldBtnCreate');
 const editWorldBtnDelete = new ApioxObject('editWorldBtnDelete');
-export const wolrdCreator = new ApioxObject('wolrdCreator');
+export const worldCreator = new ApioxObject('worldCreator');
 const create_btn = new ApioxObject(null, 'create-btn');
 const back_btn = new ApioxObject(null, 'back-btn');
 
 worldwindow.hide();
 
-back_btn.on('click', (): void => { wolrdCreator.hide(); editWorld.show(); });
+back_btn.on('click', (): void => { worldCreator.hide(); editWorld.show(); });
 editWorldBtnQuit.on('click', (): void => { worldwindow.hide(); });
-editWorldBtnCreate.on('click', (): void => { editWorld.hide(); wolrdCreator.show(); });
+editWorldBtnCreate.on('click', (): void => { editWorld.hide(); worldCreator.show(); });
 
 function updateDifficultyTexts(): void {
     gameDifficulties = [
