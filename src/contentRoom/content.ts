@@ -89,7 +89,7 @@ editWorldBtnGetin.on('click', async (): Promise<void> => {
     }
     setWorldName(targetWorldName);
 
-    const { loadGameFromLocal } = await import('../user/saveWorld.js');
+    const { loadGameFromLocal } = await import('../user/loadWorld.js');
     const { setReadingWorld } = await import('../gameRoom/gameState.js');
     const readingWorld = await loadGameFromLocal('save_' + targetWorldName);
     if (readingWorld !== null) { setReadingWorld(readingWorld); }
