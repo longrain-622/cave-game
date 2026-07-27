@@ -1,8 +1,9 @@
-import { world_height, getRandomInt, pushChunkToWorld, chunk, loadWorld } from "../const.js";
+import { world_height, getRandomInt, pushChunkToWorld, chunk, loadWorld, sealevel } from "../const.js";
 import { player } from "../player.js";
 import { eventBus } from "../others/eventBus.js";
 import { idOfBlock } from "./blockMecha/blockMechanism.js";
 import { readingWorld, coverWhenSave } from "../gameState.js";
+import { notNullUndefined } from "../../constants/utils.js";
 
 // 温度类型常量
 const TEMP = {
@@ -17,7 +18,15 @@ const TEMP = {
 }
 
 let lowest_point: number = 0; //地形最低点的纵坐标
-if (coverWhenSave) {lowest_point = readingWorld.lowest_point;}
+if (coverWhenSave && notNullUndefined(readingWorld)) {
+    if ((!Number.isNaN(readingWorld.lowest_point)) && notNullUndefined(readingWorld.lowest_point)) {
+        lowest_point = readingWorld.lowest_point;
+        console.log('read the variable lowest_point ok');
+    } else {
+        lowest_point = sealevel - 16;
+        console.log('cannot read the variable lowest_point');
+    }
+}
 
 //佩林噪声
 class PerlinNoise {
