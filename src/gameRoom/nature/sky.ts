@@ -3,6 +3,8 @@ import { room } from "../../constants/generic.js";
 import { checkBlock } from "../rendering.js";
 import { player } from "../player.js";
 import { apioxTime } from "../../apiox/time.js";
+import { coverWhenSave, readingWorld } from "../gameState.js";
+import { notNullUndefined } from "../../constants/utils.js";
 
 // 时间常量 单位：秒
 //const DAY_LENGTH: number = 1440; // 一天总秒数
@@ -184,16 +186,25 @@ const clock: {timer: number; daylong: number; addTimer: VoidFunction} = {
         if (!sky_isDrawing) {return;}
 
         this.timer++;
-        if(this.timer >= this.daylong) {this.timer = 0;}
+        if (this.timer >= this.daylong) {this.timer = 0;}
 
         //定时渲染背景
-        if(this.timer % 10 === 0) {
+        if (this.timer % 10 === 0) {
             offCtx.clearRect(0, 0, room.width, room.height);
             bg_a.drawBgBlocks(0, -128, 0.4);
             bg_b.drawBgBlocks(0, 0);
         }
     }
 };
+
+// 读档时恢复 clock.timer
+if (coverWhenSave && notNullUndefined(readingWorld)) {
+    if ((!Number.isNaN(readingWorld.skyTimer)) && notNullUndefined(readingWorld.skyTimer)) {
+        clock.timer = readingWorld.skyTimer;
+    } else {
+        clock.timer = 128;
+    }
+}
 
 class Celestials {
     x: number; y: number;
@@ -347,4 +358,4 @@ export function skyLoop(): void {
     drawTiledBackground(ctx_sky, offCanvas, offsetX, offsetY + 128);
 }
 
-export { ctx_sky, canvas_sky, initSkyBackground };
+export { ctx_sky, canvas_sky, initSkyBackground, clock };

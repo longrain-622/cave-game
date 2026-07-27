@@ -50,6 +50,7 @@ interface WorldArchive {
     inventory: InventoryArchive;
     chests: ChestAichive[];
     entityBlocks: EntityBlockArchive[];
+    skyTimer: number;
 }
 
 export { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive }
