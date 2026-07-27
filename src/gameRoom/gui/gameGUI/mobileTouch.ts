@@ -45,8 +45,7 @@ export function initTouchButtons(app: PIXI.Application) {
         container.y = y;
         container.zIndex = 3;
         container.hitArea = new PIXI.Rectangle(0, 0, sizePx, sizePx);
-        container.interactive = true;
-        container.buttonMode = true;
+        container.eventMode = 'static';
         container.cursor = 'pointer';
 
         //背景

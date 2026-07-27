@@ -1,7 +1,8 @@
 import { ApioxObject, apiObjects } from '../apiox/dom.js';
 import { apiMethod } from '../apiox/method.js';
-import { room } from '../gameRoom/const.js';
-import { contentTextStyle } from './content.js';
+import { room } from '../constants/generic.js';
+import { textStyle1 } from '../constants/pixiStyles.js';
+import { ensureAssetsInit } from '../constants/pixiAssets.js';
 import * as PIXI from 'pixi.js';
 import "localforage";
 
@@ -228,11 +229,11 @@ try {
             const bg = new PIXI.Graphics(); //未选中时不绘制任何背景
             row.addChild(bg);
 
-            const nameText = new PIXI.Text(entry.name, contentTextStyle(NAME_FONT_SIZE));
+            const nameText = new PIXI.Text(entry.name, textStyle1(NAME_FONT_SIZE));
             nameText.position.set(TEXT_LEFT, NAME_Y);
             row.addChild(nameText);
 
-            const timeText = new PIXI.Text(entry.lastTime, contentTextStyle(TIME_FONT_SIZE));
+            const timeText = new PIXI.Text(entry.lastTime, textStyle1(TIME_FONT_SIZE));
             timeText.style.fill = '#aaaaaa';
             timeText.position.set(TEXT_LEFT, TIME_Y);
             row.addChild(timeText);
@@ -257,6 +258,7 @@ try {
     //异步初始化：加载字体 + 读取存档
     (async () => {
         try {
+            await ensureAssetsInit();
             await PIXI.Assets.load('/assets/fonts/unifont.ttf');
         } catch (e) {
             console.warn('editworld.ts cannot load Unifont ttf', e);
@@ -305,5 +307,17 @@ editWorldBtnDelete.on('click', async () => {
         console.warn('editworld.ts delete world failed', e);
     }
 });
+
+/** 返回当前正在被选中世界的名称，若无选中则返回 null */
+export async function getSelectedWorldName(): Promise<string | null> {
+    if (!selectedKey) {return null;}
+    try {
+        const entries = await localforage.getItem<Array<{ key: string; name: string; lastTime: string }>>('saveIndex') || [];
+        const entry = entries.find(e => e.key === selectedKey);
+        return entry ? entry.name : null;
+    } catch {
+        return null;
+    }
+}
 
 export { worldwindow, create_btn };

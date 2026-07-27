@@ -6,65 +6,18 @@ import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";
 import { Slots } from "../gameRoom/gui/gameGUI/inventoryConfig.js";
 import { Chest, chests } from "../gameRoom/gui/gameGUI/chest.js";
 import { entityBlock_array, EntityBlock } from "../gameRoom/nature/entityBlock.js";
+import { lowest_point } from "../gameRoom/nature/createWorld.js";
+import { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive } from "../types/worldArchive.js";
 import "localforage";
 
 // localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
 declare const localforage: LocalForage;
 
-//存储索引中用到的条目元信息
-interface SaveEntry {
-    key: string;
-    name: string;
-    lastTime: string;
-}
+/*
+    key 是存档在存储中的完整键名，通常格式为 "save_<世界名称>"（例如 "save_MyWorld"）。
+*/
 
-//玩家的所有信息
-interface PlayerArchive {
-    hp: number;
-    x: number; y: number;
-}
-
-//单个动物的信息
-interface AnimalArchive {
-    type: number;
-    x: number; y: number; hp: number;
-}
-
-interface SlotMessage {
-    item: number; num: number;
-    durability: number;
-}
-
-//玩家背包的信息
-interface InventoryArchive {
-    items: SlotMessage[];
-}
-
-interface ChestAichive {
-    world_x: number; world_y: number;
-    fold: SlotMessage[];
-}
-
-interface EntityBlockArchive {
-    id: number;
-    world_x: number; world_y: number;
-    x: number; y: number;
-    vsp: number; timer: number;
-}
-
-//整个世界的信息
-interface WorldArchive {
-    name: string;
-    lastTime: string;
-    world: number[][];
-    player: PlayerArchive;
-    animals: AnimalArchive[];
-    inventory: InventoryArchive;
-    chests: ChestAichive[];
-    entityBlocks: EntityBlockArchive[];
-}
-
-function isSameName(worldName: string, existingNames?: Set<string>): string {
+function checkSameName(worldName: string, existingNames?: Set<string>): string {
     if (existingNames && existingNames.has(worldName)) {
         let counter = 1;
         let newName = worldName + ` - copy (${counter})`;
@@ -78,14 +31,17 @@ function isSameName(worldName: string, existingNames?: Set<string>): string {
     }
 }
 
-function saveWorld(existingNames?: Set<string>): WorldArchive {
+function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
     // 防重名机制：如果 worldName 已存在于 existingNames 中，自动添加 " - copy"
-    const resolvedName = isSameName(worldName, existingNames);
+    let resolvedName;
+    if(cover) {resolvedName = worldName;}
+    else {resolvedName = checkSameName(worldName, existingNames);}
 
     const targetWorld: WorldArchive = {
         name: resolvedName,
         lastTime: '',
         world: world,
+        lowest_point: lowest_point,
         player: { hp: 20, x: 256, y: 256 },
         animals: [],
         inventory: { items: [] },
@@ -167,13 +123,13 @@ function saveWorld(existingNames?: Set<string>): WorldArchive {
     return targetWorld;
 }
 
-export async function saveGameToLocal() {
+export async function saveGameToLocal(cover: boolean=false) {
     try {
         // 读取已存在的存档索引，收集所有已用的名字（用于防重名检测）
         let index = await localforage.getItem<SaveEntry[]>('saveIndex') || [];
         const existingNames = new Set(index.map(e => e.name));
 
-        const archive = saveWorld(existingNames);
+        const archive = saveWorld(cover, existingNames);
         const key = 'save_' + (archive.name || 'UnnamedWorld');
         await localforage.setItem(key, archive);
 

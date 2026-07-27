@@ -1,9 +1,12 @@
-import { world_height, room, world, chunk, place_meeting, enableKeyDoubleClickDetection } from './const.js';
+import { world_height, world, chunk, place_meeting, enableKeyDoubleClickDetection } from './const.js';
+import { room } from '../constants/generic.js';
 import { uistate } from './gui/uiState.js';
 import { mouse } from './mouse.js';
 import { eventBus } from './others/eventBus.js';
 import { app } from './rendering.js';
 import './others/audioManager.js';
+import { WorldArchive } from '../types/worldArchive.js';
+import { readingWorld, coverWhenSave } from './gameState.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent } from '../apiox/event.js';
 
@@ -42,11 +45,19 @@ class Players {
         };
     }
 
+    initPlayer(readingWorld: WorldArchive): void {
+        if (readingWorld !== null) {
+            this.hp = readingWorld.player.hp;
+            this.x = readingWorld.player.x;
+            this.y = readingWorld.player.y;
+        }
+    }
+
     initXY(): void { //初始化玩家坐标,在createWorld.js中调用
         this.x = chunk.num * chunk.width * 64 / 2;
 
         let i: number = 0;
-        while(world[i][Math.floor(this.x / 64)] === -1) {i++;}
+        while (world[i][Math.floor(this.x / 64)] === -1) {i++;}
         this.y = i*64 - 256;
     }
 
@@ -56,6 +67,7 @@ class Players {
     }
 }
 const player: Players = new Players();
+if (coverWhenSave) {player.initPlayer(readingWorld);}
 
 // 初始化 Pixi 相关资源（应在 Pixi Application 创建后调用）
 const baseTexture = PIXI.BaseTexture.from('assets/images/games/player/players.png');

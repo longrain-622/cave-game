@@ -2,7 +2,7 @@ import { player } from "../../player.js";
 import { gui_isDrawing, deathContainer } from "./inventory.js";
 import { img_gui } from "./inventoryConfig.js";
 import { genericTextStyle } from "../../rendering.js";
-import { room } from "../../const.js";
+import { room } from "../../../constants/generic.js";
 import { apiObjects } from "../../../apiox/dom.js";
 import { apioxEvent } from "../../../apiox/event.js";
 import * as PIXI from 'pixi.js';
@@ -83,8 +83,7 @@ function initDeathUI(): void {
     deathPixi.buttonSprite.width = buttonWidth;
     deathPixi.buttonSprite.height = buttonHeight;
     deathPixi.buttonSprite.position.set(btnX, btnY);
-    deathPixi.buttonSprite.interactive = true;
-    deathPixi.buttonSprite.buttonMode = true;
+    deathPixi.buttonSprite.eventMode = 'static';
     deathContainer.addChild(deathPixi.buttonSprite);
 
     // 按钮文字

@@ -4,7 +4,7 @@ import { reloadPage } from "../../../apiox/method.js";
 import { saveGameToLocal } from "../../../user/saveWorld.js";
 import { lang } from "../../../others/i18n.js";
 import { guiApp } from "../application.js";
-import { room } from "../../const.js";
+import { room } from "../../../constants/generic.js";
 import { buttonTextures } from "../application.js";
 import { genericTextStyle } from "../../rendering.js";
 import { uistate } from "../uiState.js";

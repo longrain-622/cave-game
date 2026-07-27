@@ -1,4 +1,5 @@
-import { room, world_height, getRandomInt, chunk } from "../const.js";
+import { world_height, getRandomInt, chunk } from "../const.js";
+import { room } from "../../constants/generic.js";
 import { checkBlock } from "../rendering.js";
 import { player } from "../player.js";
 import { apioxTime } from "../../apiox/time.js";

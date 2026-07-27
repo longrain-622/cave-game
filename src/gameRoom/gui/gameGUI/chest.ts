@@ -2,7 +2,8 @@ import { img_gui, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from
 import { handleBackpackClick, handleBackpackContextMenu, inventory, setSelectedIndex, updateSelectingItem, guiContainer } from './inventory.js';
 import { genericTextStyle, blockTextures } from '../../rendering.js';
 import { itemTextures } from '../../dropped/items.js';
-import { getRandomInt, room, world } from '../../const.js';
+import { getRandomInt, world } from '../../const.js';
+import { room } from '../../../constants/generic.js';
 import { mouse } from '../../mouse.js';
 import { uistate } from '../uiState.js';
 import { idOfBlock } from '../../nature/blockMecha/blockMechanism.js';

@@ -1,5 +1,6 @@
 //rendering.ts
-import { room, isOutOfBounds, world } from "./const.js";
+import { isOutOfBounds, world } from "./const.js";
+import { room } from "../constants/generic.js";
 import { player } from "./player.js";
 import { initSkyBackground } from "./nature/sky.js";
 import { mouse } from "./mouse.js";

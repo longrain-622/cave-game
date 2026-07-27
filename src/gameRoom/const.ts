@@ -1,17 +1,11 @@
 import { apioxTime } from "../apiox/time.js";
 import { apioxEvent, ApioxKeyboardEvent, apioxEventBus } from "../apiox/event.js";
+import { room } from "../constants/generic.js";
 
 //世界的属性等
 const world_height: number = 256;
 let worldName: string = "New World";
 export function setWorldName(val: string) { worldName = val; }
-
-const room: {
-    width: number; height: number
-} = {
-    width: 1280, height: 720,
-    //1280*720px
-}
 
 const chunk: {
     width: number; start_x: number;
@@ -24,6 +18,9 @@ const chunk: {
 }
 
 let world: number[][] = Array.from({ length: world_height }, (): number[] => []);
+export function loadWorld(theWorld: number[][]): void {
+    world = theWorld;
+}
 const sealevel: number = world_height / 2;
 
 //生成随机数
@@ -160,5 +157,5 @@ function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
     }
 }
 
-export { world_height, room, world, sealevel, chunk, worldName };
+export { world_height, world, sealevel, chunk, worldName };
 export { getRandomInt, place_meeting, enableKeyDoubleClickDetection, point_coll_rect, distance, isOutOfBounds, setMyVariable, pushChunkToWorld, isOnScreen };

@@ -1,4 +1,4 @@
-import { room } from "../gameRoom/const.js";
+import { room } from "../constants/generic.js";
 import { content, gameRoom } from "../contentRoom/content.js";
 import { win } from "../apiox/global.js";
 import { apioxEvent } from "../apiox/event.js";

@@ -1,5 +1,5 @@
 import { playerLoop } from './player.js';
-import { room } from './const.js';
+import { room } from '../constants/generic.js';
 import { mouseAct } from './mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering.js';
 

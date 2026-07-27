@@ -1,4 +1,4 @@
-import { room } from "../../const.js";
+import { room } from "../../../constants/generic.js";
 import { img_gui, gui_isDrawing, InventoryConfig, invenConfig, iC_hand, Slots, iC_make, iC_get, iC_clothe, iC_otherHand } from "./inventoryConfig.js";
 import { mouse } from "../../mouse.js";
 import { drawHeart, heartsAct } from "./hearts.js";

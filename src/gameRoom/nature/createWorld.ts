@@ -1,7 +1,8 @@
-import { world_height, getRandomInt, pushChunkToWorld, chunk } from "../const.js";
+import { world_height, getRandomInt, pushChunkToWorld, chunk, loadWorld } from "../const.js";
 import { player } from "../player.js";
 import { eventBus } from "../others/eventBus.js";
 import { idOfBlock } from "./blockMecha/blockMechanism.js";
+import { readingWorld, coverWhenSave } from "../gameState.js";
 
 // 温度类型常量
 const TEMP = {
@@ -16,6 +17,7 @@ const TEMP = {
 }
 
 let lowest_point: number = 0; //地形最低点的纵坐标
+if (coverWhenSave) {lowest_point = readingWorld.lowest_point;}
 
 //佩林噪声
 class PerlinNoise {
@@ -364,9 +366,13 @@ function createChunkAnyTime() {
     }
 }
 
-for (let i = 0; i < 8; i++) {
-    createChunk(chunk.start_x, true);
+if(!coverWhenSave) {
+    for (let i = 0; i < 8; i++) {
+        createChunk(chunk.start_x, true);
+    }
+    player.initXY();
+} else {
+    loadWorld(readingWorld.world);
 }
-player.initXY();
 
 export { createChunkAnyTime, lowest_point };

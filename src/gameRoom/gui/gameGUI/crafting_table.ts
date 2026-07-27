@@ -2,7 +2,8 @@ import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, img_gui } from "./inv
 import { selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../mouse.js";
-import { room, world } from "../../const.js";
+import { world } from "../../const.js";
+import { room } from "../../../constants/generic.js";
 import { blockTextures, genericTextStyle } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import { uistate } from "../uiState.js";

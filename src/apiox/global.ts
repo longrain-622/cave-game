@@ -89,3 +89,7 @@ export const doc = {
         document.title = title;
     },
 };
+
+export function winObj(): any {
+    return window;
+}

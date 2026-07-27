@@ -1,5 +1,6 @@
 import { player } from '../player.js';
-import { room, isOnScreen } from '../const.js';
+import { isOnScreen } from '../const.js';
+import { room } from '../../constants/generic.js';
 import { animalArray, Animal } from './animals.js';
 
 // 加载canvas和ctx

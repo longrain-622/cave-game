@@ -1,4 +1,5 @@
-import { room, world, getRandomInt, place_meeting, point_coll_rect } from '../const.js';
+import { world, getRandomInt, place_meeting, point_coll_rect } from '../const.js';
+import { room } from '../../constants/generic.js';
 import { player } from '../player.js';
 import { mouse } from '../mouse.js';
 import { eventBus } from '../others/eventBus.js';
@@ -6,6 +7,8 @@ import { createDrop } from '../dropped/droppedItem.js';
 import '../others/audioManager.js';
 import { apioxTime } from '../../apiox/time.js';
 import { apioxEvent } from '../../apiox/event.js';
+import { WorldArchive } from '../../types/worldArchive.js';
+import { readingWorld, coverWhenSave } from '../gameState.js';
 
 const look_range: number = 32; //渲染的范围的一半
 let animalArray: Animal[] = []; //用来存储动物实例的数组
@@ -68,6 +71,25 @@ class Animal {
         this.beginMove();
         this.hp -= harm;
         this.flashFrames = 8;
+    }
+}
+if (coverWhenSave) {loadAnimals(readingWorld);}
+
+// 加载存档中的动物
+function loadAnimals(readingWorld: WorldArchive) {
+    if (readingWorld !== null) {
+        let newAnimal: Animal;
+
+        for (let i = 0; i < readingWorld.animals.length; i++) {
+            const type = readingWorld.animals[i].type;
+            const x = readingWorld.animals[i].x;
+            const y = readingWorld.animals[i].y;
+            const hp = readingWorld.animals[i].hp;
+
+            newAnimal = new Animal(type, x, y, hp);
+        }
+
+        animalArray.push(newAnimal);
     }
 }
 

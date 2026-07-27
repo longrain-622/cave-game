@@ -1,21 +1,12 @@
-import { getRandomInt, room } from '../gameRoom/const.js';
+import { setWorldName } from '../gameRoom/const.js';
 import { ApioxObject } from '../apiox/dom.js';
 import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
-import { worldwindow, create_btn } from './editWorld.js';
-import { setWorldName } from '../gameRoom/const.js';
-import * as PIXI from 'pixi.js';
+import { worldwindow, create_btn, getSelectedWorldName } from './editWorld.js';
+import { getRandomInt } from '../constants/utils.js';
+import { room } from '../constants/generic.js';
 
 export let _room_: number = 0; //当前房间
-
-export function contentTextStyle(fontSize: number=20): PIXI.TextStyle {
-    return new PIXI.TextStyle({
-        fontFamily: 'Unifont',
-        fontSize: fontSize,
-        fill: '#ffffff',
-        padding: 10,
-    });
-}
 
 let start: number = 0;
 let choose: number = 0; //左边菜单所选的选项
@@ -26,6 +17,7 @@ let timer: number = 0;
 //获取元素
 export const gameRoom = new ApioxObject(null, 'GameRoom');
 export const content = new ApioxObject(null, 'content');
+
 const starting = new ApioxObject('starting');
 const none = new ApioxObject('none');
 const setting = new ApioxObject('setting');
@@ -39,11 +31,14 @@ const viewText = new ApioxObject('viewText');
 //const whiteBlock1 = new ApioxObject('whiteBlock1');
 const whiteBlock2 = new ApioxObject('whiteBlock2');
 const starting_steve = new ApioxObject('starting_steve');
+
 export const toast = new ApioxObject('toast');
 export const toastText = new ApioxObject('toast_text');
 export const toastCancel = new ApioxObject('toast_cancel');
 export const toastSure = new ApioxObject('toast_sure');
+
 const worldNameInput = new ApioxObject('worldNameInput');
+const editWorldBtnGetin = new ApioxObject('editWorldBtnGetin');
 
 //初始化游戏窗口 大小和显示
 content.domstyle('width', String(room.width) + 'px'); content.domstyle('height', String(room.height) + 'px');
@@ -78,11 +73,30 @@ apioxEvent.onKeyDown((e) => {
 starting_steve.on('click', (): void => {
     if(start === 1 && choose === 0) {worldwindow.show();}
 });
+
+//进入游戏
+function gotoGame(): void { _room_ = 1; gameRoom.show(); content.hide(); }
 create_btn.on('click', (): void => {
     const inputVal: string = worldNameInput.getProperty('value');
     if (inputVal !== '') { setWorldName(inputVal); }
-    _room_ = 1; gameRoom.show(); content.hide();
-}); //进入游戏
+    gotoGame();
+});
+editWorldBtnGetin.on('click', async (): Promise<void> => {
+    const targetWorldName = await getSelectedWorldName();
+    if (targetWorldName === null) {
+        console.warn('cannot reading this world');
+        return;
+    }
+    setWorldName(targetWorldName);
+
+    const { loadGameFromLocal } = await import('../user/saveWorld.js');
+    const { setReadingWorld } = await import('../gameRoom/gameState.js');
+    const readingWorld = await loadGameFromLocal('save_' + targetWorldName);
+    if (readingWorld !== null) { setReadingWorld(readingWorld); }
+    else { return; }
+
+    gotoGame();
+});
 
 //左边主菜单内容的选择
 startText.on('click', (): void => { if(start === 1){choose = 0;} });

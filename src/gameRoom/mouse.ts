@@ -1,5 +1,6 @@
 import { player } from './player.js';
-import { world, distance, getRandomInt, room } from './const.js';
+import { world, distance, getRandomInt } from './const.js';
+import { room } from '../constants/generic.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
 import { uistate } from './gui/uiState.js';
 import { Slots } from './gui/gameGUI/inventoryConfig.js';
