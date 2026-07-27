@@ -373,6 +373,10 @@ if(!coverWhenSave) {
     player.initXY();
 } else {
     loadWorld(readingWorld.world);
+    // 更新区块状态以匹配加载的世界尺寸，防止 createChunkAnyTime 在错误位置生成新区块
+    chunk.num = readingWorld.world[0].length / chunk.width;
+    chunk.start_x = chunk.num * chunk.width;
+    chunk.left_number = 0;
 }
 
 export { createChunkAnyTime, lowest_point };

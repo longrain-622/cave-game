@@ -2,6 +2,7 @@ import { apioxEvent, ApioxKeyboardEvent } from "../../../apiox/event.js";
 import { apioxHttp } from "../../../apiox/http.js";
 import { reloadPage } from "../../../apiox/method.js";
 import { saveGameToLocal } from "../../../user/saveWorld.js";
+import { coverWhenSave } from "../../gameState.js";
 import { lang } from "../../../others/i18n.js";
 import { guiApp } from "../application.js";
 import { room } from "../../../constants/generic.js";
@@ -108,6 +109,6 @@ topBtn.on('pointerdown', () => {
     gameContent.visible = false;
 });
 bottomBtn.on('pointerdown', async () => {
-    await saveGameToLocal();
+    await saveGameToLocal(coverWhenSave);
     reloadPage();
 });

@@ -11,6 +11,7 @@ import { uistate } from "../uiState.js";
 import { genericTextStyle, blockTextures } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import { draw_chest, handleChestClick, handleChestContextMenu, getChestSelectedIndex, handleChestBackpackClick, handleChestBackpackContextMenu } from "./chest.js";
+import { readingWorld, coverWhenSave } from "../../gameState.js";
 import * as PIXI from 'pixi.js';
 
 //背包物品栏类
@@ -30,7 +31,19 @@ class Inventories {
     }
 }
 const inventory: Inventories = new Inventories([], 704, 664); //新建一个背包对象
-inventory.initSlots(36);
+//初始化背包
+if (coverWhenSave && readingWorld !== null) {
+    for (let i = 0; i < readingWorld.inventory.items.length; i++) {
+        const readSlot = readingWorld.inventory.items[i];
+        const putSlot = new Slots(readSlot.item, readSlot.num, readSlot.durability);
+        inventory.items.push(putSlot);
+    }
+    while (inventory.items.length < 36) {
+        inventory.initSlots(1);
+    }
+} else {
+    inventory.initSlots(36);
+}
 
 //记录高亮格子对应的 inventory.items 索引（-1 表示没有高亮）
 let selectedIndex: number = -1;

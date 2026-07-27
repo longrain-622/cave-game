@@ -8,6 +8,7 @@ import { mouse } from '../../mouse.js';
 import { uistate } from '../uiState.js';
 import { idOfBlock } from '../../nature/blockMecha/blockMechanism.js';
 import { createDrop } from '../../dropped/droppedItem.js';
+import { coverWhenSave, readingWorld } from '../../gameState.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../apiox/event.js';
 
@@ -17,6 +18,28 @@ export interface Chest { //记录每个箱子的信息
 }
 export let chests: Chest[] = [];
 let currentChest: Chest | null = null;
+
+//初始化（读档）箱子数组
+if (coverWhenSave && readingWorld !== null) {
+    for (let i = 0; i < readingWorld.chests.length; i++) {
+        const readChest = readingWorld.chests[i];
+
+        let fold: Slots[] = [];
+        for (let k = 0; k < readChest.fold.length; k++) {
+            const readChestSlot = readChest.fold[k];
+            const putChestSlot = new Slots(readChestSlot.item, readChestSlot.num, readChestSlot.durability);
+            fold.push(putChestSlot);
+        }
+
+        const putChest: Chest = {
+            world_x: readChest.world_x,
+            world_y: readChest.world_y,
+            fold: fold,
+        }
+
+        chests.push(putChest);
+    }
+}
 
 function lookChest(look_x: number, look_y: number): Chest {
     let existing = chests.find(c => c.world_x === look_x && c.world_y === look_y);

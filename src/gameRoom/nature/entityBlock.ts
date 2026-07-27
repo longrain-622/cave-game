@@ -2,6 +2,7 @@ import { checkBlock } from "../rendering.js";
 import { ctx_entity } from "../animals/animalDraw.js";
 import { player } from "../player.js";
 import { place_meeting, world } from "../const.js";
+import { coverWhenSave, readingWorld } from "../gameState.js";
 
 class EntityBlock {
     id: number;
@@ -20,6 +21,17 @@ class EntityBlock {
 }
 
 let entityBlock_array: EntityBlock[] = [];
+
+// 初始化实体方块数组（读档）
+if (coverWhenSave && readingWorld !== null) {
+    for (let i = 0; i < readingWorld.entityBlocks.length; i++) {
+        const readEntityBlock = readingWorld.entityBlocks[i];
+        const putEntityBlock = new EntityBlock(readEntityBlock.id, readEntityBlock.world_x, readEntityBlock.world_y);
+        putEntityBlock.vsp = readEntityBlock.vsp;
+        putEntityBlock.timer = readEntityBlock.timer;
+        entityBlock_array.push(putEntityBlock);
+    }
+}
 
 function sand_fall(obj: EntityBlock, i: number): number {
     obj.vsp++;
