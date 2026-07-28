@@ -1,16 +1,16 @@
-import { img_gui, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from './inventoryConfig.js';
-import { handleBackpackClick, handleBackpackContextMenu, inventory, setSelectedIndex, updateSelectingItem, guiContainer } from './inventory.js';
-import { genericTextStyle, blockTextures } from '../../rendering.js';
-import { itemTextures } from '../../dropped/items.js';
-import { getRandomInt, world } from '../../const.js';
-import { room } from '../../../constants/generic.js';
-import { mouse } from '../../mouse.js';
-import { uistate } from '../uiState.js';
-import { idOfBlock } from '../../nature/blockMecha/blockMechanism.js';
-import { createDrop } from '../../dropped/droppedItem.js';
-import { coverWhenSave, readingWorld } from '../../gameState.js';
+import { img_gui, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from '../inventoryConfig.js';
+import { handleBackpackClick, handleBackpackContextMenu, inventory, setSelectedIndex, updateSelectingItem, guiContainer } from '../inventory.js';
+import { genericTextStyle, blockTextures } from '../../../rendering.js';
+import { itemTextures } from '../../../dropped/items.js';
+import { getRandomInt, world } from '../../../const.js';
+import { room } from '../../../../constants/generic.js';
+import { mouse } from '../../../mouse.js';
+import { uistate } from '../../uiState.js';
+import { idOfBlock } from '../../../nature/blockMecha/blockMechanism.js';
+import { createDrop } from '../../../dropped/droppedItem.js';
+import { coverWhenSave, readingWorld } from '../../../gameState.js';
 import * as PIXI from 'pixi.js';
-import { apioxEvent, ApioxMouseEvent } from '../../../apiox/event.js';
+import { apioxEvent, ApioxMouseEvent } from '../../../../apiox/event.js';
 
 export interface Chest { //记录每个箱子的信息
     world_x: number; world_y: number;
@@ -85,7 +85,7 @@ const chestGui: {
     backpackSprites: PIXI.Sprite[];
     backpackTexts: PIXI.Text[];
     backpackSelectedIndex: number; //记录背包高亮索引
-    initChestPixi: Function;
+    initChestPixi: () => void;
 } = {
     width: 704, height: 664,
     draw_x: 0, draw_y: 0,

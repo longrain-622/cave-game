@@ -1,7 +1,7 @@
 // crafting.ts
-import { Slots } from "./inventoryConfig.js";
-import { idOfBlock } from "../../nature/blockMecha/blockMechanism.js";
-import { idOfItem } from "../../dropped/items.js";
+import { Slots } from "../inventoryConfig.js";
+import { idOfBlock } from "../../../nature/blockMecha/blockMechanism.js";
+import { idOfItem } from "../../../dropped/items.js";
 
 export function slotsToMatrix(slots: Slots[], cols: number, rows: number): (Slots | null)[][] {
     const matrix: (Slots | null)[][] = [];

@@ -3,34 +3,32 @@ import { img_gui, gui_isDrawing, InventoryConfig, invenConfig, iC_hand, Slots, i
 import { mouse } from "../../mouse.js";
 import { drawHeart, heartsAct } from "./hearts.js";
 import { player } from "../../player.js";
-import { craftingResultSlot, craftingSlots, updateCraftingResult, recipes, consumeCraftingMaterials } from "./crafting.js";
-import { draw_craftingTable, handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType } from "./crafting_table.js";
+import { craftingResultSlot, craftingSlots, updateCraftingResult, recipes, consumeCraftingMaterials } from "./blockGUI/crafting.js";
+import { draw_craftingTable, handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType } from "./blockGUI/crafting_table.js";
 import { apioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent } from "../../../apiox/event.js";
 import { guiApp } from "../application.js";
 import { uistate } from "../uiState.js";
 import { genericTextStyle, blockTextures } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
-import { draw_chest, handleChestClick, handleChestContextMenu, getChestSelectedIndex, handleChestBackpackClick, handleChestBackpackContextMenu } from "./chest.js";
+import { draw_chest, handleChestClick, handleChestContextMenu, getChestSelectedIndex, handleChestBackpackClick, handleChestBackpackContextMenu } from "./blockGUI/chest.js";
 import { readingWorld, coverWhenSave } from "../../gameState.js";
 import * as PIXI from 'pixi.js';
 
-//背包物品栏类
-class Inventories {
+//背包对象
+interface Inventories {
     items: Slots[]; //存储槽位对象的数组
     width: number; height: number; //屏幕上绘制的宽高
-
-    constructor(items: Slots[], width: number, height: number) {
-        this.items = items;
-        this.width = width; this.height = height;
-    }
-
-    initSlots(num: number) { //初始化槽位
+    initSlots: (num: number) => void; //初始化槽位
+}
+const inventory: Inventories = {
+    items: [],
+    width: 704, height: 664,
+    initSlots(num: number) {
         for(let i = 0; i < num; i++) {
             this.items.push(new Slots(-1, 0));
         }
-    }
-}
-const inventory: Inventories = new Inventories([], 704, 664); //新建一个背包对象
+    },
+};
 
 //记录高亮格子对应的 inventory.items 索引（-1 表示没有高亮）
 let selectedIndex: number = -1;

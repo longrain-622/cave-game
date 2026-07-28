@@ -1,15 +1,15 @@
-import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, img_gui } from "./inventoryConfig.js";
-import { selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "./inventory.js";
+import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, img_gui } from "../inventoryConfig.js";
+import { selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "../inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
-import { mouse } from "../../mouse.js";
-import { world } from "../../const.js";
-import { room } from "../../../constants/generic.js";
-import { blockTextures, genericTextStyle } from "../../rendering.js";
-import { itemTextures } from "../../dropped/items.js";
-import { uistate } from "../uiState.js";
-import { idOfBlock } from "../../nature/blockMecha/blockMechanism.js";
+import { mouse } from "../../../mouse.js";
+import { world } from "../../../const.js";
+import { room } from "../../../../constants/generic.js";
+import { blockTextures, genericTextStyle } from "../../../rendering.js";
+import { itemTextures } from "../../../dropped/items.js";
+import { uistate } from "../../uiState.js";
+import { idOfBlock } from "../../../nature/blockMecha/blockMechanism.js";
 import * as PIXI from 'pixi.js';
-import { apioxEvent, ApioxMouseEvent } from "../../../apiox/event.js";
+import { apioxEvent, ApioxMouseEvent } from "../../../../apiox/event.js";
 
 const craftingTable: {width: number; height: number;} = {
     width: 704, height: 664

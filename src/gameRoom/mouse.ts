@@ -13,7 +13,7 @@ import { idOfItem, putDoor, useItem } from './dropped/items.js';
 import { door_openOrClose } from './nature/blockMecha/bmFunction.js';
 import { lowest_point } from './nature/createWorld.js';
 import { idOfBlock } from './nature/blockMecha/blockMechanism.js';
-import { breakChest } from './gui/gameGUI/chest.js';
+import { breakChest } from './gui/gameGUI/blockGUI/chest.js';
 import './others/audioManager.js';
 import { apioxEvent, ApioxMouseEvent } from '../apiox/event.js';
 import { ApioxObject } from '../apiox/dom.js';

@@ -14,7 +14,7 @@ export async function loadScripts() {
     '/js/gameRoom/player.js',
     '/js/gameRoom/nature/blockMecha/blockMechanism.js',
     '/js/gameRoom/animals/animals.js',
-    '/js/gameRoom/gui/gameGUI/crafting_table.js',
+    '/js/gameRoom/gui/gameGUI/blockGUI/crafting_table.js',
     '/js/gameRoom/nature/offsetElements.js',
     '/js/gameRoom/others/loadingCheck.js',
   ];

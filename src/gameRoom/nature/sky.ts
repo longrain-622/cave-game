@@ -179,7 +179,7 @@ function initSkyBackground(): void {
     bg_b.drawBgBlocks(0, 0);
 }
 
-const clock: {timer: number; daylong: number; addTimer: VoidFunction} = {
+const clock: { timer: number; daylong: number; addTimer: () => void } = {
     timer: 128, //天空计时器
     daylong: 1440,
     addTimer() {

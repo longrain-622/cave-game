@@ -5,9 +5,9 @@ interface Uistate {
     chest_isOpening: boolean;
     furnace_isOpening: boolean;
 
-    invenUI_isOpening: Function; //与物品栏相关的ui的打开状态
-    anyui_isOpening: Function; //是否有ui打开
-    anyui_isOpening_except: Function; //除了xxx关闭以外是否有其他ui打开
+    invenUI_isOpening: () => boolean; //与物品栏相关的ui的打开状态
+    anyui_isOpening: () => boolean; //是否有ui打开
+    anyui_isOpening_except: (which_isOpening: boolean) => boolean; //除了xxx关闭以外是否有其他ui打开
 }
 
 export const uistate: Uistate = {
