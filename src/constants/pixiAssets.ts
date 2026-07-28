@@ -8,7 +8,7 @@ const INIT_KEY = '__PIXI_ASSETS_INIT__';
  * 使用 window 级标志，确保跨模块入口只初始化一次。
  */
 export async function ensureAssetsInit(): Promise<void> {
-    if ((winObj as any)[INIT_KEY]) {return;}
-    (winObj as any)[INIT_KEY] = true;
+    if ((winObj() as any)[INIT_KEY]) {return;}
+    (winObj() as any)[INIT_KEY] = true;
     await PIXI.Assets.init({ basePath: './assets/' });
 }
