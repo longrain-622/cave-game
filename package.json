@@ -1,6 +1,6 @@
 {
   "name": "cavegame",
-  "version": "1.0.0-alpha.1",
+  "version": "1.1.0-alpha.1",
   "description": "A 2d pixel-style game.",
   "main": "./src/main.ts",
   "scripts": {

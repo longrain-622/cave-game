@@ -51,6 +51,7 @@ interface WorldArchive {
     chests: ChestAichive[];
     entityBlocks: EntityBlockArchive[];
     skyTimer: number;
+    seed: number; // Perlin 噪声种子，用于读档后生成连续的新区块
 }
 
 export { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive }

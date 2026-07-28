@@ -170,8 +170,8 @@ function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
     }
 }
 
-// 创建噪声对象
-const seed = Math.random();
+// 创建噪声对象 — 读档时使用存档中的种子，保证新生成区块与已存档区块连续
+const seed = (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.seed) && !Number.isNaN(readingWorld.seed)) ? readingWorld.seed : Math.random();
 const terrainNoise = new PerlinNoise(seed);
 const stoneNoise = new PerlinNoise(seed + 1); // 不同种子
 const temperatureNoise = new PerlinNoise(seed + 2); // 温度噪声，不同种子
@@ -388,4 +388,4 @@ if(!coverWhenSave) {
     chunk.left_number = 0;
 }
 
-export { createChunkAnyTime, lowest_point };
+export { createChunkAnyTime, lowest_point, seed };

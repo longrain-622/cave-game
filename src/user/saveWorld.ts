@@ -6,7 +6,7 @@ import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";
 import { Slots } from "../gameRoom/gui/gameGUI/inventoryConfig.js";
 import { Chest, chests } from "../gameRoom/gui/gameGUI/chest.js";
 import { entityBlock_array, EntityBlock } from "../gameRoom/nature/entityBlock.js";
-import { lowest_point } from "../gameRoom/nature/createWorld.js";
+import { lowest_point, seed } from "../gameRoom/nature/createWorld.js";
 import { clock } from "../gameRoom/nature/sky.js";
 import { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive } from "../types/worldArchive.js";
 import "localforage";
@@ -49,6 +49,7 @@ function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
         chests: [],
         entityBlocks: [],
         skyTimer: clock.timer,
+        seed: seed,
     };
 
     //保存的时间
