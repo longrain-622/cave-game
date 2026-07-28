@@ -9,6 +9,7 @@ import { WorldArchive } from '../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from './gameState.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent } from '../apiox/event.js';
+import { notNullUndefined } from '../constants/utils.js';
 
 export let can_drawPlayer: boolean = false;
 //let playerContainer: PIXI.Container | null = null;
@@ -46,7 +47,7 @@ class Players {
     }
 
     initPlayer(readingWorld: WorldArchive): void {
-        if (readingWorld !== null) {
+        if (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.player)) {
             this.hp = readingWorld.player.hp;
             this.x = readingWorld.player.x;
             this.y = readingWorld.player.y;
@@ -67,7 +68,6 @@ class Players {
     }
 }
 const player: Players = new Players();
-if (coverWhenSave) {player.initPlayer(readingWorld);}
 
 // 初始化 Pixi 相关资源（应在 Pixi Application 创建后调用）
 const baseTexture = PIXI.BaseTexture.from('assets/images/games/player/players.png');
@@ -247,6 +247,11 @@ function updatePlayerRender(): void {
     player.parts.leftLeg.rotation = -legAngle;
     player.parts.rightLeg.rotation = legAngle;
 }
+
+function playerMain(): void {
+    player.initPlayer(readingWorld);
+}
+playerMain();
 
 function playerLoop(): void {
     if(!uistate.invenUI_isOpening() && player.hp > 0){ //打开背包无法移动

@@ -18,15 +18,6 @@ const TEMP = {
 }
 
 let lowest_point: number = 0; //地形最低点的纵坐标
-if (coverWhenSave && notNullUndefined(readingWorld)) {
-    if ((!Number.isNaN(readingWorld.lowest_point)) && notNullUndefined(readingWorld.lowest_point)) {
-        lowest_point = readingWorld.lowest_point;
-        console.log('read the variable lowest_point ok');
-    } else {
-        lowest_point = sealevel - 16;
-        console.log('cannot read the variable lowest_point');
-    }
-}
 
 //佩林噪声
 class PerlinNoise {
@@ -156,20 +147,6 @@ class PerlinNoise {
     }
 }
 
-/** 根据 X 坐标和温度噪声实例获取温度类型 */
-function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
-    // 获取噪声值（范围 -1 到 1）
-    let noiseVal = tempNoise.fbm(x * TEMP.NOISE_SCALE, TEMP.OCTAVES, TEMP.PERSISTENCE, TEMP.LACUNARITY);
-    // 映射到温度类型
-    if (noiseVal > TEMP.HOT_THRESHOLD) {
-        return TEMP.HOT;
-    } else if (noiseVal < TEMP.COLD_THRESHOLD) {
-        return TEMP.COLD;
-    } else {
-        return TEMP.NORMAL;
-    }
-}
-
 // 创建噪声对象 — 读档时使用存档中的种子，保证新生成区块与已存档区块连续
 const seed = (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.seed) && !Number.isNaN(readingWorld.seed)) ? readingWorld.seed : Math.random();
 const terrainNoise = new PerlinNoise(seed);
@@ -179,6 +156,20 @@ const temperatureNoise = new PerlinNoise(seed + 2); // 温度噪声，不同种�
 const caveNoise2D = new PerlinNoise(seed + 3); // 专门用于洞穴的二维噪声
 const ironNoise2D = new PerlinNoise(seed + 4);
 const coalNoise2D = new PerlinNoise(seed + 5);
+
+/** 根据 X 坐标和温度噪声实例获取温度类型 */
+function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
+    // 获取噪声值（范围 -1 到 1）
+    let noiseVal: number = tempNoise.fbm(x * TEMP.NOISE_SCALE, TEMP.OCTAVES, TEMP.PERSISTENCE, TEMP.LACUNARITY);
+    // 映射到温度类型
+    if (noiseVal > TEMP.HOT_THRESHOLD) {
+        return TEMP.HOT;
+    } else if (noiseVal < TEMP.COLD_THRESHOLD) {
+        return TEMP.COLD;
+    } else {
+        return TEMP.NORMAL;
+    }
+}
 
 function createChunk(startX: number, behind: boolean) { //startX:当前区块在世界中的起始 X 坐标
     let worlding = [];
@@ -375,17 +366,32 @@ function createChunkAnyTime() {
     }
 }
 
-if(!coverWhenSave) {
-    for (let i = 0; i < 8; i++) {
-        createChunk(chunk.start_x, true);
+function createWorldMain(): void {
+    // 读取存档的 lowest_point
+    if (coverWhenSave && notNullUndefined(readingWorld)) {
+        if ((!Number.isNaN(readingWorld.lowest_point)) && notNullUndefined(readingWorld.lowest_point)) {
+            lowest_point = readingWorld.lowest_point;
+            console.log('read the variable lowest_point ok');
+        } else {
+            lowest_point = sealevel - 16;
+            console.log('cannot read the variable lowest_point');
+        }
     }
-    player.initXY();
-} else {
-    loadWorld(readingWorld.world);
-    // 更新区块状态以匹配加载的世界尺寸，防止 createChunkAnyTime 在错误位置生成新区块
-    chunk.num = readingWorld.world[0].length / chunk.width;
-    chunk.start_x = chunk.num * chunk.width;
-    chunk.left_number = 0;
+
+    // 读取存档的世界数组
+    if(!coverWhenSave) {
+        for (let i = 0; i < 8; i++) {
+            createChunk(chunk.start_x, true);
+        }
+        player.initXY();
+    } else {
+        loadWorld(readingWorld.world);
+        // 更新区块状态以匹配加载的世界尺寸，防止 createChunkAnyTime 在错误位置生成新区块
+        chunk.num = readingWorld.world[0].length / chunk.width;
+        chunk.start_x = chunk.num * chunk.width;
+        chunk.left_number = 0;
+    }
 }
+createWorldMain();
 
 export { createChunkAnyTime, lowest_point, seed };
