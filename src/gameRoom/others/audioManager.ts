@@ -12,7 +12,9 @@ function playBlockSound(blockId: number): void {
         case idOfBlock.dirt: case idOfBlock.sand: case idOfBlock.snowGrass:
             soundManager.play('gravel' + String(getRandomInt(1, 4)));
             break;
-        case idOfBlock.stone: case idOfBlock.cobblestone: case idOfBlock.sandstone: case idOfBlock.coal_ore: case idOfBlock.iron_ore:
+        case idOfBlock.stone: case idOfBlock.cobblestone: case idOfBlock.sandstone:
+        case idOfBlock.coal_ore: case idOfBlock.iron_ore:
+        case idOfBlock.furnace:
             soundManager.play('stone4');
             break;
         case idOfBlock.oak: case idOfBlock.planks: case idOfBlock.crafting_table:

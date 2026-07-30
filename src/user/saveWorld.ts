@@ -5,10 +5,11 @@ import { Animal, animalArray } from "../gameRoom/animals/animals.js";
 import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";
 import { Slots } from "../gameRoom/gui/gameGUI/inventoryConfig.js";
 import { Chest, chests } from "../gameRoom/gui/gameGUI/blockGUI/chest.js";
+import { Furnace, furnaceArray } from "../gameRoom/gui/gameGUI/blockGUI/furnace.js";
 import { entityBlock_array, EntityBlock } from "../gameRoom/nature/entityBlock.js";
 import { lowest_point, seed } from "../gameRoom/nature/createWorld.js";
 import { clock } from "../gameRoom/nature/sky.js";
-import { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive } from "../types/worldArchive.js";
+import { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive, FurnaceArchive } from "../types/worldArchive.js";
 import "localforage";
 
 // localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
@@ -47,6 +48,7 @@ function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
         animals: [],
         inventory: { items: [] },
         chests: [],
+        furnaces: [],
         entityBlocks: [],
         skyTimer: clock.timer,
         seed: seed,
@@ -109,6 +111,33 @@ function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
         };
 
         targetWorld.chests.push(saveChest);
+    }
+
+    //存储所有熔炉
+    for (let f = 0; f < furnaceArray.length; f++) {
+        const targetFurnace: Furnace = furnaceArray[f];
+        const saveFurnace: FurnaceArchive = {
+            world_x: targetFurnace.world_x,
+            world_y: targetFurnace.world_y,
+            fuel: {
+                item: targetFurnace.fuel.item,
+                num: targetFurnace.fuel.num,
+                durability: targetFurnace.fuel.durability,
+            },
+            input: {
+                item: targetFurnace.input.item,
+                num: targetFurnace.input.num,
+                durability: targetFurnace.input.durability,
+            },
+            output: {
+                item: targetFurnace.output.item,
+                num: targetFurnace.output.num,
+                durability: targetFurnace.output.durability,
+            },
+            fuelProgress: targetFurnace.fuelProgress,
+            outputProgress: targetFurnace.outputProgress,
+        };
+        targetWorld.furnaces.push(saveFurnace);
     }
 
     //存储所有实体方块

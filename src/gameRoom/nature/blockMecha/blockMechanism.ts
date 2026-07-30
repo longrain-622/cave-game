@@ -17,16 +17,17 @@ export enum idOfBlock {
     crafting_table = 9,
     iron_ore = 10, coal_ore = 11,
     oak_door_bottom = 12, oak_door_top = 13,
+    furnace = 14,
 }
 
 //方块类，用于存储方块属性
-export class Blocks {
-    id: number; hardness: number;
+export interface Blocks {
+    id: number;
+    hardness: number;
+}
 
-    constructor(id: number, hardness: number) {
-        this.id = id;
-        this.hardness = hardness;
-    }
+function newBlock(id: number, hardness: number): Blocks {
+    return { id: id, hardness: hardness };
 }
 
 //-1硬度表示无法挖掘
@@ -41,28 +42,29 @@ const hardness: {
 };
 
 const block = {
-    grass: new Blocks(idOfBlock.grass, hardness.dirt),
-    dirt: new Blocks(idOfBlock.dirt, hardness.dirt),
-    stone: new Blocks(idOfBlock.stone, hardness.stone),
-    oak: new Blocks(idOfBlock.oak, hardness.oak),
-    leaves: new Blocks(idOfBlock.leaves, 0),
-    cobblestone: new Blocks(idOfBlock.cobblestone, hardness.stone),
-    sand: new Blocks(idOfBlock.sand, hardness.dirt - 1),
-    snowGrass: new Blocks(idOfBlock.snowGrass, hardness.dirt),
-    sandstone: new Blocks(idOfBlock.sandstone, hardness.stone),
-    planks: new Blocks(idOfBlock.planks, hardness.planks),
-    crafting_table: new Blocks(idOfBlock.crafting_table, hardness.planks),
-    iron_ore: new Blocks(idOfBlock.iron_ore, hardness.stone + 4),
-    coal_ore: new Blocks(idOfBlock.coal_ore, hardness.stone + 2),
-    invicon_grass: new Blocks(idOfBlock.invicon_grass, 0),
-    cactus: new Blocks(idOfBlock.cactus, 4),
-    deadBush: new Blocks(idOfBlock.deadBush, 0),
-    oak_door_bottom: new Blocks(idOfBlock.oak_door_bottom, hardness.planks),
-    oak_door_top: new Blocks(idOfBlock.oak_door_top, hardness.planks),
-    oak_door_bottom_open: new Blocks(idOfBlock.oak_door_bottom_open, hardness.planks),
-    oak_door_top_open: new Blocks(idOfBlock.oak_door_top_open, hardness.planks),
-    stone_dark: new Blocks(idOfBlock.stone_dark, -1),
-    chest: new Blocks(idOfBlock.chest, hardness.planks),
+    grass: newBlock(idOfBlock.grass, hardness.dirt),
+    dirt: newBlock(idOfBlock.dirt, hardness.dirt),
+    stone: newBlock(idOfBlock.stone, hardness.stone),
+    oak: newBlock(idOfBlock.oak, hardness.oak),
+    leaves: newBlock(idOfBlock.leaves, 0),
+    cobblestone: newBlock(idOfBlock.cobblestone, hardness.stone),
+    sand: newBlock(idOfBlock.sand, hardness.dirt - 1),
+    snowGrass: newBlock(idOfBlock.snowGrass, hardness.dirt),
+    sandstone: newBlock(idOfBlock.sandstone, hardness.stone),
+    planks: newBlock(idOfBlock.planks, hardness.planks),
+    crafting_table: newBlock(idOfBlock.crafting_table, hardness.planks),
+    iron_ore: newBlock(idOfBlock.iron_ore, hardness.stone + 4),
+    coal_ore: newBlock(idOfBlock.coal_ore, hardness.stone + 2),
+    invicon_grass: newBlock(idOfBlock.invicon_grass, 0),
+    cactus: newBlock(idOfBlock.cactus, 4),
+    deadBush: newBlock(idOfBlock.deadBush, 0),
+    oak_door_bottom: newBlock(idOfBlock.oak_door_bottom, hardness.planks),
+    oak_door_top: newBlock(idOfBlock.oak_door_top, hardness.planks),
+    oak_door_bottom_open: newBlock(idOfBlock.oak_door_bottom_open, hardness.planks),
+    oak_door_top_open: newBlock(idOfBlock.oak_door_top_open, hardness.planks),
+    stone_dark: newBlock(idOfBlock.stone_dark, -1),
+    chest: newBlock(idOfBlock.chest, hardness.planks),
+    furnace: newBlock(idOfBlock.furnace, hardness.stone),
 };
 
 const blocksArray: Blocks[] = [
@@ -70,7 +72,7 @@ const blocksArray: Blocks[] = [
     block.sand, block.snowGrass, block.sandstone, block.planks, block.crafting_table, block.iron_ore, block.coal_ore,
     block.invicon_grass, block.cactus, block.deadBush,
     block.oak_door_bottom, block.oak_door_top, block.oak_door_bottom_open, block.oak_door_top_open,
-    block.stone_dark, block.chest
+    block.stone_dark, block.chest, block.furnace
 ];
 blocksArray.sort((a, b) => a.id - b.id);
 

@@ -12,6 +12,7 @@ import { genericTextStyle, blockTextures } from "../../rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import { draw_chest, handleChestClick, handleChestContextMenu, getChestSelectedIndex, handleChestBackpackClick, handleChestBackpackContextMenu } from "./blockGUI/chest.js";
 import { readingWorld, coverWhenSave } from "../../gameState.js";
+import { draw_furnace, handleFurnaceClick, handleFurnaceContextMenu, getFurnaceSelectedIndex, handleFurnaceBackpackClick, handleFurnaceBackpackContextMenu } from "./blockGUI/furnace.js";
 import * as PIXI from 'pixi.js';
 
 //背包对象
@@ -314,10 +315,11 @@ export function initInventoryUI() {
 
 apioxEvent.onKeyDown((ev: ApioxKeyboardEvent) => {
     if (ev.key === 'e') {
-        if(ev.repeat) {return;}
-        if(uistate.craftingTable_isOpening) {uistate.craftingTable_isOpening = false; return;}
-        if(uistate.chest_isOpening) {uistate.chest_isOpening = false; return;}
-        if(uistate.anyui_isOpening_except(uistate.inventory_isOpening)) {return;}
+        if (ev.repeat) {return;}
+        if (uistate.craftingTable_isOpening) {uistate.craftingTable_isOpening = false; return;}
+        if (uistate.chest_isOpening) {uistate.chest_isOpening = false; return;}
+        if (uistate.furnace_isOpening) {uistate.furnace_isOpening = false; return;}
+        if (uistate.anyui_isOpening_except(uistate.inventory_isOpening)) {return;}
         uistate.inventory_isOpening = !uistate.inventory_isOpening;
     }
 
@@ -353,6 +355,16 @@ apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
             }
             // 未命中箱子槽位，尝试处理背包
             handleChestBackpackClick();
+            return;
+        }
+
+        if (uistate.furnace_isOpening) {
+            handleFurnaceClick(selecting);
+            if (getFurnaceSelectedIndex() !== -1) {
+                return; // 命中了熔炉槽位，已处理
+            }
+            // 未命中熔炉槽位，尝试处理背包
+            handleFurnaceBackpackClick();
             return;
         }
 
@@ -482,6 +494,15 @@ apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
                 return;
             }
             handleChestBackpackContextMenu();
+            return;
+        }
+
+        if (uistate.furnace_isOpening) {
+            handleFurnaceContextMenu(selecting);
+            if (getFurnaceSelectedIndex() !== -1) {
+                return;
+            }
+            handleFurnaceBackpackContextMenu();
             return;
         }
 
@@ -810,6 +831,7 @@ function inventoryLoop(): void {
         drawInventory();
         draw_craftingTable();
         draw_chest();
+        draw_furnace();
     }
 }
 

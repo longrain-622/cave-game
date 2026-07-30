@@ -1,6 +1,6 @@
 /*
 interface UserMessage {
-    userName: string;
+    username: string;
 }
 */
 

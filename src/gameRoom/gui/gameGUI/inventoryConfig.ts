@@ -29,6 +29,10 @@ export const ct_crafting = createConfig({cols: 3, rows: 3, startX: 120, startY: 
 export const ct_get = createConfig({cols: 1, rows: 1, slotWidth: 96, slotHeight: 96, startX: 480, startY: 124});
 //chest
 export const chestConfig = createConfig({startX: 32, startY: 72});
+//furnace
+export const furnaceConfig_input = createConfig({cols: 1, rows: 1, startX: 224, startY: 68});
+export const furnaceConfig_output = createConfig({cols: 1, rows: 1, startX: 448, startY: 124, slotWidth: 96, slotHeight: 96});
+export const furnaceConfig_fuel = createConfig({cols: 1, rows: 1, startX: 224, startY: 212});
 
 //槽位类
 class Slots {
@@ -65,6 +69,7 @@ export const img_gui = {
     icons: new Image(),
     crafting_table: new Image(),
     chest: new Image(),
+    furnace: new Image(),
 }
 img_gui.inventory.src = 'assets/images/games/gui/container/inventory.png';
 img_gui.widgets.src = 'assets/images/games/gui/widgets.png';
@@ -72,7 +77,8 @@ img_gui.player.src = 'assets/images/games/player/players.png';
 img_gui.icons.src = 'assets/images/games/gui/hearts/icons.png';
 img_gui.crafting_table.src = 'assets/images/games/gui/container/craftingtable.png';
 img_gui.chest.src = 'assets/images/games/gui/shulker_box.png';
-const guiImages = [img_gui.inventory, img_gui.widgets, img_gui.player, img_gui.icons, img_gui.crafting_table, img_gui.chest];
+img_gui.furnace.src = 'assets/images/games/gui/furnace_gui.png';
+const guiImages = [img_gui.inventory, img_gui.widgets, img_gui.player, img_gui.icons, img_gui.crafting_table, img_gui.chest, img_gui.furnace];
 export let gui_isDrawing: boolean = false;
 let imagesLoaded: number = 0;
 function checkAllLoaded() {

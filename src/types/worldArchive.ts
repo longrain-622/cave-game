@@ -32,6 +32,15 @@ interface ChestAichive {
     fold: SlotMessage[];
 }
 
+interface FurnaceArchive {
+    world_x: number; world_y: number;
+    fuel: SlotMessage;
+    input: SlotMessage;
+    output: SlotMessage;
+    fuelProgress: number; // 燃料燃烧的进度
+    outputProgress: number;
+}
+
 interface EntityBlockArchive {
     id: number;
     world_x: number; world_y: number;
@@ -49,9 +58,10 @@ interface WorldArchive {
     animals: AnimalArchive[];
     inventory: InventoryArchive;
     chests: ChestAichive[];
+    furnaces: FurnaceArchive[];
     entityBlocks: EntityBlockArchive[];
     skyTimer: number;
     seed: number; // Perlin 噪声种子，用于读档后生成连续的新区块
 }
 
-export { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive }
+export { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive, FurnaceArchive }

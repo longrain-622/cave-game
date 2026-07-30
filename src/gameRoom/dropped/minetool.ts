@@ -1,4 +1,4 @@
-import { Blocks, blocksArray } from "../nature/blockMecha/blockMechanism.js";
+import { Blocks, blocksArray, idOfBlock } from "../nature/blockMecha/blockMechanism.js";
 import { inventory, widgets } from "../gui/gameGUI/inventory.js";
 import { idOfItem } from "./items.js";
 
@@ -21,7 +21,9 @@ function getBlockHardnessById(blockId: number): number {
 
 export function calculateHardness(id: number): number { //根据工具等计算方块硬度
     switch(id) {
-        case 2: case 4: case 7: case 10: case 11:
+        case idOfBlock.stone: case idOfBlock.cobblestone: case idOfBlock.sandstone:
+        case idOfBlock.iron_ore: case idOfBlock.coal_ore:
+        case idOfBlock.furnace:
             switch(inventory.items[widgets.select].item) {
                 case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe:
                     return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;

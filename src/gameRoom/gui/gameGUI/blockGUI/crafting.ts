@@ -101,6 +101,17 @@ export const recipes: RecipeShape[] = [
         gridWidth: 3,
         gridHeight: 3
     },
+    { //熔炉
+        cells: [
+            [{ itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }],
+            [{ itemId: idOfBlock.cobblestone, amount: 1 }, null, { itemId: idOfBlock.cobblestone, amount: 1 }],
+            [{ itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }],
+        ],
+        outputId: idOfBlock.furnace,
+        outputCount: 1,
+        gridWidth: 3,
+        gridHeight: 3
+    },
 ];
 
 // 匹配配方，返回最大可合成次数

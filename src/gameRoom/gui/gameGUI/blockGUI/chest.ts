@@ -20,24 +20,26 @@ export let chests: Chest[] = [];
 let currentChest: Chest | null = null;
 
 //初始化（读档）箱子数组
-if (coverWhenSave && readingWorld !== null) {
-    for (let i = 0; i < readingWorld.chests.length; i++) {
-        const readChest = readingWorld.chests[i];
+function loadChest(): void {
+    if (coverWhenSave && readingWorld !== null) {
+        for (let i = 0; i < readingWorld.chests.length; i++) {
+            const readChest = readingWorld.chests[i];
 
-        let fold: Slots[] = [];
-        for (let k = 0; k < readChest.fold.length; k++) {
-            const readChestSlot = readChest.fold[k];
-            const putChestSlot = new Slots(readChestSlot.item, readChestSlot.num, readChestSlot.durability);
-            fold.push(putChestSlot);
+            let fold: Slots[] = [];
+            for (let k = 0; k < readChest.fold.length; k++) {
+                const readChestSlot = readChest.fold[k];
+                const putChestSlot = new Slots(readChestSlot.item, readChestSlot.num, readChestSlot.durability);
+                fold.push(putChestSlot);
+            }
+
+            const putChest: Chest = {
+                world_x: readChest.world_x,
+                world_y: readChest.world_y,
+                fold: fold,
+            }
+
+            chests.push(putChest);
         }
-
-        const putChest: Chest = {
-            world_x: readChest.world_x,
-            world_y: readChest.world_y,
-            fold: fold,
-        }
-
-        chests.push(putChest);
     }
 }
 
@@ -58,6 +60,7 @@ function setCurrentChest(wx: number, wy: number): void {
     currentChest = lookChest(wx, wy);
 }
 
+// 打开箱子
 apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
     if(ev.button !== 2) {return;}
     if(world[mouse.world_y][mouse.world_x] === idOfBlock.chest) {
@@ -69,7 +72,7 @@ apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
     }
 });
 
-//箱子 Gui 的 Pixi 元素
+// 箱子 Gui 的 Pixi 元素
 let chestGui_inited: boolean = false;
 const chestGui: {
     width: number; height: number; //屏幕上绘制的宽高
@@ -153,8 +156,8 @@ const chestGui: {
         }
 
         // 创建背包物品（36格，与 inventory.ts 中位置完全一致）
-        const invenX = (room.width - 704) / 2;
-        const invenY = (room.height - 664) / 2;
+        const invenX = (room.width - inventory.width) / 2;
+        const invenY = (room.height - inventory.height) / 2;
         const width = 48, height = 48;
 
         // 热键栏（9格）
@@ -198,7 +201,6 @@ const chestGui: {
                 this.backpackTexts.push(text);
             }
         }
-
 
         //高亮图形
         this.highlightGraphics = new PIXI.Graphics();
@@ -343,9 +345,9 @@ function drawBackpackHighlights(): void {
 }
 
 export function draw_chest(): void {
-    if(!gui_isDrawing) {return;}
-    if(!chestGui_inited) {chestGui.initChestPixi();}
-    if(!uistate.chest_isOpening) {
+    if (!gui_isDrawing) {return;}
+    if (!chestGui_inited) {chestGui.initChestPixi();}
+    if (!uistate.chest_isOpening) {
         chestGui.chestContainer.visible = false;
         currentChest = null;
         return;
@@ -355,17 +357,17 @@ export function draw_chest(): void {
     updateChestSlots();
     drawChestHighlights();
 
-    //绘制背包物品和高亮 叠加在同一个 highlightGraphics 上
+    // 绘制背包物品和高亮 叠加在同一个 highlightGraphics 上
     updateBackpackSlots();
-    //先清空高亮再重新绘制箱子和背包高亮，避免重叠
+    // 先清空高亮再重新绘制箱子和背包高亮，避免重叠
     chestGui.highlightGraphics.clear();
     chestGui.highlightGraphics.visible = false;
-    drawChestHighlights(); //箱子高亮
-    drawBackpackHighlights(); //背包高亮
-    updateSelectingItem(); //更新鼠标拖拽物品的显示
+    drawChestHighlights(); // 箱子高亮
+    drawBackpackHighlights(); // 背包高亮
+    updateSelectingItem(); // 更新鼠标拖拽物品的显示
 }
 
-//交互处理函数
+// 交互处理函数
 export function handleChestClick(selecting: Slots): void {
     if (chestGui.selectedIndex === -1 || !currentChest) {return;}
     const target = currentChest.fold[chestGui.selectedIndex];
@@ -473,3 +475,8 @@ export function breakChest(chest_world_x: number, chest_world_y: number): void {
         }
     }
 }
+
+function chestMain(): void {
+    loadChest();
+}
+chestMain();
