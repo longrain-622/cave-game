@@ -14,6 +14,7 @@ import { door_openOrClose } from './nature/blockMecha/bmFunction.js';
 import { lowest_point } from './nature/createWorld.js';
 import { idOfBlock } from './nature/blockMecha/blockMechanism.js';
 import { breakChest } from './gui/gameGUI/blockGUI/chest.js';
+import { breakFurnace } from './gui/gameGUI/blockGUI/furnace.js';
 import './others/audioManager.js';
 import { apioxEvent, ApioxMouseEvent } from '../apiox/event.js';
 import { ApioxObject } from '../apiox/dom.js';
@@ -115,6 +116,7 @@ apioxEvent.onMouseUp(
 //处理特殊情况的挖掘
 function specialMouseBreak(mine_mousex: number, mine_mousey: number) {
     breakChest(mine_mousex, mine_mousey);
+    breakFurnace(mine_mousex, mine_mousey);
 }
 
 export function mouseAct(): void {
