@@ -1,7 +1,12 @@
 import { player } from "../../player.js";
-import { widgets, heartContainer } from "./inventory.js";
+import { widgets } from "./inventory.js";
 import { img_gui } from "./inventoryConfig.js";
 import * as PIXI from 'pixi.js';
+
+// 心形血量容器
+export const heartContainer = new PIXI.Container();
+heartContainer.visible = true;
+heartContainer.zIndex = 0;
 
 const heart: {
     lasthp: number; timer: number; drawWhite: boolean; drawWhite_phaser: number;

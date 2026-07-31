@@ -6,7 +6,7 @@ import { updateWorldPixi, updateMouseSprites } from './rendering.js';
 import { animalArray, animalsLoop } from './animals/animals.js';
 import { drawAnimals, ctx_entity, canvas_entity } from './animals/animalDraw.js';
 
-import { inventoryLoop } from './gui/gameGUI/inventory.js';
+import { gameGuiLoop } from './gui/gameGUI/gameGuiState.js';
 import { dropArray, dropLoop } from './dropped/droppedItem.js';
 import { drawDeadPage } from './gui/gameGUI/death.js';
 
@@ -43,6 +43,6 @@ export function gameLoop(): void {
     skyLoop();
 
     lookBlocks();
-    inventoryLoop();
+    gameGuiLoop();
     drawDeadPage();
 }

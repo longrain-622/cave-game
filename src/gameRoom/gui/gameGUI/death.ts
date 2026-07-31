@@ -1,11 +1,16 @@
 import { player } from "../../player.js";
-import { gui_isDrawing, deathContainer } from "./inventory.js";
+import { gui_isDrawing } from "./inventory.js";
 import { img_gui } from "./inventoryConfig.js";
 import { genericTextStyle } from "../../rendering.js";
 import { room } from "../../../constants/generic.js";
 import { apiObjects } from "../../../apiox/dom.js";
 import { apioxEvent } from "../../../apiox/event.js";
 import * as PIXI from 'pixi.js';
+
+// 死亡界面容器
+export const deathContainer = new PIXI.Container();
+deathContainer.visible = false;
+deathContainer.zIndex = 4;
 
 const death: {str: string[], click: boolean} = {
     str: [],

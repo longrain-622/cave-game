@@ -1,8 +1,11 @@
-const room: {
-    width: number; height: number
-} = {
-    width: 1280, height: 720,
-    //1280*720px
+interface Room {
+    width: number;
+    height: number;
 }
 
-export { room }
+const room: Room = {
+    width: 1280, height: 720,
+    // 1280*720px
+};
+
+export { room };

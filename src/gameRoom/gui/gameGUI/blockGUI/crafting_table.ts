@@ -1,5 +1,6 @@
 import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, img_gui } from "../inventoryConfig.js";
-import { selecting, craftingTableContainer, drawBackpackItems, locateHighWhite, updateSelectingItem } from "../inventory.js";
+import { selecting, locateHighWhite } from "../gameGuiState.js";
+import { updateSelectingItem, inventory } from "../inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../../mouse.js";
 import { world } from "../../../const.js";
@@ -10,6 +11,11 @@ import { uistate } from "../../uiState.js";
 import { idOfBlock } from "../../../nature/blockMecha/blockMechanism.js";
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from "../../../../apiox/event.js";
+
+// 工作台 UI 容器
+export const craftingTableContainer = new PIXI.Container();
+craftingTableContainer.visible = false;
+craftingTableContainer.zIndex = 3;
 
 const craftingTable: {width: number; height: number;} = {
     width: 704, height: 664
@@ -49,6 +55,10 @@ let wbResultSprite: PIXI.Sprite; //输出槽图标
 let wbResultText: PIXI.Text; //输出槽数量
 let wbHighlight: PIXI.Graphics; //高亮矩形
 let wbInitialized = false;
+// 工作台中显示的背包槽位（36格，独立于工作台合成网格的 wbSlotSprites/wbSlotTexts）
+let wbBagSprites: PIXI.Sprite[] = [];
+let wbBagTexts: PIXI.Text[] = [];
+let wbBagInitialized = false;
 const item_width: number = 48, item_height: number = 48; //绘制的物品长宽
 
 //更新工作台合成结果
@@ -225,7 +235,7 @@ function draw_craftingTable(): void {
     updateSelectingItem(); //绘制鼠标拖拽的物品（跟随鼠标）
 }
 
-// 导出工作台交互函数，供 inventory.ts 的全局事件调用
+// 导出工作台交互函数，供全局事件调用
 export function handleWorkbenchClick(): void {
     if (selectedWbType === null) {return;}
 
@@ -360,6 +370,49 @@ export function handleWorkbenchContextMenu(): void {
                 selecting.num = 0;
             }
             updateWorkbenchResult();
+        }
+    }
+}
+
+function drawBackpackItems(invenX: number, invenY: number): void {
+    // 初始化工作台背包显示元素（只执行一次）
+    if (!wbBagInitialized) {
+        for (let i = 0; i < inventory.items.length; i++) {
+            const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
+            sprite.width = 48;
+            sprite.height = 48;
+            sprite.visible = false;
+            craftingTableContainer.addChild(sprite);
+            wbBagSprites.push(sprite);
+
+            const text = new PIXI.Text('', genericTextStyle());
+            text.style.fontSize = 28;
+            text.anchor.set(1, 1);
+            text.visible = false;
+            craftingTableContainer.addChild(text);
+            wbBagTexts.push(text);
+        }
+        wbBagInitialized = true;
+    }
+
+    // 更新热键栏（9个）
+    for (let i = 0; i < 9; i++) {
+        const x = invenX + iC_hand.startX + i * (iC_hand.slotWidth + iC_hand.paddingX) + 8;
+        const y = invenY + iC_hand.startY + 8;
+        updateSlotDisplay(wbBagSprites[i], wbBagTexts[i], inventory.items[i]);
+        wbBagSprites[i].position.set(x, y);
+        wbBagTexts[i].position.set(x + item_width + 4, y + item_height + 4);
+    }
+
+    // 更新背包主体（27个，索引 9~35）
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 9; col++) {
+            const idx = 9 + row * 9 + col;
+            const x = invenX + invenConfig.startX + col * (invenConfig.slotWidth + invenConfig.paddingX) + 8;
+            const y = invenY + invenConfig.startY + row * (invenConfig.slotHeight + invenConfig.paddingY) + 8;
+            updateSlotDisplay(wbBagSprites[idx], wbBagTexts[idx], inventory.items[idx]);
+            wbBagSprites[idx].position.set(x, y);
+            wbBagTexts[idx].position.set(x + item_width + 4, y + item_height + 4);
         }
     }
 }

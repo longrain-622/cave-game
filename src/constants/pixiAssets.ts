@@ -10,5 +10,5 @@ const INIT_KEY = '__PIXI_ASSETS_INIT__';
 export async function ensureAssetsInit(): Promise<void> {
     if ((winObj() as any)[INIT_KEY]) {return;}
     (winObj() as any)[INIT_KEY] = true;
-    await PIXI.Assets.init({ basePath: './assets/' });
+    await PIXI.Assets.init({ basePath: './assets/images/' });
 }

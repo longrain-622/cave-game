@@ -1,5 +1,6 @@
-import { Slots, img_gui, furnaceConfig_fuel, furnaceConfig_input, furnaceConfig_output, invenConfig, iC_hand, gui_isDrawing } from '../inventoryConfig.js';
-import { guiContainer, inventory, handleBackpackClick, handleBackpackContextMenu, setSelectedIndex, updateSelectingItem } from '../inventory.js';
+import { Slots, img_gui, furnaceConfig_fuel, furnaceConfig_input, furnaceConfig_output, invenConfig, iC_hand, gui_isDrawing, InventoryConfig } from '../inventoryConfig.js';
+import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../gameGuiState.js';
+import { guiContainer, inventory, updateSelectingItem } from '../inventory.js';
 import { room } from '../../../../constants/generic.js';
 import { genericTextStyle, blockTextures } from '../../../rendering.js';
 import { itemTextures } from '../../../dropped/items.js';
@@ -104,6 +105,11 @@ interface FurnacePixi {
     backpackSelectedIndex: number; // 记录背包高亮索引
     initFurnacePixi: () => void; // 初始化 GUI 的函数，仅执行一次
 }
+
+enum furnaceSlotNumber {
+    input, output, fuel
+}
+
 const furnaceGui: FurnacePixi = {
     width: 704, height: 664,
     draw_x: 0, draw_y: 0,
@@ -289,7 +295,7 @@ function updateSlotDisplay(sprite: PIXI.Sprite, text: PIXI.Text, slot: Slots): v
 }
 
 function updateFurnaceSlots(): void {
-    if (!currentFurnace) return;
+    if (!currentFurnace) {return;}
     updateSlotDisplay(furnaceGui.inputSprite, furnaceGui.inputCount, currentFurnace.input);
     updateSlotDisplay(furnaceGui.outputSprite, furnaceGui.outputCount, currentFurnace.output);
     updateSlotDisplay(furnaceGui.fuelSprite, furnaceGui.fuelCount, currentFurnace.fuel);
@@ -299,19 +305,19 @@ function drawFurnaceHighlights(): void {
     furnaceGui.highlightGraphics.clear();
     furnaceGui.highlightGraphics.visible = false;
     furnaceGui.selectedIndex = -1;
-    if (!currentFurnace) return;
+    if (!currentFurnace) {return;}
 
     const slotConfigs: { cfg: typeof furnaceConfig_input; sprite: PIXI.Sprite; index: number }[] = [
-        { cfg: furnaceConfig_input, sprite: furnaceGui.inputSprite, index: 0 },
-        { cfg: furnaceConfig_output, sprite: furnaceGui.outputSprite, index: 1 },
-        { cfg: furnaceConfig_fuel, sprite: furnaceGui.fuelSprite, index: 2 },
+        { cfg: furnaceConfig_input, sprite: furnaceGui.inputSprite, index: furnaceSlotNumber.input },
+        { cfg: furnaceConfig_output, sprite: furnaceGui.outputSprite, index: furnaceSlotNumber.output },
+        { cfg: furnaceConfig_fuel, sprite: furnaceGui.fuelSprite, index: furnaceSlotNumber.fuel },
     ];
 
     for (const { cfg, index } of slotConfigs) {
-        const sx = furnaceGui.draw_x + cfg.startX;
-        const sy = furnaceGui.draw_y + cfg.startY;
-        const sw = cfg.slotWidth;
-        const sh = cfg.slotHeight;
+        const sx: number = furnaceGui.draw_x + cfg.startX;
+        const sy: number = furnaceGui.draw_y + cfg.startY;
+        const sw: number = cfg.slotWidth;
+        const sh: number = cfg.slotHeight;
 
         if (mouse.x >= sx && mouse.x <= sx + sw &&
             mouse.y >= sy && mouse.y <= sy + sh) {
@@ -328,9 +334,9 @@ function drawFurnaceHighlights(): void {
 function updateBackpackSlots(): void {
     const invenItems = inventory.items;
     for (let i = 0; i < invenItems.length; i++) {
-        const slot = invenItems[i];
-        const sprite = furnaceGui.backpackSprites[i];
-        const text = furnaceGui.backpackCounts[i];
+        const slot: Slots = invenItems[i];
+        const sprite: PIXI.Sprite = furnaceGui.backpackSprites[i];
+        const text: PIXI.Text = furnaceGui.backpackCounts[i];
         if (!slot || slot.item === -1) {
             sprite.visible = false;
             text.visible = false;
@@ -354,20 +360,20 @@ function updateBackpackSlots(): void {
 
 function drawBackpackHighlights(): void {
     furnaceGui.backpackSelectedIndex = -1;
-    const invenX = (room.width - 704) / 2;
-    const invenY = (room.height - 664) / 2;
+    const invenX: number = (room.width - 704) / 2;
+    const invenY: number = (room.height - 664) / 2;
 
     // 检测热键栏（9格）
-    const hand = iC_hand;
-    const handStartX = invenX + hand.startX;
-    const handStartY = invenY + hand.startY;
-    const handW = hand.slotWidth + hand.paddingX;
-    const handH = hand.slotHeight + hand.paddingY;
+    const hand: InventoryConfig = iC_hand;
+    const handStartX: number = invenX + hand.startX;
+    const handStartY: number = invenY + hand.startY;
+    const handW: number = hand.slotWidth + hand.paddingX;
+    const handH: number = hand.slotHeight + hand.paddingY;
     if (mouse.x >= handStartX && mouse.x <= handStartX + handW * hand.cols &&
         mouse.y >= handStartY && mouse.y <= handStartY + handH * hand.rows) {
-        const col = Math.floor((mouse.x - handStartX) / handW);
-        const row = Math.floor((mouse.y - handStartY) / handH);
-        const idx = row * hand.cols + col;
+        const col: number = Math.floor((mouse.x - handStartX) / handW);
+        const row: number = Math.floor((mouse.y - handStartY) / handH);
+        const idx: number = row * hand.cols + col;
         if (idx < 9) {
             furnaceGui.backpackSelectedIndex = idx;
             furnaceGui.highlightGraphics.beginFill(0xffffff, 0.3);
@@ -379,16 +385,16 @@ function drawBackpackHighlights(): void {
     }
 
     // 检测背包主体（27格）
-    const inven = invenConfig;
-    const invenStartX = invenX + inven.startX;
-    const invenStartY = invenY + inven.startY;
-    const invenW = inven.slotWidth + inven.paddingX;
-    const invenH = inven.slotHeight + inven.paddingY;
+    const inven: InventoryConfig = invenConfig;
+    const invenStartX: number = invenX + inven.startX;
+    const invenStartY: number = invenY + inven.startY;
+    const invenW: number = inven.slotWidth + inven.paddingX;
+    const invenH: number = inven.slotHeight + inven.paddingY;
     if (mouse.x >= invenStartX && mouse.x <= invenStartX + invenW * inven.cols &&
         mouse.y >= invenStartY && mouse.y <= invenStartY + invenH * inven.rows) {
-        const col = Math.floor((mouse.x - invenStartX) / invenW);
-        const row = Math.floor((mouse.y - invenStartY) / invenH);
-        const idx = 9 + row * inven.cols + col;
+        const col: number = Math.floor((mouse.x - invenStartX) / invenW);
+        const row: number = Math.floor((mouse.y - invenStartY) / invenH);
+        const idx: number = 9 + row * inven.cols + col;
         if (idx < inventory.items.length) {
             furnaceGui.backpackSelectedIndex = idx;
             furnaceGui.highlightGraphics.beginFill(0xffffff, 0.3);
@@ -427,14 +433,14 @@ export function handleFurnaceClick(selecting: Slots): void {
     if (furnaceGui.selectedIndex === -1 || !currentFurnace) {return;}
     let target: Slots;
     switch (furnaceGui.selectedIndex) {
-        case 0: target = currentFurnace.input; break;
-        case 1: target = currentFurnace.output; break;
-        case 2: target = currentFurnace.fuel; break;
+        case furnaceSlotNumber.input: target = currentFurnace.input; break;
+        case furnaceSlotNumber.output: target = currentFurnace.output; break;
+        case furnaceSlotNumber.fuel: target = currentFurnace.fuel; break;
         default: return;
     }
 
     // 输出槽只能拿物品，不能放
-    if (furnaceGui.selectedIndex === 1) {
+    if (furnaceGui.selectedIndex === furnaceSlotNumber.output) {
         if (selecting.item === -1 && target.item !== -1) {
             selecting.item = target.item;
             selecting.num = target.num;
@@ -444,8 +450,8 @@ export function handleFurnaceClick(selecting: Slots): void {
         return;
     }
 
-    const mouseHas = (selecting.item !== -1);
-    const targetHas = (target.item !== -1);
+    const mouseHas: boolean = (selecting.item !== -1);
+    const targetHas: boolean = (target.item !== -1);
 
     if (!mouseHas && targetHas) {
         selecting.item = target.item;
@@ -480,14 +486,14 @@ export function handleFurnaceContextMenu(selecting: Slots): void {
     if (furnaceGui.selectedIndex === -1 || !currentFurnace) {return;}
     let target: Slots;
     switch (furnaceGui.selectedIndex) {
-        case 0: target = currentFurnace.input; break;
-        case 1: target = currentFurnace.output; break;
-        case 2: target = currentFurnace.fuel; break;
+        case furnaceSlotNumber.input: target = currentFurnace.input; break;
+        case furnaceSlotNumber.output: target = currentFurnace.output; break;
+        case furnaceSlotNumber.fuel: target = currentFurnace.fuel; break;
         default: return;
     }
 
     // 输出槽只能拿物品，不能放
-    if (furnaceGui.selectedIndex === 1) {
+    if (furnaceGui.selectedIndex === furnaceSlotNumber.output) {
         if (selecting.item === -1 && target.item !== -1) {
             selecting.item = target.item;
             selecting.num = 1;
@@ -554,11 +560,11 @@ export function breakFurnace(furnace_world_x: number, furnace_world_y: number): 
             currentFurnace = null;
         }
 
-        const target = furnaceArray.find(obj => (obj.world_x === furnace_world_x && obj.world_y === furnace_world_y));
+        const target: Furnace = furnaceArray.find(obj => (obj.world_x === furnace_world_x && obj.world_y === furnace_world_y));
         if (!target) {return;}
         furnaceArray.splice(furnaceArray.indexOf(target), 1);
 
-        const allSlots = [target.input, target.output, target.fuel];
+        const allSlots: Slots[] = [target.input, target.output, target.fuel];
         for (let i = 0; i < allSlots.length; i++) {
             if (allSlots[i].item === -1) {continue;}
             for (let k = 0; k < allSlots[i].num; k++) {
