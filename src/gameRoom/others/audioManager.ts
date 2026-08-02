@@ -5,7 +5,7 @@ import { getRandomInt } from '../const.js';
 import { idOfBlock } from '../nature/blockMecha/blockMechanism.js';
 
 function playBlockSound(blockId: number): void {
-    switch(blockId) {
+    switch (blockId) {
         case idOfBlock.grass: case idOfBlock.invicon_grass: case idOfBlock.deadBush:
             soundManager.play('grassDig' + String(getRandomInt(1, 2)));
             break;
@@ -43,7 +43,11 @@ eventBus.on('item:pickup', () => {
 });
 
 eventBus.on('player:hurt', () => {
-    soundManager.play('playerhurt');
+    switch (getRandomInt(0, 2)) {
+        case 0: soundManager.play('playerhurt1'); break;
+        case 1: soundManager.play('playerhurt2'); break;
+        case 2: soundManager.play('playerhurt3'); break;
+    }
 });
 
 eventBus.on('player:attack', () => {

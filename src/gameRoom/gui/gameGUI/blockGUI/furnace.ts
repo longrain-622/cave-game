@@ -4,16 +4,18 @@ import { guiContainer, inventory, updateSelectingItem } from '../inventory.js';
 import { room } from '../../../../constants/generic.js';
 import { genericTextStyle, blockTextures } from '../../../rendering.js';
 import { itemTextures } from '../../../dropped/items.js';
-import { getRandomInt, world } from '../../../const.js';
+import { getRandomInt, point_coll_rect, world } from '../../../const.js';
 import { readingWorld, coverWhenSave } from '../../../gameState.js';
 import { WorldArchive, FurnaceArchive } from '../../../../types/worldArchive.js';
 import { mouse } from '../../../mouse.js';
+import { player } from '../../../player.js';
 import { uistate } from '../../uiState.js';
 import { idOfBlock } from '../../../nature/blockMecha/blockMechanism.js';
 import { createDrop } from '../../../dropped/droppedItem.js';
 import { notNullUndefined } from '../../../../constants/utils.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../../apiox/event.js';
+import { getFurnaceRecipe, FurnaceRecipe } from './furnaceRecipe.js';
 
 export interface Furnace {
     world_x: number; world_y: number;
@@ -25,6 +27,7 @@ export interface Furnace {
 }
 export const furnaceArray: Furnace[] = [];
 let currentFurnace: Furnace | null = null;
+const lookRange: number = 32 * 64; // 最大渲染距离，超过此值的实例，循环自动跳过，单位：px
 
 // 加载存档中的所有熔炉
 function loadFurnace(readWorld: WorldArchive): void {
@@ -548,6 +551,66 @@ export function handleFurnaceBackpackContextMenu(): void {
     if (furnaceGui.backpackSelectedIndex !== -1) {
         setSelectedIndex(furnaceGui.backpackSelectedIndex);
         handleBackpackContextMenu();
+    }
+}
+
+// 烧制物品
+// 当有熔炉处于正在使用的状态时，每帧执行一次
+function firingItem(whichFurnace: Furnace): void {
+    if (whichFurnace.input.item === idOfBlock.air) {return;}
+
+    // 检测输入物品对应的配方
+    const recipe: FurnaceRecipe = getFurnaceRecipe(whichFurnace.input.item);
+    if (!recipe) {
+        whichFurnace.outputProgress = 0;
+        return;
+    }
+
+    // 输出槽已有物品且与成品种类不同，则不进行烧制
+    if (whichFurnace.output.item !== -1) {
+        if (whichFurnace.output.item !== recipe.output) {
+            whichFurnace.outputProgress = 0;
+            return;
+        }
+        // 输出槽已堆叠满，无法继续放入成品
+        if (whichFurnace.output.num >= whichFurnace.output.max) {
+            whichFurnace.outputProgress = 0;
+            return;
+        }
+    }
+
+    // 递增进度
+    whichFurnace.outputProgress++;
+    whichFurnace.fuelProgress++;
+
+    // 进度达到配方所需时间，输出成品
+    if (whichFurnace.outputProgress >= recipe.time) {
+        // 消耗一个输入物品
+        whichFurnace.input.num--;
+        if (whichFurnace.input.num <= 0) {
+            whichFurnace.input.item = -1;
+            whichFurnace.input.num = 0;
+        }
+
+        // 输出成品：输出槽为空则放置，否则数量递增
+        if (whichFurnace.output.item === -1) {
+            whichFurnace.output.item = recipe.output;
+            whichFurnace.output.num = 1;
+            whichFurnace.output.durability = -1;
+        } else {
+            whichFurnace.output.num++;
+        }
+        whichFurnace.outputProgress = 0;
+    }
+}
+
+// 每帧处理所有熔炉的烧制
+export function furnaceLoop(): void {
+    for (let i = 0; i < furnaceArray.length; i++) {
+        if (!point_coll_rect(furnaceArray[i].world_x * 64, furnaceArray[i].world_y * 64, player.x - lookRange / 2, player.y - lookRange / 2, lookRange, lookRange)) {
+            return;
+        }
+        firingItem(furnaceArray[i]);
     }
 }
 

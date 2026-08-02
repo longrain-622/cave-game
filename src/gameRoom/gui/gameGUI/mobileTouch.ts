@@ -3,29 +3,25 @@ import { genericTextStyle } from '../../rendering.js';
 import { setting } from '../../../contentRoom/setting.js';
 import { ApioxAnyEvent, apioxEvent } from '../../../apiox/event.js';
 
-class TouchButton {
+interface TouchButton {
     anchor_x: number; anchor_y: number;
     key: string; //按下时触发的键盘或鼠标
     visible: boolean;
     size: number; //大小 = size * 32
+}
 
-    constructor(anchor_x: number, anchor_y: number, key: string, visible: boolean=true, size: number=2) {
-        this.anchor_x = anchor_x; this.anchor_y = anchor_y;
-        this.key = key;
-        this.visible = visible;
-        this.size = size;
-    }
+const defaultTouchButton: TouchButton = {
+    anchor_x: 0, anchor_y: 0,
+    key: '',
+    visible: true,
+    size: 2,
+};
+
+function newTouchButton(overrides: Partial<TouchButton>): TouchButton {
+    return { ...defaultTouchButton, ...overrides };
 }
 
 let TouchButton_added: TouchButton[] = [];
-
-if(setting.phoneButton_isOpening) {
-    TouchButton_added.push(new TouchButton(0, 0.7, 'a', true, 3));
-    TouchButton_added.push(new TouchButton(0.20, 0.7, 'd', true, 3));
-    TouchButton_added.push(new TouchButton(1, 0.7, 'w', true, 3));
-} else {
-    TouchButton_added = [];
-}
 
 export function initTouchButtons(app: PIXI.Application) {
     const { width, height } = app.screen;
@@ -104,3 +100,14 @@ export function initTouchButtons(app: PIXI.Application) {
         app.stage.addChild(container);
     });
 }
+
+function mobileTouchMain(): void {
+    if (setting.phoneButton_isOpening) {
+        TouchButton_added.push(newTouchButton({ anchor_x: 0, anchor_y: 0.7, key: 'a', size: 3 }));
+        TouchButton_added.push(newTouchButton({ anchor_x: 0.20, anchor_y: 0.7, key: 'd', size: 3 }));
+        TouchButton_added.push(newTouchButton({ anchor_x: 1, anchor_y: 0.7, key: 'w', size: 3 }));
+    } else {
+        TouchButton_added = [];
+    }
+}
+mobileTouchMain();
