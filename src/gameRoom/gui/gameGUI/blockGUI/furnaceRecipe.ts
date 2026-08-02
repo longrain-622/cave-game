@@ -1,16 +1,27 @@
 import { idOfBlock } from "../../../nature/blockMecha/blockMechanism.js";
+import { idOfItem } from "../../../dropped/items.js";
 
-export interface FurnaceRecipe {
+interface FurnaceRecipe {
     input: number;
     output: number;
     time: number; // 燃烧需要等待的时间
 }
 
-export const furnaceRecipes: FurnaceRecipe[] = [
+const furnaceRecipes: FurnaceRecipe[] = [
     { input: idOfBlock.cobblestone, output: idOfBlock.stone, time: 100 }
 ];
 
 // 根据输入物品查找配方，找不到返回 undefined
-export function getFurnaceRecipe(input: number): FurnaceRecipe {
+function getFurnaceRecipe(input: number): FurnaceRecipe {
     return furnaceRecipes.find(recipe => recipe.input === input);
 }
+
+// 燃料种类范围
+const fuels: number[] = [
+    idOfBlock.planks, idOfBlock.oak,
+    idOfBlock.chest, idOfBlock.crafting_table,
+    idOfItem.coal, idOfItem.oak_door,
+    idOfItem.stick, idOfItem.wooden_pickaxe,
+];
+
+export { FurnaceRecipe, furnaceRecipes, getFurnaceRecipe, fuels };

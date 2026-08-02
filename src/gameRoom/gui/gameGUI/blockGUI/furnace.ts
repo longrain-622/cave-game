@@ -15,7 +15,7 @@ import { createDrop } from '../../../dropped/droppedItem.js';
 import { notNullUndefined } from '../../../../constants/utils.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../../apiox/event.js';
-import { getFurnaceRecipe, FurnaceRecipe } from './furnaceRecipe.js';
+import { getFurnaceRecipe, FurnaceRecipe, fuels } from './furnaceRecipe.js';
 
 export interface Furnace {
     world_x: number; world_y: number;
@@ -222,6 +222,41 @@ const furnaceGui: FurnacePixi = {
             this.furnaceContainer.addChild(this.fuelCount);
         }
 
+        // 燃料燃烧的进度（火焰从底部向上生长，共 14 帧）
+        // 页面上的火焰轮廓位于贴图坐标 (57,37)~(69,49)，贴图 4 倍缩放
+        for (let i = 0; i < 14; i++) {
+            // 取火焰贴图 (177,0,14,14) 的底部 i+1 行，火焰基座始终对齐轮廓底部
+            const fuelProgressTex = new PIXI.Texture(this.furnaceTex, new PIXI.Rectangle(177, 13 - i, 14, i + 1));
+            const fuelProgress = new PIXI.Sprite(fuelProgressTex);
+            fuelProgress.width = 56;
+            fuelProgress.height = (i + 1) * 4;
+            fuelProgress.position.set(this.draw_x + 228, this.draw_y + 200 - (i + 1) * 4);
+            fuelProgress.visible = false;
+            this.fuelProgress.push(fuelProgress);
+        }
+
+        // 输出获取的进度（白色箭头从左向右填充，共 24 帧）
+        // 页面上的灰色空箭头位于贴图坐标 (80,34)~(100,49)
+        for (let k = 0; k < 24; k++) {
+            // 露出部分随帧数变长
+            const outputProgressTex = new PIXI.Texture(this.furnaceTex, new PIXI.Rectangle(177, 14, k + 1, 16));
+            const outputProgress = new PIXI.Sprite(outputProgressTex);
+            outputProgress.width = (k + 1) * 4;
+            outputProgress.height = 64;
+            outputProgress.position.set(this.draw_x + 320, this.draw_y + 136);
+            outputProgress.visible = false;
+            this.outputProgress.push(outputProgress);
+        }
+
+        // 把所有进度精灵添加进数组
+        for (let c = 0; c < 14; c++) {
+            this.furnaceContainer.addChild(this.fuelProgress[c]);
+        }
+
+        for (let c = 0; c < 24; c++) {
+            this.furnaceContainer.addChild(this.outputProgress[c]);
+        }
+
         // 创建背包物品
         const invenX: number = (room.width - inventory.width) / 2;
         const invenY: number = (room.height - inventory.height) / 2;
@@ -408,6 +443,32 @@ function drawBackpackHighlights(): void {
     }
 }
 
+// 绘制燃料与输出的进度指示
+function drawProgress(): void {
+    if (!currentFurnace) {return;}
+
+    // 燃料火焰：燃烧中按燃料进度显示对应高度的火焰帧，否则全部隐藏
+    // 100 与 firingItem 中一份燃料燃烧的进度上限一致
+    let fuelFrame: number = Math.floor(currentFurnace.fuelProgress / 100 * furnaceGui.fuelProgress.length);
+    if (fuelFrame >= furnaceGui.fuelProgress.length) {fuelFrame = furnaceGui.fuelProgress.length - 1;}
+    for (let i = 0; i < furnaceGui.fuelProgress.length; i++) {
+        furnaceGui.fuelProgress[i].visible = (currentFurnace.fuelProgress > 0 && i === fuelFrame);
+    }
+
+    // 输出箭头：烧制中按烧制进度显示对应长度的箭头帧，否则全部隐藏
+    let outputFrame: number = -1;
+    if (currentFurnace.outputProgress > 0) {
+        const recipe: FurnaceRecipe = getFurnaceRecipe(currentFurnace.input.item);
+        if (recipe) {
+            outputFrame = Math.floor(currentFurnace.outputProgress / recipe.time * furnaceGui.outputProgress.length);
+            if (outputFrame >= furnaceGui.outputProgress.length) {outputFrame = furnaceGui.outputProgress.length - 1;}
+        }
+    }
+    for (let k = 0; k < furnaceGui.outputProgress.length; k++) {
+        furnaceGui.outputProgress[k].visible = (k === outputFrame);
+    }
+}
+
 export function draw_furnace(): void {
     if (!gui_isDrawing) {return;}
     if (!furnaceGui_inited) {furnaceGui.initFurnacePixi();}
@@ -419,6 +480,7 @@ export function draw_furnace(): void {
 
     furnaceGui.furnaceContainer.visible = uistate.furnace_isOpening;
     updateFurnaceSlots();
+    drawProgress();
     drawFurnaceHighlights();
 
     // 绘制背包物品和高亮 叠加在同一个 highlightGraphics 上
@@ -483,6 +545,11 @@ export function handleFurnaceClick(selecting: Slots): void {
             selecting.num = tmpNum;
         }
     }
+
+    // 玩家改变了输入槽的物品，重置烧制进度，避免进度被新物品继承
+    if (furnaceGui.selectedIndex === furnaceSlotNumber.input) {
+        currentFurnace.outputProgress = 0;
+    }
 }
 
 export function handleFurnaceContextMenu(selecting: Slots): void {
@@ -528,6 +595,11 @@ export function handleFurnaceContextMenu(selecting: Slots): void {
             if (selecting.num === 0) { selecting.item = -1; selecting.num = 0; }
         }
     }
+
+    // 玩家改变了输入槽的物品，重置烧制进度，避免进度被新物品继承
+    if (furnaceGui.selectedIndex === furnaceSlotNumber.input) {
+        currentFurnace.outputProgress = 0;
+    }
 }
 
 // 导出熔炉索引与交互函数（供 inventory 使用）
@@ -557,26 +629,35 @@ export function handleFurnaceBackpackContextMenu(): void {
 // 烧制物品
 // 当有熔炉处于正在使用的状态时，每帧执行一次
 function firingItem(whichFurnace: Furnace): void {
-    if (whichFurnace.input.item === idOfBlock.air) {return;}
-
     // 检测输入物品对应的配方
+    // 输入被拿走（空气）时同样找不到配方，走下面的分支：进度归零、火焰熄灭，不会冻结
     const recipe: FurnaceRecipe = getFurnaceRecipe(whichFurnace.input.item);
     if (!recipe) {
         whichFurnace.outputProgress = 0;
+        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
         return;
     }
 
     // 输出槽已有物品且与成品种类不同，则不进行烧制
-    if (whichFurnace.output.item !== -1) {
+    if (whichFurnace.output.item !== idOfBlock.air) {
         if (whichFurnace.output.item !== recipe.output) {
             whichFurnace.outputProgress = 0;
+            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
             return;
         }
         // 输出槽已堆叠满，无法继续放入成品
         if (whichFurnace.output.num >= whichFurnace.output.max) {
             whichFurnace.outputProgress = 0;
+            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
             return;
         }
+    }
+
+    // 燃料槽为空或物品不是燃料，不烧制
+    if (!fuels.includes(whichFurnace.fuel.item)) {
+        whichFurnace.outputProgress = 0;
+        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
+        return;
     }
 
     // 递增进度
@@ -588,7 +669,7 @@ function firingItem(whichFurnace: Furnace): void {
         // 消耗一个输入物品
         whichFurnace.input.num--;
         if (whichFurnace.input.num <= 0) {
-            whichFurnace.input.item = -1;
+            whichFurnace.input.item = idOfBlock.air;
             whichFurnace.input.num = 0;
         }
 
@@ -602,13 +683,24 @@ function firingItem(whichFurnace: Furnace): void {
         }
         whichFurnace.outputProgress = 0;
     }
+
+    // 消耗燃料
+    if (whichFurnace.fuelProgress >= 100) {
+        whichFurnace.fuelProgress = 0;
+        whichFurnace.fuel.num--;
+
+        if (whichFurnace.fuel.num <= 0) {
+            whichFurnace.fuel.item = idOfBlock.air;
+            whichFurnace.fuel.num = 0;
+        }
+    }
 }
 
 // 每帧处理所有熔炉的烧制
 export function furnaceLoop(): void {
     for (let i = 0; i < furnaceArray.length; i++) {
         if (!point_coll_rect(furnaceArray[i].world_x * 64, furnaceArray[i].world_y * 64, player.x - lookRange / 2, player.y - lookRange / 2, lookRange, lookRange)) {
-            return;
+            continue; // 超出玩家视野范围的熔炉跳过，继续处理其余熔炉
         }
         firingItem(furnaceArray[i]);
     }

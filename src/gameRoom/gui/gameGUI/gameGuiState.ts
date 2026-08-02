@@ -1,4 +1,4 @@
-import { handleFurnaceClick, handleFurnaceContextMenu, getFurnaceSelectedIndex, handleFurnaceBackpackClick, handleFurnaceBackpackContextMenu, draw_furnace } from "./blockGUI/furnace.js";
+import { handleFurnaceClick, handleFurnaceContextMenu, getFurnaceSelectedIndex, handleFurnaceBackpackClick, handleFurnaceBackpackContextMenu, draw_furnace, furnaceLoop } from "./blockGUI/furnace.js";
 import { handleChestClick, handleChestContextMenu, getChestSelectedIndex, handleChestBackpackClick, handleChestBackpackContextMenu, draw_chest } from "./blockGUI/chest.js";
 import { uistate } from "../uiState.js";
 import { player } from "../../player.js";
@@ -479,6 +479,7 @@ export function gameGuiLoop(): void {
         draw_craftingTable();
         draw_chest();
         draw_furnace();
+        furnaceLoop();
     }
 }
 
