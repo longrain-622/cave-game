@@ -25,7 +25,7 @@ export function calculateHardness(id: number): number { //根据工具等计算�
         case idOfBlock.iron_ore: case idOfBlock.coal_ore:
         case idOfBlock.furnace:
             switch(inventory.items[widgets.select].item) {
-                case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe:
+                case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe: case idOfItem.iron_pickaxe:
                     return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
                     //break;
             }

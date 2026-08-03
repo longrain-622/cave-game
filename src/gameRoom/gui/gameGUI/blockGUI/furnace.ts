@@ -449,7 +449,7 @@ function drawProgress(): void {
 
     // 燃料火焰：燃烧中按燃料进度显示对应高度的火焰帧，否则全部隐藏
     // 100 与 firingItem 中一份燃料燃烧的进度上限一致
-    let fuelFrame: number = Math.floor(currentFurnace.fuelProgress / 100 * furnaceGui.fuelProgress.length);
+    let fuelFrame: number = Math.floor(currentFurnace.fuelProgress / 512 * furnaceGui.fuelProgress.length);
     if (fuelFrame >= furnaceGui.fuelProgress.length) {fuelFrame = furnaceGui.fuelProgress.length - 1;}
     for (let i = 0; i < furnaceGui.fuelProgress.length; i++) {
         furnaceGui.fuelProgress[i].visible = (currentFurnace.fuelProgress > 0 && i === fuelFrame);
@@ -685,7 +685,7 @@ function firingItem(whichFurnace: Furnace): void {
     }
 
     // 消耗燃料
-    if (whichFurnace.fuelProgress >= 100) {
+    if (whichFurnace.fuelProgress >= 512) {
         whichFurnace.fuelProgress = 0;
         whichFurnace.fuel.num--;
 

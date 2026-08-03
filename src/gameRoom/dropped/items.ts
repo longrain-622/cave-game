@@ -10,6 +10,7 @@ export enum idOfItem {
     beef = 512, chicken, mutton, porkchop, apple,
     stick, wooden_pickaxe, stone_pickaxe, coal, raw_iron,
     oak_door,
+    iron_ingot, iron_pickaxe
 }
 
 const img_items = {
@@ -19,6 +20,7 @@ const img_items = {
     wooden_pickaxe: new Image(), stone_pickaxe: new Image(),
     coal: new Image(), raw_iron: new Image(),
     oak_door: new Image(),
+    iron_ingot: new Image(), iron_pickaxe: new Image()
 }
 img_items.beef.src = 'assets/images/games/items/beef.png';
 img_items.chicken.src = 'assets/images/games/items/chicken.png';
@@ -31,6 +33,8 @@ img_items.stone_pickaxe.src = 'assets/images/games/items/stone_pickaxe.png';
 img_items.coal.src = 'assets/images/games/items/coal.png';
 img_items.raw_iron.src = 'assets/images/games/items/raw_iron.png';
 img_items.oak_door.src = 'assets/images/games/items/oak_door.png';
+img_items.iron_ingot.src = 'assets/images/games/items/iron_ingot.png';
+img_items.iron_pickaxe.src = 'assets/images/games/items/iron_pickaxe.png';
 
 //加载图片
 const item_images = [
@@ -40,6 +44,7 @@ const item_images = [
     img_items.wooden_pickaxe, img_items.stone_pickaxe,
     img_items.coal, img_items.raw_iron,
     img_items.oak_door,
+    img_items.iron_ingot, img_items.iron_pickaxe,
 ];
 let imagesLoaded: number = 0;
 let item_isDrawing: boolean = false;
@@ -65,6 +70,8 @@ function initItemTextures() {
     itemTextures[idOfItem.coal] = PIXI.Texture.from(img_items.coal);
     itemTextures[idOfItem.raw_iron] = PIXI.Texture.from(img_items.raw_iron);
     itemTextures[idOfItem.oak_door] = PIXI.Texture.from(img_items.oak_door);
+    itemTextures[idOfItem.iron_ingot] = PIXI.Texture.from(img_items.iron_ingot);
+    itemTextures[idOfItem.iron_pickaxe] = PIXI.Texture.from(img_items.iron_pickaxe);
 }
 
 function checkItem(ctx: CanvasRenderingContext2D, drawingObj: number, x: number, y: number, width: number, height: number, sx=0, sy=0, sw=16, sh=16) {
@@ -81,6 +88,8 @@ function checkItem(ctx: CanvasRenderingContext2D, drawingObj: number, x: number,
         case idOfItem.coal: sw = 32; sh = 32; ctx.drawImage(img_items.coal, sx, sy, sw, sh, x, y, width, height); break;
         case idOfItem.raw_iron: sw = 32; sh = 32; ctx.drawImage(img_items.raw_iron, sx, sy, sw, sh, x, y, width, height); break;
         case idOfItem.oak_door: ctx.drawImage(img_items.oak_door, sx, sy, sw, sh, x, y, width, height); break;
+        case idOfItem.iron_ingot: ctx.drawImage(img_items.iron_ingot, sx, sy, sw, sh, x, y, width, height); break;
+        case idOfItem.iron_pickaxe: sw = 32; sh = 32; ctx.drawImage(img_items.iron_pickaxe, sx, sy, sw, sh, x, y, width, height); break;
     }
 }
 

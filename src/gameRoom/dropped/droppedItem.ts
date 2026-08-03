@@ -55,7 +55,11 @@ function createDrop(type: number, x: number, y: number) {
 
 function lookDrops(targetBlock: number): number { //返回对应方块掉落物的类型
     let dropObj: number = targetBlock;
-    let isTakingPickaxe: boolean = inventory.items[widgets.select].item === idOfItem.wooden_pickaxe || inventory.items[widgets.select].item === idOfItem.stone_pickaxe;
+    const isTakingPickaxe: boolean = (
+        inventory.items[widgets.select].item === idOfItem.wooden_pickaxe ||
+        inventory.items[widgets.select].item === idOfItem.stone_pickaxe ||
+        inventory.items[widgets.select].item === idOfItem.iron_pickaxe
+    );
 
     switch(targetBlock) {
         case idOfBlock.invicon_grass: dropObj = idOfBlock.air; break;

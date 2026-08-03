@@ -41,16 +41,16 @@ class Slots {
 
     get max(): number { //堆叠上限
         switch(this.item) {
-            case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe:
+            case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe: case idOfItem.iron_pickaxe:
                 return 1;
-                /*break;*/
-            default: return 64; /*break;*/
+            default: return 64;
         }
     }
     get mine_speed(): number {
         switch(this.item) {
             case idOfItem.wooden_pickaxe: return 0.18;
             case idOfItem.stone_pickaxe: return 0.10;
+            case idOfItem.iron_pickaxe: return 0.06;
             default: return 1;
         }
     }

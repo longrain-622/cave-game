@@ -30,14 +30,14 @@ export interface RecipeShape {
 
 // 配方库
 export const recipes: RecipeShape[] = [
-    { //木板
+    { // 木板
         cells: [[{ itemId: idOfBlock.oak, amount: 1 }]],
         outputId: idOfBlock.planks,
         outputCount: 4,
         gridWidth: 1,
         gridHeight: 1
     },
-    { //工作台
+    { // 工作台
         cells: [
             [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
             [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }]
@@ -47,7 +47,7 @@ export const recipes: RecipeShape[] = [
         gridWidth: 2,
         gridHeight: 2
     },
-    { //木棍
+    { // 木棍
         cells: [
             [{ itemId: idOfBlock.planks, amount: 1 }],
             [{ itemId: idOfBlock.planks, amount: 1 }]
@@ -57,7 +57,7 @@ export const recipes: RecipeShape[] = [
         gridWidth: 1,
         gridHeight: 2
     },
-    { //木镐
+    { // 木镐
         cells: [
             [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
             [null, { itemId: idOfItem.stick, amount: 1 }, null],
@@ -68,7 +68,7 @@ export const recipes: RecipeShape[] = [
         gridWidth: 3,
         gridHeight: 3
     },
-    { //石镐
+    { // 石镐
         cells: [
             [{ itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }],
             [null, { itemId: idOfItem.stick, amount: 1 }, null],
@@ -79,7 +79,7 @@ export const recipes: RecipeShape[] = [
         gridWidth: 3,
         gridHeight: 3
     },
-    { //橡木门
+    { // 橡木门
         cells: [
             [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
             [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
@@ -90,7 +90,7 @@ export const recipes: RecipeShape[] = [
         gridWidth: 2,
         gridHeight: 3
     },
-    { //箱子
+    { // 箱子
         cells: [
             [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
             [{ itemId: idOfBlock.planks, amount: 1 }, null, { itemId: idOfBlock.planks, amount: 1 }],
@@ -101,7 +101,7 @@ export const recipes: RecipeShape[] = [
         gridWidth: 3,
         gridHeight: 3
     },
-    { //熔炉
+    { // 熔炉
         cells: [
             [{ itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }],
             [{ itemId: idOfBlock.cobblestone, amount: 1 }, null, { itemId: idOfBlock.cobblestone, amount: 1 }],
@@ -112,6 +112,17 @@ export const recipes: RecipeShape[] = [
         gridWidth: 3,
         gridHeight: 3
     },
+    { // 铁镐
+        cells: [
+            [{ itemId: idOfItem.iron_ingot, amount: 1 }, { itemId: idOfItem.iron_ingot, amount: 1 }, { itemId: idOfItem.iron_ingot, amount: 1 }],
+            [null, { itemId: idOfItem.stick, amount: 1 }, null],
+            [null, { itemId: idOfItem.stick, amount: 1 }, null],
+        ],
+        outputId: idOfItem.iron_pickaxe,
+        outputCount: 1,
+        gridWidth: 3,
+        gridHeight: 3
+    }
 ];
 
 // 匹配配方，返回最大可合成次数

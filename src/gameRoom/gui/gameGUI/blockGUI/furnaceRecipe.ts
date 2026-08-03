@@ -8,7 +8,8 @@ interface FurnaceRecipe {
 }
 
 const furnaceRecipes: FurnaceRecipe[] = [
-    { input: idOfBlock.cobblestone, output: idOfBlock.stone, time: 100 }
+    { input: idOfBlock.cobblestone, output: idOfBlock.stone, time: 256 },
+    { input: idOfItem.raw_iron, output: idOfItem.iron_ingot, time: 512 }
 ];
 
 // 根据输入物品查找配方，找不到返回 undefined
