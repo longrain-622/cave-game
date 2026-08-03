@@ -108,7 +108,7 @@ const chestGui: {
     initChestPixi(): void {
         chestGui_inited = true;
 
-        if(!this.chestContainer.parent) {
+        if (!this.chestContainer.parent) {
             guiContainer.addChild(this.chestContainer);
         }
         this.chestContainer.removeChildren();
@@ -465,10 +465,10 @@ export function breakChest(chest_world_x: number, chest_world_y: number): void {
         }
 
         const target = chests.find(obj => (obj.world_x === chest_world_x && obj.world_y === chest_world_y));
-        if(!target) {return;}
+        if (!target) {return;}
         chests.splice(chests.indexOf(target), 1);
 
-        for(let i = 0; i < target.fold.length; i++) {
+        for (let i = 0; i < target.fold.length; i++) {
             if(target.fold[i].item === -1) {continue;}
             for(let k = 0; k < target.fold[i].num; k++) {
                 createDrop(target.fold[i].item, chest_world_x * 64 + getRandomInt(0, 64), chest_world_y * 64 + getRandomInt(0, 64));

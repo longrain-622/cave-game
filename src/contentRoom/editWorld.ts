@@ -64,7 +64,6 @@ try {
     const archiveApp = new PIXI.Application({
         width: room.width,
         height: BLACKBG_HEIGHT,
-        transparent: true,
         antialias: false,
         backgroundAlpha: 0,
     });

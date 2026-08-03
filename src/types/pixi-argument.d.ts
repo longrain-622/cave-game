@@ -4,10 +4,6 @@ import 'pixi.js';
 declare module 'pixi.js' {
     interface ApplicationOptions {
         backgroundAlpha?: number;
-        /**
-         * @deprecated 从 v6.0.0 开始已弃用，使用 `backgroundAlpha` 替代
-         */
-        transparent?: boolean;
     };
 
     interface Application {
@@ -18,16 +14,13 @@ declare module 'pixi.js' {
     interface Container {
         sortableChildren: boolean;
         zIndex: number;
-        eventMode: string;
     };
 
     interface BaseTexture {
         defaultOptions: IBaseTextureOptions;
     };
 
-    interface Sprite {
-        eventMode: string;
-    };
+    interface TilingSprite {};
 
     export namespace Assets {
         function init(options: { basePath?: string; manifest?: any }): Promise<void>;

@@ -8,5 +8,8 @@
     "title": "游戏菜单",
     "backToGame": "回到游戏",
     "exitToContent": "保存并退回到标题画面"
+  },
+  "exitingPage": {
+    "savingText": "保存世界中"
   }
 }

@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { genericTextStyle } from '../../rendering.js';
 import { setting } from '../../../contentRoom/setting.js';
-import { ApioxAnyEvent, apioxEvent } from '../../../apiox/event.js';
+import { apioxEvent } from '../../../apiox/event.js';
 
 interface TouchButton {
     anchor_x: number; anchor_y: number;
@@ -79,14 +79,14 @@ export function initTouchButtons(app: PIXI.Application) {
             composed: true,
         };
 
-        const onPointerDown = (e: ApioxAnyEvent): void => {
+        const onPointerDown = (e: PIXI.FederatedPointerEvent): void => {
             e.stopPropagation();
             e.preventDefault();
             overlay.visible = true;
             apioxEvent.dispatchKeyboard('keydown', btn.key, eventOptions);
         };
 
-        const onPointerUp = (e: ApioxAnyEvent): void => {
+        const onPointerUp = (e: PIXI.FederatedPointerEvent): void => {
             e.stopPropagation();
             e.preventDefault();
             overlay.visible = false;

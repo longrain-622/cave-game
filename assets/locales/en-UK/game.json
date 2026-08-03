@@ -8,5 +8,8 @@
     "title": "Game Menu",
     "backToGame": "Return to Game",
     "exitToContent": "Back to Title Screen"
+  },
+  "exitingPage": {
+    "savingText": "Saving the world..."
   }
 }

@@ -14,15 +14,15 @@ PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
 const app = new PIXI.Application({
     width: room.width,
     height: room.height,
-    transparent: true,
     antialias: false,
     backgroundAlpha: 0,
 });
-app.view.style.position = 'absolute';
-app.view.style.left = '0';
-app.view.style.top = '0';
-app.view.style.width = room.width + 'px';
-app.view.style.height = room.height + 'px';
+const viewStyle = (app.view as HTMLCanvasElement).style;
+viewStyle.position = 'absolute';
+viewStyle.left = '0';
+viewStyle.top = '0';
+viewStyle.width = room.width + 'px';
+viewStyle.height = room.height + 'px';
 app.stage.sortableChildren = true;
 
 //将 Pixi 画布插入到游戏容器中，放置于其他 Canvas 之上

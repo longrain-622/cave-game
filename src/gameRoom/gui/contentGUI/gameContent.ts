@@ -9,6 +9,7 @@ import { room } from "../../../constants/generic.js";
 import { buttonTextures } from "../application.js";
 import { textStyle2 } from "../../../constants/pixiStyles.js";
 import { uistate } from "../uiState.js";
+import { exitPagePixi } from "./exitingPage.js";
 import * as PIXI from 'pixi.js';
 
 const gameContent = new PIXI.Container();
@@ -123,6 +124,7 @@ topBtn.on('pointerdown', () => {
     gameContent.visible = false;
 });
 bottomBtn.on('pointerdown', async () => {
+    exitPagePixi.container.visible = true;
     await saveGameToLocal(coverWhenSave);
     reloadPage();
 });
