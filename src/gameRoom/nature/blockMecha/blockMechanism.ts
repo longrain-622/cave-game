@@ -85,10 +85,10 @@ function lookBlocks() { //检测方块并触发方块的机制
     let look_y: number = Math.floor(player.y / 64) - look_range;
     for(let i = 0; i < 2*look_range; i++) {
         let look_x: number = Math.floor(player.x / 64) + Math.floor((times / 2 - 1) * look_range);
-        if(isOutOfBounds(look_y, look_x)) {continue;}
+        if (isOutOfBounds(look_y, look_x)) {continue;}
 
         for(let k = 0; k < look_range / 2; k++) {
-            if(isOutOfBounds(look_y, look_x)) {continue;}
+            if (isOutOfBounds(look_y, look_x)) {continue;}
             let looking_block = world[look_y][look_x];
 
             looking_block = grass_and_dirt(looking_block, look_x, look_y);

@@ -107,8 +107,7 @@ apioxEvent.onMouseUp(
                     inventory.items[widgets.select] = new Slots(-1, 0);
                 }
                 eventBus.emit('block:put', taking.item);
-            }
-            else {
+            } else {
                 inventory.items[widgets.select] = useItem(taking);
             }
         }
@@ -184,7 +183,7 @@ export function mouseAct(): void {
 
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); //生成掉落物
             specialMouseBreak(mine_mousex, mine_mousey);
-            if(mine_mousey > lowest_point) {targetBlock = idOfBlock.stone_dark;} else {targetBlock = idOfBlock.air;}
+            if (mine_mousey > lowest_point) {targetBlock = idOfBlock.stone_dark;} else {targetBlock = idOfBlock.air;}
             world[mine_mousey][mine_mousex] = targetBlock;
         }
     }

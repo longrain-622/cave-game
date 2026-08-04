@@ -80,7 +80,7 @@ class Animal {
     }
 
     injured(wouldJump: boolean, harm: number): void { //动物受伤
-        if(wouldJump) {
+        if (wouldJump) {
             this.vsp = -10;
             this.can_jump = false;
         }
@@ -215,11 +215,11 @@ function animalActions(): void {
 
             //改变腿部旋转方向
             animal.legrad += 0.1;
-            if(animal.legrad >= 2 * Math.PI){animal.legrad = 0;}
+            if (animal.legrad >= 2 * Math.PI){animal.legrad = 0;}
         } else {
-            if(animal.legrad !== 0 && animal.legrad < 2 * Math.PI) {
+            if (animal.legrad !== 0 && animal.legrad < 2 * Math.PI) {
                 animal.legrad += 0.1;
-                if(animal.legrad >= 2 * Math.PI) {animal.legrad = 0;}
+                if (animal.legrad >= 2 * Math.PI) {animal.legrad = 0;}
             }
         }
     }

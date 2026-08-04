@@ -39,7 +39,7 @@ let dropArray: Droppeds[] = [];
 let look_range = 32; // 渲染范围 单位：格
 
 function createDrop(type: number, x: number, y: number) {
-    if(type !== -1) {
+    if (type !== -1) {
         const newDrop = new Droppeds(type, x, y);
         dropArray.push(newDrop);
     }
@@ -65,14 +65,14 @@ function lookDrops(targetBlock: number): number { //返回对应方块掉落物�
         case idOfBlock.invicon_grass: dropObj = idOfBlock.air; break;
         case idOfBlock.grass: case idOfBlock.snowGrass: dropObj = idOfBlock.dirt; break;
         case idOfBlock.stone: case idOfBlock.cobblestone:
-            if(isTakingPickaxe) {dropObj = idOfBlock.cobblestone;}
+            if (isTakingPickaxe) {dropObj = idOfBlock.cobblestone;}
             else {dropObj = idOfBlock.air;}
             break;
-        case idOfBlock.leaves: if(getRandomInt(0, 1) === 0) {dropObj = idOfBlock.air;} else {dropObj = idOfItem.apple;} break;
-        case idOfBlock.sandstone: if(!isTakingPickaxe) {dropObj = idOfBlock.air;} break;
-        case idOfBlock.iron_ore: if(!isTakingPickaxe) {dropObj = idOfBlock.air;} else {dropObj = idOfItem.raw_iron;} break;
-        case idOfBlock.coal_ore: if(!isTakingPickaxe) {dropObj = idOfBlock.air;} else {dropObj = idOfItem.coal;} break;
-        case idOfBlock.deadBush: if(getRandomInt(0, 2) === 0) {dropObj = idOfItem.stick;} else {dropObj = idOfBlock.air;} break;
+        case idOfBlock.leaves: if (getRandomInt(0, 1) === 0) {dropObj = idOfBlock.air;} else {dropObj = idOfItem.apple;} break;
+        case idOfBlock.sandstone: if (!isTakingPickaxe) {dropObj = idOfBlock.air;} break;
+        case idOfBlock.iron_ore: if (!isTakingPickaxe) {dropObj = idOfBlock.air;} else {dropObj = idOfItem.raw_iron;} break;
+        case idOfBlock.coal_ore: if (!isTakingPickaxe) {dropObj = idOfBlock.air;} else {dropObj = idOfItem.coal;} break;
+        case idOfBlock.deadBush: if (getRandomInt(0, 2) === 0) {dropObj = idOfItem.stick;} else {dropObj = idOfBlock.air;} break;
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open: dropObj = idOfItem.oak_door; break;
     }
     return dropObj;
@@ -83,7 +83,7 @@ function drawDrops() {
         const drop: Droppeds = dropArray[k];
         const screenX: number = player.screen_x + drop.x - player.x;
         const screenY: number = player.screen_y + drop.y - player.y;
-        if(!isOnScreen(screenX, screenY, drop.width, drop.height)) {continue;}
+        if (!isOnScreen(screenX, screenY, drop.width, drop.height)) {continue;}
         checkBlock(ctx_entity, drop.type, screenX, screenY, drop.width, drop.height);
         checkItem(ctx_entity, drop.type, screenX, screenY, drop.width, drop.height);
     }
@@ -210,11 +210,11 @@ function dropsX() {
 }
 
 apioxEvent.onKeyDown((e) => { //丢弃物品
-    if(e.key !== 'q') {return;}
-    if(inventory.items[widgets.select].num >= 1) {
+    if (e.key !== 'q') {return;}
+    if (inventory.items[widgets.select].num >= 1) {
         inventory.items[widgets.select].num -= 1;
         createDrop(inventory.items[widgets.select].item, player.x + player.width/2 + player.face*32, player.y);
-        if(inventory.items[widgets.select].num <= 0) {
+        if (inventory.items[widgets.select].num <= 0) {
             inventory.items[widgets.select] = new Slots(-1, 0);
         }
     }

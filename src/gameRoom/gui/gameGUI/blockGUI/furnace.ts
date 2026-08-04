@@ -146,7 +146,7 @@ const furnaceGui: FurnacePixi = {
     initFurnacePixi() {
         furnaceGui_inited = true;
 
-        if(!this.furnaceContainer.parent) {
+        if (!this.furnaceContainer.parent) {
             guiContainer.addChild(this.furnaceContainer);
         }
         this.furnaceContainer.removeChildren();

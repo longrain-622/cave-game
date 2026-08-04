@@ -10,8 +10,8 @@ export class ApioxObject {
 
     constructor(id: string | null = null, className: string | null = null) {
         this.id = id; this.className = className;
-        if(id !== null) {this.element = document.getElementById(id);}
-        else if(className !== null) {
+        if (id !== null) {this.element = document.getElementById(id);}
+        else if (className !== null) {
             const elements = document.getElementsByClassName(className);
             if (elements.length > 0) {
                 this.element = elements[0] as HTMLElement;
@@ -54,7 +54,7 @@ export class ApioxObject {
     }
 
     domProperty(prop: string, value: any=null): any {
-        if(value !== null) {
+        if (value !== null) {
             (this.element as any)[prop] = value;
         }
         return (this.element as any)[prop];

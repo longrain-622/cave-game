@@ -33,10 +33,10 @@ for (let i = 0; i < WORKBENCH_COLS * WORKBENCH_ROWS; i++) {
 }
 
 apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
-    if(ev.button !== 2) {return;}
-    if(world[mouse.world_y][mouse.world_x] === idOfBlock.crafting_table) {
-        if(uistate.anyui_isOpening_except(uistate.craftingTable_isOpening)) {return;}
-        if(!uistate.craftingTable_isOpening) {
+    if (ev.button !== 2) {return;}
+    if (world[mouse.world_y][mouse.world_x] === idOfBlock.crafting_table) {
+        if (uistate.anyui_isOpening_except(uistate.craftingTable_isOpening)) {return;}
+        if (!uistate.craftingTable_isOpening) {
             uistate.craftingTable_isOpening = true;
         }
     }

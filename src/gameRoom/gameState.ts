@@ -5,7 +5,7 @@ export let coverWhenSave: boolean = false;
 
 export function setReadingWorld(val: WorldArchive) {
     readingWorld = val;
-    if(readingWorld !== null) {
+    if (readingWorld !== null) {
         coverWhenSave = true;
     }
 }

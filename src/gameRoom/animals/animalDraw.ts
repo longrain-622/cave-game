@@ -93,7 +93,7 @@ function drawAnimals(): void {
         let draw_x = player.screen_x + animal.x - player.x;
         let draw_y = player.screen_y + animal.y - player.y;
 
-        if(!isOnScreen(draw_x, draw_y, animal.width, animal.height)) {continue;}
+        if (!isOnScreen(draw_x, draw_y, animal.width, animal.height)) {continue;}
 
         const needFlip: boolean = (animal.dir === 1);
         const needDierad: boolean = (animal.hp <= 0);

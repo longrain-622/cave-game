@@ -136,7 +136,7 @@ apioxEvent.onKeyDown((e) => {
         case 'a': player.face = -1; player.left = 1; break;
         case 'd': player.face = 1; player.right = 1; break;
         case 'w':
-            if(player.can_jump && !uistate.invenUI_isOpening()) {
+            if (player.can_jump && !uistate.invenUI_isOpening()) {
                 player.vsp = player.jumpspeed;
                 player.can_jump = false;
             }
@@ -168,11 +168,11 @@ function playerMove(): void { // 玩家移动
     // 改变玩家腿部旋转方向
     if (player.left === 1 || player.right === 1) {
         player.leg_rad += 0.3 + player.acc / 48;
-        if(player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
+        if (player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
     } else {
-        if(player.leg_rad !== 0 && player.leg_rad < 2 * Math.PI) {
+        if (player.leg_rad !== 0 && player.leg_rad < 2 * Math.PI) {
             player.leg_rad += 0.3;
-            if(player.leg_rad >= 2 * Math.PI) {player.leg_rad = 0;}
+            if (player.leg_rad >= 2 * Math.PI) {player.leg_rad = 0;}
         }
     }
 
@@ -210,7 +210,7 @@ function playerJump(): void { // 玩家跳跃
                     break;
                 }
             } else {
-                if(!place_meeting(player.x+32, player.y)) {
+                if (!place_meeting(player.x+32, player.y)) {
                     player.y -= 1;
                 } else {
                     player.vsp = 0;

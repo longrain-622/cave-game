@@ -5,7 +5,7 @@ import { win } from "../apiox/global.js";
 
 apioxEvent.listenGlobalOnce('DOMContentLoaded', (): void => {
     const logo = new ApioxObject('logo');
-    if(win.session.get('logoShown') === 'true') {
+    if (win.session.get('logoShown') === 'true') {
         logo.hide();
     } else {
         logo.show('flex');

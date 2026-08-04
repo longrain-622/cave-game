@@ -197,7 +197,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
         let noiseVal = terrainNoise.fbm(globalX * scale, 4, 0.5, 2.0);
         let grassHeight = sealevel + Math.floor(noiseVal * amplitude);
         grassHeight = Math.min(world_height - 3, Math.max(1, grassHeight));
-        if(grassHeight > lowest_point) {lowest_point = grassHeight;} //设置最低点
+        if (grassHeight > lowest_point) {lowest_point = grassHeight;} //设置最低点
 
         let stoneNoiseVal = stoneNoise.fbm(globalX * scale * 1.5, 3);
         let stoneHeight = grassHeight + stoneOffset + Math.floor(stoneNoiseVal * stoneVariation);
@@ -229,7 +229,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
 
             if (y === g) {worldLine.push(surfaceBlock);}
             else if (y > g && y <= s) {
-                if(temp === 1 && y >= g + getRandomInt(3, 4)) {worldLine.push(7);}
+                if (temp === 1 && y >= g + getRandomInt(3, 4)) {worldLine.push(7);}
                 else {worldLine.push(dirtBlock);}
             } else if (y > s) {worldLine.push(stoneBlock);}
             else {worldLine.push(-1);}
@@ -296,7 +296,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
         const x: number = cactus_x[c];
         let y: number = 0;
         while(y < world_height && worlding[y][x] === -1) {y++;}
-        if(worlding[y][x] !== 5) {continue;}
+        if (worlding[y][x] !== 5) {continue;}
 
         let cactus_height: number = getRandomInt(1, 3);
         while(cactus_height > 0) {
@@ -344,24 +344,24 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
             const threshold = {
                 cave: -0.12, iron: 0.36, coal: 0.32,
             }
-            if(Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = 11;}
-            if(Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = 10;}
-            if(combined < threshold.cave) {worlding[y][x] = idOfBlock.stone_dark;}
+            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = 11;}
+            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = 10;}
+            if (combined < threshold.cave) {worlding[y][x] = idOfBlock.stone_dark;}
         }
     }
 
     //将当前区块追加到全局世界末尾
     pushChunkToWorld(worlding, behind);
     chunk.num++;
-    if(!behind) {chunk.left_number++;}
+    if (!behind) {chunk.left_number++;}
     chunk.start_x = chunk.num * chunk.width;
     eventBus.emit('chunk:create', behind);
 }
 
 function createChunkAnyTime() {
-    if(player.x - chunk.lookRange * 64 <= 0) {
+    if (player.x - chunk.lookRange * 64 <= 0) {
         createChunk(-chunk.width * (chunk.left_number + 1), false);
-    } else if(player.x + chunk.lookRange * 64 >= chunk.num * chunk.width * 64) {
+    } else if (player.x + chunk.lookRange * 64 >= chunk.num * chunk.width * 64) {
         createChunk(chunk.start_x, true);
     }
 }
@@ -379,7 +379,7 @@ function createWorldMain(): void {
     }
 
     // 读取存档的世界数组
-    if(!coverWhenSave) {
+    if (!coverWhenSave) {
         for (let i = 0; i < 8; i++) {
             createChunk(chunk.start_x, true);
         }

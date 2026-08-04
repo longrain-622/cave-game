@@ -67,11 +67,11 @@ apioxEvent.listenGlobalOnce('click', (): void => {
 
 //创建世界选单
 apioxEvent.onKeyDown((e) => {
-    if(e.key !== 'Enter') {return;}
-    if(start === 1 && choose === 0) {worldwindow.show();}
+    if (e.key !== 'Enter') {return;}
+    if (start === 1 && choose === 0) {worldwindow.show();}
 });
 starting_steve.on('click', (): void => {
-    if(start === 1 && choose === 0) {worldwindow.show();}
+    if (start === 1 && choose === 0) {worldwindow.show();}
 });
 
 //进入游戏
@@ -99,10 +99,10 @@ editWorldBtnGetin.on('click', async (): Promise<void> => {
 });
 
 //左边主菜单内容的选择
-startText.on('click', (): void => { if(start === 1){choose = 0;} });
-downloadText.on('click', (): void => { if(start === 1){choose = 1;} });
-setText.on('click', (): void => { if(start === 1){choose = 2;} });
-viewText.on('click', (): void => { if(start === 1){choose = 3;} });
+startText.on('click', (): void => { if (start === 1){choose = 0;} });
+downloadText.on('click', (): void => { if (start === 1){choose = 1;} });
+setText.on('click', (): void => { if (start === 1){choose = 2;} });
+viewText.on('click', (): void => { if (start === 1){choose = 3;} });
 
 function bgimageAnimation(): void { //背景图片的左右移动
     //解析当前 left 值，若无效则默认为 0
@@ -143,10 +143,10 @@ function bgimageAnimation(): void { //背景图片的左右移动
 }
 
 function ctrlShow(): void { //控制各种功能的显示和隐藏
-    if(start === 1) {
-        if(last_choose === choose) {return;}
+    if (start === 1) {
+        if (last_choose === choose) {return;}
 
-        if(choose !== 3) {bgimg.domstyle('filter', 'blur(5px)');}
+        if (choose !== 3) {bgimg.domstyle('filter', 'blur(5px)');}
         switch(choose) {
             case 0:
                 whiteBlock2.show('flex');
@@ -185,7 +185,7 @@ export function contentLoop(): void {
 }
 
 //彩蛋
-if(getRandomInt(0, 31) === 1) {
+if (getRandomInt(0, 31) === 1) {
     const contentIcon = new ApioxObject('contentIcon');
     contentIcon.domProperty('src', 'assets/images/others/AllayPixel.png');
 }

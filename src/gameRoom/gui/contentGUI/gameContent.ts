@@ -113,9 +113,9 @@ gameContent.addChild(txt.backToGame);
 gameContent.addChild(txt.backToTitle);
 
 apioxEvent.onKeyDown((e: ApioxKeyboardEvent): void => {
-    if(e.key !== 'Escape') {return;}
-    if(e.repeat) {return;}
-    if(uistate.anyui_isOpening() && !uistate.gameContent_isOpening) {return;}
+    if (e.key !== 'Escape') {return;}
+    if (e.repeat) {return;}
+    if (uistate.anyui_isOpening() && !uistate.gameContent_isOpening) {return;}
     uistate.gameContent_isOpening = !uistate.gameContent_isOpening;
     gameContent.visible = uistate.gameContent_isOpening;
 });

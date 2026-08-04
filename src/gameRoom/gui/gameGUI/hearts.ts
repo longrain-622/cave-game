@@ -75,13 +75,13 @@ function heartsAct(): void {
         heart.drawWhite_phaser = 2;
     }
 
-    if(heart.drawWhite) {
+    if (heart.drawWhite) {
         heart.timer++;
-        if(heart.timer >= 6) {
+        if (heart.timer >= 6) {
             heart.drawWhite_phaser++;
             heart.timer = 0;
         }
-        if(heart.drawWhite_phaser > 4) {
+        if (heart.drawWhite_phaser > 4) {
             heart.drawWhite = false;
             heart.drawWhite_phaser = 1;
             heart.timer = 0;

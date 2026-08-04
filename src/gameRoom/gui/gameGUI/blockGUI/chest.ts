@@ -72,10 +72,10 @@ function setCurrentChest(wx: number, wy: number): void {
 
 // 打开箱子
 apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
-    if(ev.button !== 2) {return;}
-    if(world[mouse.world_y][mouse.world_x] === idOfBlock.chest) {
-        if(uistate.anyui_isOpening_except(uistate.chest_isOpening)) {return;}
-        if(!uistate.chest_isOpening) {
+    if (ev.button !== 2) {return;}
+    if (world[mouse.world_y][mouse.world_x] === idOfBlock.chest) {
+        if (uistate.anyui_isOpening_except(uistate.chest_isOpening)) {return;}
+        if (!uistate.chest_isOpening) {
             setCurrentChest(mouse.world_x, mouse.world_y);
             uistate.chest_isOpening = true;
         }
@@ -466,7 +466,7 @@ export function handleChestBackpackContextMenu(): void {
 
 //箱子被破坏时的处理
 export function breakChest(chest_world_x: number, chest_world_y: number): void {
-    if(world[chest_world_y][chest_world_x] === idOfBlock.chest && chests.length > 0) {
+    if (world[chest_world_y][chest_world_x] === idOfBlock.chest && chests.length > 0) {
         //破坏箱子后关闭 GUI 状态
         if (uistate.chest_isOpening) {
             uistate.chest_isOpening = false;
@@ -478,7 +478,7 @@ export function breakChest(chest_world_x: number, chest_world_y: number): void {
         chests.splice(chests.indexOf(target), 1);
 
         for (let i = 0; i < target.fold.length; i++) {
-            if(target.fold[i].item === -1) {continue;}
+            if (target.fold[i].item === -1) {continue;}
             for(let k = 0; k < target.fold[i].num; k++) {
                 createDrop(target.fold[i].item, chest_world_x * 64 + getRandomInt(0, 64), chest_world_y * 64 + getRandomInt(0, 64));
             }

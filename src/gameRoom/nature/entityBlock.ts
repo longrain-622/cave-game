@@ -37,7 +37,7 @@ function sand_fall(obj: EntityBlock, i: number): number {
     obj.vsp++;
     obj.y += obj.vsp;
 
-    if(place_meeting(obj.x + 32, obj.y + 64)) {
+    if (place_meeting(obj.x + 32, obj.y + 64)) {
         world[Math.floor(obj.y / 64)][Math.floor(obj.x / 64)] = 5;
 
         entityBlock_array.splice(i, 1);
@@ -46,7 +46,7 @@ function sand_fall(obj: EntityBlock, i: number): number {
     }
 
     obj.timer++; //掉落的沙子到了时间就清除
-    if(obj.timer >= 1024) {
+    if (obj.timer >= 1024) {
         entityBlock_array.splice(i, 1);
         i--;
         return i;

@@ -44,14 +44,14 @@ apioxEvent.onKeyDown((ev: ApioxKeyboardEvent) => {
 
     //键盘选取物品栏的物品
     const num = Number(ev.key);
-    if(!isNaN(num) && num >= 1 && num <= 9 && ev.key.length === 1) {widgets.select = num - 1;}
+    if (!isNaN(num) && num >= 1 && num <= 9 && ev.key.length === 1) {widgets.select = num - 1;}
 });
 apioxEvent.onWheel((event: ApioxWheelEvent) => {
     // deltaY > 0 向下滚动，< 0 向上滚动
     //滚动物品栏
     widgets.select += 1 * event.deltaY/Math.abs(event.deltaY);
-    if(widgets.select > 8){widgets.select = 0;}
-    else if(widgets.select < 0){widgets.select = 8;}
+    if (widgets.select > 8){widgets.select = 0;}
+    else if (widgets.select < 0){widgets.select = 8;}
 });
 apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
     if (isTriggered) {return;} //防重复
@@ -471,7 +471,7 @@ export function setSelectedIndex(newVal: number): void {
 }
 
 export function gameGuiLoop(): void {
-    if(player.hp > 0) {
+    if (player.hp > 0) {
         heartsAct();
         drawHeart();
         floatContainer.visible = uistate.invenUI_isOpening();

@@ -14,7 +14,7 @@ const setting: SettingConfig = {
     screenRotate_isOpening: false,
 }
 
-if(detectPlatform() === 'mobile') {
+if (detectPlatform() === 'mobile') {
     setting.phoneButton_isOpening = true;
     setting.screenRotate_isOpening = true;
 }

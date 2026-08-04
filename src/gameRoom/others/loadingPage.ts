@@ -45,7 +45,7 @@ dotTimer = apioxTime.setInt(updateDots, 100);
 
 // 导出完成加载的方法，供 loadingCheck 调用
 export function finishLoading(): void {
-  if(dotTimer !== undefined) {apioxTime.clearInt(dotTimer);}
+  if (dotTimer !== undefined) {apioxTime.clearInt(dotTimer);}
   loadingTextObj.domProperty('textContent', loadedText);
   apioxTime.setOut(() => {
     const pageObj = new ApioxObject(null, 'loadingPage');
