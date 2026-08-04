@@ -19,6 +19,7 @@ interface Inventories {
     width: number; height: number; //屏幕上绘制的宽高
     initSlots: (num: number) => void; //初始化槽位
 }
+
 const inventory: Inventories = {
     items: [],
     width: 704, height: 664,
@@ -30,13 +31,18 @@ const inventory: Inventories = {
 };
 
 //物品栏对象
-const widgets: {
-    width: number; height: number; x: number; y: number; select: number;
-} = {
+interface Widgets {
+    width: number; height: number;
+    x: number; y: number;
+    select: number;
+}
+
+const widgets: Widgets = {
     width: 760, height: 88,
     x: 0, y: 0,
     select: 0
 };
+
 widgets.x = (room.width - widgets.width) / 2;
 widgets.y = room.height - widgets.height;
 
@@ -73,11 +79,11 @@ let bookSprite: PIXI.Sprite; // 配方书按钮
 
 export function initInventoryUI() {
     //如果已经添加过，避免重复
-    if(!guiContainer.parent) {
+    if (!guiContainer.parent) {
         guiApp.stage.addChild(guiContainer);
         guiContainer.addChild(inventoryContainer, heartContainer, craftingTableContainer, deathContainer, floatContainer);
     }
-    if(!widgetContainer.parent) {
+    if (!widgetContainer.parent) {
         guiApp.stage.addChild(widgetContainer);
     }
 
@@ -190,7 +196,7 @@ export function initInventoryUI() {
     }
 
     //合成网格（4个槽位）
-    for(let i = 0; i < 4; i++) {
+    for (let i = 0; i < 4; i++) {
         const row: number = Math.floor(i / 2);
         const col: number = i % 2;
         const x: number = invenX + iC_make.startX + col * (iC_make.slotWidth + iC_make.paddingX) + 8;
@@ -407,10 +413,10 @@ export function drawInventory(): void {
 function pickupObj(item: number): void { //拾取物品
     //找到空格
     let targetSlot: number = 0;
-    while((inventory.items[targetSlot].item !== -1 && inventory.items[targetSlot].item !== item)
+    while ((inventory.items[targetSlot].item !== -1 && inventory.items[targetSlot].item !== item)
     || inventory.items[targetSlot].num >= inventory.items[targetSlot].max) {
         targetSlot += 1;
-        if(targetSlot >= inventory.items.length - 1) {return;}
+        if (targetSlot >= inventory.items.length - 1) {return;}
     }
 
     //拾取

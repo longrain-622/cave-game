@@ -2,16 +2,21 @@ import { apioxTime } from "../apiox/time.js";
 import { apioxEvent, ApioxKeyboardEvent, apioxEventBus } from "../apiox/event.js";
 import { room } from "../constants/generic.js";
 
-//世界的属性等
+// 世界的属性等
 const world_height: number = 256;
 let worldName: string = "New World";
 export function setWorldName(val: string) { worldName = val; }
 
-const chunk: {
-    width: number; start_x: number;
-    num: number; lookRange: number;
+// 定义区块对象
+interface Chunk {
+    width: number;
+    start_x: number;
+    num: number;
+    lookRange: number;
     left_number: number;
-} = {
+}
+
+const chunk: Chunk = {
     width: 16, start_x: 0,
     num: 0, lookRange: 32, //渲染范围
     left_number: 0, //左侧区块数量
@@ -23,25 +28,24 @@ export function loadWorld(theWorld: number[][]): void {
 }
 const sealevel: number = world_height / 2;
 
-//生成随机数
+// 生成随机数
 function getRandomInt(min: number, max: number): number {
     min = Math.ceil(min);
     max = Math.floor(max);
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-//检测点与对象的碰撞
+// 检测点与对象的碰撞
 function place_meeting(x: number, y: number): boolean {
-    if(world[Math.floor(y / 64)][Math.floor(x / 64)] >= 0) {return true;}
+    if (world[Math.floor(y / 64)][Math.floor(x / 64)] >= 0) {return true;}
     else {return false;}
 }
 
-//检测点和矩形的碰撞
+// 检测点和矩形的碰撞
 function point_coll_rect(x: number, y: number, rect_x: number, rect_y: number, width: number, height: number): boolean {
-    if(x >= rect_x && x <= rect_x + width && y >= rect_y && y <= rect_y + height) {
+    if (x >= rect_x && x <= rect_x + width && y >= rect_y && y <= rect_y + height) {
         return true;
-    }
-    else {
+    } else {
         return false;
     }
 }
@@ -98,7 +102,7 @@ function enableKeyDoubleClickDetection(delay = 300): () => void {
 
     // 返回统一的清理函数
     return () => {
-        unsubscribe(); //移除键盘监听
+        unsubscribe(); // 移除键盘监听
         if (resetTimer) {
             apioxTime.clearOut(resetTimer);
             resetTimer = null;
@@ -106,21 +110,21 @@ function enableKeyDoubleClickDetection(delay = 300): () => void {
     };
 }
 
-function distance(x1: number, y1: number, x2: number, y2: number): number { //获得两点间距离
+function distance(x1: number, y1: number, x2: number, y2: number): number { // 获得两点间距离
     const dx: number = x1 - x2;
     const dy: number = y1 - y2;
     return Math.hypot(dx, dy);
 }
 
 function isOnScreen(x: number, y: number, width: number, height: number): boolean {
-    if(x >= -width && y >= -height && x <= room.width + width && y <= room.height + height) {
+    if (x >= -width && y >= -height && x <= room.width + width && y <= room.height + height) {
         return true;
     } else {
         return false;
     }
 }
 
-function isOutOfBounds(row: number, col: number): boolean { //y, x
+function isOutOfBounds(row: number, col: number): boolean { // y, x
     if (row < 0 || row >= world_height) {return true;}
     const rowLen: number = world[row]?.length ?? 0;
     return col < 0 || col >= rowLen;
@@ -144,7 +148,7 @@ function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
     const expectedLen: number = chunk.num * chunk.width;
 
     for (let i = 0; i < world_height; i++) {
-        //截断污染：如果该行长度超过预期，说明被越界写入过
+        // 截断污染：如果该行长度超过预期，说明被越界写入过
         if (world[i].length > expectedLen) {
             world[i].length = expectedLen;
         }

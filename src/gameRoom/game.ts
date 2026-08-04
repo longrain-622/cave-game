@@ -35,10 +35,10 @@ export function gameLoop(): void {
     updateMouseSprites();
     mouseAct();
 
-    if(animalArray.length > 0) {animalsLoop(); drawAnimals();}
-    if(dropArray.length > 0) {dropLoop();}
-    if(particleArray.length > 0) {particleAct(); drawParticles();}
-    if(entityBlock_array.length > 0) {look_entityBlock();}
+    if (animalArray.length > 0) {animalsLoop(); drawAnimals();}
+    if (dropArray.length > 0) {dropLoop();}
+    if (particleArray.length > 0) {particleAct(); drawParticles();}
+    if (entityBlock_array.length > 0) {look_entityBlock();}
     skyLoop();
 
     lookBlocks();

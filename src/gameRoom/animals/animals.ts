@@ -216,8 +216,7 @@ function animalActions(): void {
             //改变腿部旋转方向
             animal.legrad += 0.1;
             if(animal.legrad >= 2 * Math.PI){animal.legrad = 0;}
-        }
-        else {
+        } else {
             if(animal.legrad !== 0 && animal.legrad < 2 * Math.PI) {
                 animal.legrad += 0.1;
                 if(animal.legrad >= 2 * Math.PI) {animal.legrad = 0;}
@@ -241,15 +240,15 @@ function killAnimal(which: Animal): void {
 }
 
 apioxEvent.listenGlobal('click', (): void => {
-    if(mouse.can_use) { //攻击动物
-        for(let i = 0; i < animalArray.length; i++) {
+    if (mouse.can_use) { //攻击动物
+        for (let i = 0; i < animalArray.length; i++) {
             const animal = animalArray[i];
             if (animal.isDying || animal.hp <= 0) {continue;} // 已死亡不再受攻击
 
             let target_x = player.screen_x + animal.x - player.x;
             let target_y = player.screen_y + animal.y - player.y;
 
-            if(point_coll_rect(mouse.x, mouse.y, target_x, target_y, animal.width, animal.height)) {
+            if (point_coll_rect(mouse.x, mouse.y, target_x, target_y, animal.width, animal.height)) {
                 animal.injured(true, 1);
                 eventBus.emit('player:attack');
             }

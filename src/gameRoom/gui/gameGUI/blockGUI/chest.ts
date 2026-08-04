@@ -45,6 +45,15 @@ function loadChest(): void {
 }
 
 function lookChest(look_x: number, look_y: number): Chest {
+    // 清除无用的箱子对象
+    for (let i = chests.length - 1; i >= 0; i--) {
+        const cst: Chest = chests[i];
+        if (!world[cst.world_y] || world[cst.world_y][cst.world_x] !== idOfBlock.chest) {
+            chests.splice(i, 1);
+        }
+    }
+
+    // 检查或补漏箱子对象
     let existing = chests.find(c => c.world_x === look_x && c.world_y === look_y);
     if (!existing) {
         existing = {

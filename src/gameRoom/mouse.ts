@@ -54,9 +54,11 @@ apioxEvent.onMouseMove(
         mouse.x = (event.clientX - gameRoom.getRectLeft()) * scaleX;
         mouse.y = (event.clientY - gameRoom.getRectTop()) * scaleY;
 
-        if(distance(mouse.x, mouse.y, player.screen_x, player.screen_y) <= 256) {
+        if (distance(mouse.x, mouse.y, player.screen_x, player.screen_y) <= 256) {
             mouse.can_use = true;
-        } else {mouse.can_use = false;}
+        } else {
+            mouse.can_use = false;
+        }
     }
 );
 apioxEvent.onMouseDown(
@@ -81,27 +83,27 @@ apioxEvent.onMouseUp(
         mouse.isDown = false;
         const taking: Slots = inventory.items[widgets.select];
 
-        if(!uistate.invenUI_isOpening()
+        if (!uistate.invenUI_isOpening()
         && mouse.can_use
         && mouse.downingButton === 2
         && player.hp > 0) { //方块互动
             door_openOrClose();
         }
 
-        if(!uistate.invenUI_isOpening()
+        if (!uistate.invenUI_isOpening()
         && mouse.can_use
         && mouse.downingButton === 2
         && world[mouse.world_y][mouse.world_x] < 0
         && taking.num >= 1
         && player.hp > 0) {
-            if(taking.item < 512 || taking.item === idOfItem.oak_door) { //放置
-                switch(taking.item) {
+            if (taking.item < 512 || taking.item === idOfItem.oak_door) { //放置
+                switch (taking.item) {
                     case idOfItem.oak_door: putDoor(taking.item); break;
                     default: world[mouse.world_y][mouse.world_x] = taking.item; break;
                 }
                 taking.num -= 1;
                 inventory.items[widgets.select] = taking;
-                if(inventory.items[widgets.select].num <= 0) {
+                if (inventory.items[widgets.select].num <= 0) {
                     inventory.items[widgets.select] = new Slots(-1, 0);
                 }
                 eventBus.emit('block:put', taking.item);
@@ -124,7 +126,7 @@ export function mouseAct(): void {
     mouse.world_y = Math.round((player.y + mouse.y - player.screen_y) / 64);
 
     //鼠标挖方块计时器
-    if(mouse.isDown && mouse.downingButton === 0 && world[mouse.world_y][mouse.world_x] !== -1) {
+    if (mouse.isDown && mouse.downingButton === 0 && world[mouse.world_y][mouse.world_x] !== -1) {
         // 检查目标方块是否改变
         if (mouse.last_world_x !== mouse.world_x || mouse.last_world_y !== mouse.world_y
             || mouse.last_tool !== inventory.items[widgets.select].item
@@ -142,9 +144,9 @@ export function mouseAct(): void {
             mouse.blockhardness = calculateHardness(blockId);
         }
 
-        if(mouse.blockhardness !== -1) {
+        if (mouse.blockhardness !== -1) {
             mouse.timer++;
-            if(mouse.timer > mouse.blockhardness) {
+            if (mouse.timer > mouse.blockhardness) {
                 mouse.timer = 0;
                 mouse.destory++;
             }
@@ -155,7 +157,7 @@ export function mouseAct(): void {
         mouse.destory = 0;
     }
 
-    if(!uistate.invenUI_isOpening()
+    if (!uistate.invenUI_isOpening()
         && mouse.can_use 
         && player.hp > 0
         && mouse.isDown
@@ -163,10 +165,10 @@ export function mouseAct(): void {
         && world[mouse.world_y][mouse.world_x] !== -1
         && mouse.blockhardness !== -1
     ) { //挖掘
-        if(!player.needRotateHand) {player.needRotateHand = true;}
-        if(getRandomInt(0, 16) === 1) {createParticles(world[mouse.world_y][mouse.world_x], mouse.world_x*64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y*64 - 8 + getRandomInt(0, 1) * 72);}
+        if (!player.needRotateHand) {player.needRotateHand = true;}
+        if (getRandomInt(0, 16) === 1) {createParticles(world[mouse.world_y][mouse.world_x], mouse.world_x*64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y*64 - 8 + getRandomInt(0, 1) * 72);}
 
-        if(mouse.destory > 9) {
+        if (mouse.destory > 9) {
             //挖掘和掉落
             mouse.destory = 0;
             mouse.timer = 0;
@@ -176,7 +178,7 @@ export function mouseAct(): void {
             eventBus.emit('block:break', targetBlock);
 
             //管理粒子生成
-            for(let a = 0; a < getRandomInt(16, 32); a++) {
+            for (let a = 0; a < getRandomInt(16, 32); a++) {
                 createParticles(world[mine_mousey][mine_mousex], mine_mousex*64 + getRandomInt(0, 64), mine_mousey*64 + getRandomInt(0, 64));
             }
 

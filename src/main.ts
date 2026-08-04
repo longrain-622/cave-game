@@ -20,7 +20,7 @@ async function ensureGameLoaded() {
 
 // 主驱动循环
 function mainLoop() {
-    switch(_room_) {
+    switch (_room_) {
         case 0:
             contentLoop();
             break;

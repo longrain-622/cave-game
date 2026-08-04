@@ -57,6 +57,15 @@ function loadFurnace(readWorld: WorldArchive): void {
 }
 
 function lookFurnace(look_x: number, look_y: number): Furnace {
+    // 清除无用的熔炉对象
+    for (let i = furnaceArray.length - 1; i >= 0; i--) {
+        const fur: Furnace = furnaceArray[i];
+        if (!world[fur.world_y] || world[fur.world_y][fur.world_x] !== idOfBlock.furnace) {
+            furnaceArray.splice(i, 1);
+        }
+    }
+
+    // 查找或补漏某个位置的熔炉对象
     let existing = furnaceArray.find(f => f.world_x === look_x && f.world_y === look_y);
     if (!existing) {
         existing = {

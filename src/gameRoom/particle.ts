@@ -4,47 +4,47 @@ import { checkBlock } from './rendering.js';
 import { ctx_entity } from "./animals/animalDraw.js";
 import { idOfBlock } from "./nature/blockMecha/blockMechanism.js";
 
-class Particles {
+interface Particles {
     type: number;
     x: number;
     y: number;
-    vsp: number;    // 垂直速度
-    hsp: number;    // 水平速度
+    vsp: number; // 垂直速度
+    hsp: number; // 水平速度
     width: number;
     height: number;
     timer: number;
-    life: number;   // 剩余生命周期（帧数）
+    life: number; // 剩余生命周期（帧数）
+}
 
-    constructor(type: number, x: number, y: number) {
-        this.type = type;
-        this.x = x;
-        this.y = y;
-        this.width = 2 * getRandomInt(2, 4); //px
-        this.height = 2 * getRandomInt(2, 4);
-
-        // 斜抛初速度：水平随机 -3 到 3，垂直向上 -5 到 -3
-        this.hsp = getRandomInt(-1, 1);
-        this.vsp = getRandomInt(-2, -1);
-
-        this.timer = 0;   // 初始为0，开始计时
-    }
+function newParticles(type: number, x: number, y: number): Particles {
+    return {
+        type: type,
+        x: x, y: y,
+        vsp: getRandomInt(-2, -1),
+        hsp: getRandomInt(-1, 1),
+        width: 2 * getRandomInt(2, 4),
+        height: 2 * getRandomInt(2, 4),
+        timer: 0,
+        life: 100 + getRandomInt(0, 32),
+    };
 }
 
 let particleArray: Particles[] = []; //存储粒子对象的数组
 
 function createParticles(type: number, x: number, y: number): void {
-    particleArray.push(new Particles(type, x, y));
+    particleArray.push(newParticles(type, x, y));
 }
 
-function particleAct(): void { //控制粒子的行为
+function particleAct(): void { // 控制粒子的行为
     for(let i = 0; i < particleArray.length; i++) {
-        const particle = particleArray[i];
+        const particle: Particles = particleArray[i];
 
-        //删除到时间的
+        // 删除到时间的
         particle.timer++;
-        if(particle.timer >= 100 + getRandomInt(0, 32)) {
+        if (particle.timer >= particle.life) {
             particleArray.splice(i, 1);
             i--;
+            continue; // 粒子已删除,跳过本帧的物理计算
         }
 
         const GRAVITY = 0.5;
@@ -90,10 +90,10 @@ function drawParticles(): void {
         const obj: Particles = particleArray[k];
         const screenX: number = player.screen_x + obj.x - player.x;
         const screenY: number = player.screen_y + obj.y - player.y;
-        if(!isOnScreen(screenX, screenY, obj.width, obj.height)) {continue;}
+        if (!isOnScreen(screenX, screenY, obj.width, obj.height)) {continue;}
 
         let sx: number = 0, sy: number = 0;
-        switch(obj.type) {
+        switch (obj.type) {
             case idOfBlock.invicon_grass: case idOfBlock.deadBush: case idOfBlock.chest:
                 sx = 8; sy = 12;
                 break;

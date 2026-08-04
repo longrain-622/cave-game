@@ -54,7 +54,7 @@ class Players {
         }
     }
 
-    initXY(): void { //初始化玩家坐标,在createWorld.js中调用
+    initXY(): void { // 初始化玩家坐标,在createWorld.js中调用
         this.x = chunk.num * chunk.width * 64 / 2;
 
         let i: number = 0;
@@ -132,7 +132,7 @@ apioxEvent.onKeyDoubleClick((detail) => {
 });
 apioxEvent.onKeyDown((e) => {
     if (uistate.invenUI_isOpening()) {return;}
-    switch(e.key) {
+    switch (e.key) {
         case 'a': player.face = -1; player.left = 1; break;
         case 'd': player.face = 1; player.right = 1; break;
         case 'w':
@@ -144,18 +144,18 @@ apioxEvent.onKeyDown((e) => {
     }
 });
 apioxEvent.onKeyUp((e) => {
-    if(e.key === 'a' || e.key === 'd') {
+    if (e.key === 'a' || e.key === 'd') {
         player.left = 0; player.right = 0;
         player.acc = 0;
     }
 });
 apioxEvent.listenGlobal('mousedown', () => {
-    if(!uistate.invenUI_isOpening() && mouse.can_use) { //玩家手部旋转触发
+    if (!uistate.invenUI_isOpening() && mouse.can_use) { // 玩家手部旋转触发
         player.needRotateHand = true;
     }
 });
 
-function playerMove(): void { //玩家移动
+function playerMove(): void { // 玩家移动
     let dir = player.right - player.left;
 
     if (dir != 0) {
@@ -165,8 +165,8 @@ function playerMove(): void { //玩家移动
         }
     }
 
-    //改变玩家腿部旋转方向
-    if(player.left === 1 || player.right === 1) {
+    // 改变玩家腿部旋转方向
+    if (player.left === 1 || player.right === 1) {
         player.leg_rad += 0.3 + player.acc / 48;
         if(player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
     } else {
@@ -176,13 +176,13 @@ function playerMove(): void { //玩家移动
         }
     }
 
-    //改变玩家手旋转方向
-    if(player.needRotateHand) {
-        if(mouse.x > player.screen_x + player.width / 2) {player.isRotateRighthand = true;}
+    // 改变玩家手旋转方向
+    if (player.needRotateHand) {
+        if (mouse.x > player.screen_x + player.width / 2) {player.isRotateRighthand = true;}
         else {player.isRotateRighthand = false;}
 
         player.hand_rad += 0.3;
-        if(player.hand_rad >= Math.PI) {
+        if (player.hand_rad >= Math.PI) {
             player.needRotateHand = false;
             player.hand_rad = 0;
         }
@@ -191,11 +191,11 @@ function playerMove(): void { //玩家移动
     }
 }
 
-function playerJump(): void { //玩家跳跃
+function playerJump(): void { // 玩家跳跃
     player.vsp += player.grav;
-    if(player.vsp != 0) {
-        for(let i = 0; i < Math.abs(player.vsp); i++) {
-            if(player.vsp > 0) {
+    if (player.vsp != 0) {
+        for (let i = 0; i < Math.abs(player.vsp); i++) {
+            if (player.vsp > 0) {
                 if (!(place_meeting(player.x+8, player.y+128) || place_meeting(player.x + 56, player.y + 128))) {
                     player.y += 1;
                 } else {
@@ -209,8 +209,7 @@ function playerJump(): void { //玩家跳跃
                     player.can_jump = true;
                     break;
                 }
-            }
-            else {
+            } else {
                 if(!place_meeting(player.x+32, player.y)) {
                     player.y -= 1;
                 } else {
@@ -220,7 +219,7 @@ function playerJump(): void { //玩家跳跃
             }
         }
     }
-    if(!(place_meeting(player.x+8, player.y+128) || place_meeting(player.x + 56, player.y + 128))){
+    if (!(place_meeting(player.x+8, player.y+128) || place_meeting(player.x + 56, player.y + 128))){
         player.can_jump = false;
     }
 }
@@ -254,10 +253,13 @@ function playerMain(): void {
 playerMain();
 
 function playerLoop(): void {
-    if(!uistate.invenUI_isOpening() && player.hp > 0){ //打开背包无法移动
+    // 打开背包无法移动
+    if (!uistate.invenUI_isOpening() && player.hp > 0){ 
         playerMove();
     }
-    if(player.hp > 0) {playerJump();}
+
+    if (player.hp > 0) {playerJump();}
+
     updatePlayerRender();
 }
 
