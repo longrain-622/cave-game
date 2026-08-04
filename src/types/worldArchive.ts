@@ -54,6 +54,7 @@ interface WorldArchive {
     lastTime: string;
     world: number[][];
     lowest_point: number;
+    left_number: number; // 左侧已生成的区块数，读档时用于保持噪声坐标与数组坐标对齐
     player: PlayerArchive;
     animals: AnimalArchive[];
     inventory: InventoryArchive;

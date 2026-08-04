@@ -7,6 +7,7 @@ import { idOfBlock } from '../../nature/blockMecha/blockMechanism.js';
 import { room } from '../../../constants/generic.js';
 import { apioxHttp } from '../../../apiox/http.js';
 import { lang } from '../../../others/i18n.js';
+import { eventBus } from '../../others/eventBus.js';
 
 interface ExitPagePixi {
     container: PIXI.Container;
@@ -36,7 +37,11 @@ const exitPagePixi: ExitPagePixi = {
         this.container.visible = false;
         this.container.zIndex = 11;
 
-        this.background = new PIXI.TilingSprite(blockTextures[idOfBlock.dirt], room.width, room.height);
+        // 等待泥土纹理初始化完成后再创建背景，
+        // 防止模块加载阶段纹理未就绪时以空纹理创建 TilingSprite 导致渲染失败
+        const dirtTexture: PIXI.Texture = await waitForDirtTexture();
+
+        this.background = new PIXI.TilingSprite(dirtTexture, room.width, room.height);
         this.background.tileScale.x = 4;
         this.background.tileScale.y = 4;
         this.background.anchor.set(0, 0);
@@ -68,6 +73,17 @@ async function loadSavingText(): Promise<string> {
         console.error('load saving text error', error);
         return '';
     }
+}
+
+// 等待泥土纹理初始化完成（blockTextures 在渲染模块全部贴图加载完毕后才会填充）
+// 纹理未就绪时等待 textures:ready 事件，而非轮询时间
+function waitForDirtTexture(): Promise<PIXI.Texture> {
+    const readyTexture: PIXI.Texture = blockTextures[idOfBlock.dirt];
+    if (readyTexture) {return Promise.resolve(readyTexture);}
+
+    return new Promise((resolve) => {
+        eventBus.once('textures:ready', () => resolve(blockTextures[idOfBlock.dirt]));
+    });
 }
 
 function exitPageMain(): void {

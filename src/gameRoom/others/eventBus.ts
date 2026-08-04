@@ -7,6 +7,7 @@ type EventMap = {
     'block:put': [blockId: number];
     'item:pickup': [];
     'chunk:create': [behind: boolean];
+    'textures:ready': []; // 方块贴图纹理初始化完成，blockTextures 已填充
 };
 
 type EventName = keyof EventMap;

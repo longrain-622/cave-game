@@ -1,5 +1,5 @@
 import { getDate } from "../apiox/time.js";
-import { worldName, world } from "../gameRoom/const.js";
+import { worldName, world, chunk } from "../gameRoom/const.js";
 import { player } from "../gameRoom/player.js";
 import { Animal, animalArray } from "../gameRoom/animals/animals.js";
 import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";
@@ -36,7 +36,7 @@ function checkSameName(worldName: string, existingNames?: Set<string>): string {
 function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
     // 防重名机制：如果 worldName 已存在于 existingNames 中，自动添加 " - copy"
     let resolvedName;
-    if(cover) {resolvedName = worldName;}
+    if (cover) {resolvedName = worldName;}
     else {resolvedName = checkSameName(worldName, existingNames);}
 
     const targetWorld: WorldArchive = {
@@ -44,6 +44,7 @@ function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
         lastTime: '',
         world: world,
         lowest_point: lowest_point,
+        left_number: chunk.left_number,
         player: { hp: 20, x: 256, y: 256 },
         animals: [],
         inventory: { items: [] },

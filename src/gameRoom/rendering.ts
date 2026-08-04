@@ -5,6 +5,7 @@ import { player } from "./player.js";
 import { initSkyBackground, initSkyContainer } from "./nature/sky.js";
 import { mouse } from "./mouse.js";
 import { idOfBlock } from "./nature/blockMecha/blockMechanism.js";
+import { eventBus } from "./others/eventBus.js";
 
 import * as PIXI from 'pixi.js';
 import { apiMethod } from "../apiox/method.js";
@@ -105,6 +106,7 @@ function checkAllLoaded(): void {
 
         initSkyBackground();
         initBlockTextures();
+        eventBus.emit('textures:ready'); // 通知依赖 blockTextures 的模块可以安全创建纹理了
 
         //鼠标 UI 容器
         const mouseUIContainer = new PIXI.Container();

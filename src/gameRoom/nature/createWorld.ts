@@ -389,7 +389,13 @@ function createWorldMain(): void {
         // 更新区块状态以匹配加载的世界尺寸，防止 createChunkAnyTime 在错误位置生成新区块
         chunk.num = readingWorld.world[0].length / chunk.width;
         chunk.start_x = chunk.num * chunk.width;
-        chunk.left_number = 0;
+        // 恢复左侧区块计数，保证向左生成新区块时噪声坐标与存档地形连续
+        // 旧存档没有该字段时回退为 0
+        if (notNullUndefined(readingWorld.left_number) && !Number.isNaN(readingWorld.left_number)) {
+            chunk.left_number = readingWorld.left_number;
+        } else {
+            chunk.left_number = 0;
+        }
     }
 }
 createWorldMain();
