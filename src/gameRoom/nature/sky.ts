@@ -5,6 +5,8 @@ import { player } from "../player.js";
 import { apioxTime } from "../../apiox/time.js";
 import { coverWhenSave, readingWorld } from "../gameState.js";
 import { notNullUndefined } from "../../constants/utils.js";
+import * as PIXI from 'pixi.js';
+import { idOfBlock } from "./blockMecha/blockMechanism.js";
 
 // 时间常量 单位：秒
 //const DAY_LENGTH: number = 1440; // 一天总秒数
@@ -18,44 +20,59 @@ const SUNRISE_END: number = SUNRISE_DUR;
 const DAY_END: number = SUNRISE_END + DAY_DUR;
 const SUNSET_END: number = DAY_END + SUNSET_DUR;
 
-const canvas_sky = document.getElementById('gamebackground') as HTMLCanvasElement;
-$('#gamebackground').css({
-    'width': room.width + 'px',
-    'height': room.height + 'px',
-    'position': 'absolute',
-    'left': '0',
-    'top': '0'
-});
-canvas_sky.width = room.width;
-canvas_sky.height = room.height;
 export let sky_isDrawing: boolean = false;
-const ctx_sky: CanvasRenderingContext2D = canvas_sky.getContext('2d');
-ctx_sky.imageSmoothingEnabled = false;
-const sky_img = {
-    moon: new Image(),
-}
-sky_img.moon.src = 'assets/images/games/others/moon_phases.png';
-const sky_images = [sky_img.moon];
-let imagesLoaded: number = 0;
-function checkAllLoaded(): void {
-    imagesLoaded++;
-    if (imagesLoaded === sky_images.length) {
-        sky_isDrawing = true;
-    }
-}
-sky_images.forEach(sky_img => sky_img.addEventListener('load', checkAllLoaded));
 
-//离屏canvas用于背景图片的绘制
+// PixiJS 天空图层
+// 天空容器位于舞台最底层（zIndex=0，世界图层为 1），由 rendering.ts 创建舞台后调用 initSkyContainer 挂载
+const skyContainer: PIXI.Container = new PIXI.Container();
+export function initSkyContainer(stage: PIXI.Container): void {
+    if (skyContainer.parent) {return;} // 防止重复挂载
+    skyContainer.zIndex = 0;
+    stage.addChild(skyContainer);
+}
+
+// 太阳（Graphics 绘制）
+let sunContainer: PIXI.Container;
+let sunGlow: PIXI.Graphics;
+let sunCore: PIXI.Graphics;
+
+// 月亮（Sprite 绘制）
+// 月相图为无透明通道的 RGB 贴图，不能直接 tint 出辉光，故蓝色光晕用圆形 Graphics + BlurFilter 模拟
+let moonContainer: PIXI.Container;
+let moonSprite: PIXI.Sprite;
+let moonGlow: PIXI.Graphics;
+let moonTex: PIXI.Texture; // 月相图加载完成后缓存，供 initSkyBackground 创建精灵时使用
+
+// 月相图通过 PIXI.Assets 加载（不使用 Web API），加载完成后设置纹理。
+// 注意：加载通常先于 initSkyBackground 完成，故先存入 moonTex，待精灵创建时再赋值
+PIXI.Assets.load('/assets/images/games/others/moon_phases.png').then((tex: PIXI.Texture) => {
+    moonTex = new PIXI.Texture(tex.baseTexture, new PIXI.Rectangle(12, 12, 8, 8));
+    if (moonSprite) {moonSprite.texture = moonTex;}
+    sky_isDrawing = true;
+});
+
+// 天空渐变（Graphics 色带近似）
+// PIXI 无原生渐变，按原 canvas 线性渐变相同的插值方式逐层绘制色带
+const GRADIENT_STRIP_H: number = 4; // 每条色带高度（4px 一层，视觉与平滑渐变基本一致）
+let gradientGraphics: PIXI.Graphics;
+let lastGradientTimer: number = -1;
+
+// 离屏canvas用于背景地形的绘制（作为平铺纹理源）
 const offCanvas = document.createElement('canvas');
 offCanvas.width = room.width;
 offCanvas.height = room.height;
 const offCtx = offCanvas.getContext('2d');
 offCtx.imageSmoothingEnabled = false;
+const bgTex: PIXI.Texture = PIXI.Texture.from(offCanvas);
+
+// 平铺背景精灵（initSkyBackground 中创建）
+const bgTiles: PIXI.Sprite[] = [];
+const BG_TILE_W: number = 32 * 32; // 背景贴图水平平铺宽度（32格 x 32px）
 
 class BgImages {
-    blocks: number[][]; //背景图层存放的方块
-    depth: number; //纵深
-    width: number; height: number; //单位：格
+    blocks: number[][]; // 背景图层存放的方块
+    depth: number; // 纵深
+    width: number; height: number; // 单位：格
 
     constructor(depth: number) {
         this.blocks = [];
@@ -63,8 +80,8 @@ class BgImages {
         this.width = 32; this.height = 32;
     }
 
-    createBlocks() { //生成背景图片的地形
-        this.blocks = []; //重置避免累积
+    createBlocks() { // 生成背景图片的地形
+        this.blocks = []; // 重置避免累积
         const sealevel = Math.round(this.height / 2);
         let terrain_grass: number[] = new Array(this.width);
         
@@ -97,11 +114,12 @@ class BgImages {
             let worldLine: number[] = [];
             for (let i = 0; i < this.width; i++) {
                 if (k === terrain_grass[i]) {
-                    worldLine.push(0); // 草
+                    worldLine.push(idOfBlock.grass); // 草
                 } else if (k > terrain_grass[i]) {
-                    worldLine.push(1); // 泥
-                }
-                else {worldLine.push(-1);} // 海平面以上为空气
+                    worldLine.push(idOfBlock.dirt); // 泥
+                } else {
+                    worldLine.push(idOfBlock.air); // 海平面以上为空气
+                } 
             }
             this.blocks.push(worldLine); // 将一行作为数组推入二维数组
         }
@@ -125,7 +143,7 @@ class BgImages {
                 this.blocks[y][x] = 1; // 将草换成泥（树干根部）
                 for (let k = 0; k < oak_height; k++) {
                     y--;
-                    if (y >= 0) {this.blocks[y][x] = -2;} // 橡木
+                    if (y >= 0) {this.blocks[y][x] = idOfBlock.oak;} // 橡木
                 }
 
                 // 树叶
@@ -133,7 +151,7 @@ class BgImages {
                 for (let i = 0; i < 3; i++) {
                     for (let n = 0; n < leaves_height; n++) {
                         if (y >= 0 && x >= 0 && x < this.width && this.blocks[y][x] === -1) {
-                            this.blocks[y][x] = 3; // 树叶
+                            this.blocks[y][x] = idOfBlock.leaves; // 树叶
                         }
                         y++;
                     }
@@ -144,9 +162,9 @@ class BgImages {
         }
     }
 
-    drawBgBlocks(initx: number, inity: number, alpha: number = 0.5) { //绘制背景图片
+    drawBgBlocks(initx: number, inity: number, alpha: number = 0.5) { // 绘制背景图片
         let draw_y: number = inity;
-        for(let k = 0; k < this.height; k++) {
+        for (let k = 0; k < this.height; k++) {
             if (!this.blocks[k]) {break;}
             let draw_x: number = initx;
             for(let i = 0; i < this.width; i++) {
@@ -156,7 +174,7 @@ class BgImages {
             draw_y += 32;
         }
 
-        switch(getPhase()) {
+        switch (getPhase()) {
             case 0: offCtx.fillStyle = `rgba(${0 + 2*clock.timer}, ${0 + (20/9)*clock.timer}, ${0 + 2.8*clock.timer}, ${alpha})`; break;
             case 1: offCtx.fillStyle = `rgba(180, 200, 255, ${alpha})`; break;
             case 2: offCtx.fillStyle = `rgba(${180 - 2*(clock.timer - DAY_END)}, ${200 - 20/9*(clock.timer - DAY_END)}, ${255 - 2.8*(clock.timer - DAY_END)}, ${alpha})`; break;
@@ -172,15 +190,62 @@ const bg_a = new BgImages(0);
 const bg_b = new BgImages(0);
 
 function initSkyBackground(): void {
+    // 把背景地形绘制进离屏画布，再上传为纹理
     offCtx.clearRect(0, 0, room.width, room.height);
     bg_a.createBlocks();
     bg_a.drawBgBlocks(0, -128, 0.4);
     bg_b.createBlocks();
     bg_b.drawBgBlocks(0, 0);
+    bgTex.baseTexture.update();
+
+    // 创建天空精灵（添加顺序即绘制层级：渐变 -> 太阳 -> 月亮 -> 平铺地形）
+
+    // 渐变
+    gradientGraphics = new PIXI.Graphics();
+    skyContainer.addChild(gradientGraphics);
+
+    // 太阳（白色方块本体 + 柔光层，64x64 本体位于原点中心，绘制时以 sun.x/sun.y 为左上角）
+    sunGlow = new PIXI.Graphics();
+    sunGlow.beginFill(0xffffff);
+    sunGlow.drawRect(-34, -34, 68, 68);
+    sunGlow.endFill();
+    sunGlow.filters = [new PIXI.BlurFilter(16)]; // 对应原版 shadowBlur=32
+    sunCore = new PIXI.Graphics();
+    sunCore.beginFill(0xffffff);
+    sunCore.drawRect(-32, -32, 64, 64);
+    sunCore.endFill();
+    sunContainer = new PIXI.Container();
+    sunContainer.addChild(sunGlow);
+    sunContainer.addChild(sunCore);
+    skyContainer.addChild(sunContainer);
+
+    // 月亮（本体 Sprite + 蓝色圆形光晕，纹理在月相图加载完成后设置）
+    moonGlow = new PIXI.Graphics();
+    moonGlow.beginFill(0x3d5aa1); // 原版 shadowColor
+    moonGlow.drawRect(-34, -34, 68, 68); // 光晕
+    moonGlow.endFill();
+    moonGlow.filters = [new PIXI.BlurFilter(8)]; // 对应原版 shadowBlur=32
+    moonGlow.alpha = 0.6;
+    moonSprite = new PIXI.Sprite(moonTex ? moonTex : PIXI.Texture.EMPTY); // 月相图可能已加载完成，直接用缓存的纹理
+    moonSprite.width = 64;
+    moonSprite.height = 64;
+    moonSprite.anchor.set(0.5);
+    moonContainer = new PIXI.Container();
+    moonContainer.addChild(moonGlow);
+    moonContainer.addChild(moonSprite);
+    skyContainer.addChild(moonContainer);
+
+    // 平铺背景精灵池（覆盖 1280 宽的屏幕最多需要 3 张）
+    for (let i = 0; i < 4; i++) {
+        const tile: PIXI.Sprite = new PIXI.Sprite(bgTex);
+        tile.visible = false;
+        skyContainer.addChild(tile);
+        bgTiles.push(tile);
+    }
 }
 
 const clock: { timer: number; daylong: number; addTimer: () => void } = {
-    timer: 128, //天空计时器
+    timer: 128, // 天空计时器
     daylong: 1440,
     addTimer() {
         if (!sky_isDrawing) {return;}
@@ -188,11 +253,12 @@ const clock: { timer: number; daylong: number; addTimer: () => void } = {
         this.timer++;
         if (this.timer >= this.daylong) {this.timer = 0;}
 
-        //定时渲染背景
+        // 定时重绘背景地形（含天色染色），并重新上传纹理
         if (this.timer % 10 === 0) {
             offCtx.clearRect(0, 0, room.width, room.height);
             bg_a.drawBgBlocks(0, -128, 0.4);
             bg_b.drawBgBlocks(0, 0);
+            bgTex.baseTexture.update();
         }
     }
 };
@@ -215,7 +281,7 @@ class Celestials {
 const sun = new Celestials();
 const moon = new Celestials();
 
-apioxTime.setInt(() => { //开始计时
+apioxTime.setInt(() => { // 开始计时
     clock.addTimer();
 }, 1000);
 
@@ -227,8 +293,9 @@ function getPhase(): number { // 0日出 1白天 2日落 3夜晚
     return 3;
 }
 
-function drawSun() { //绘制太阳和月亮
-    //通过时间得到天体位置
+function drawSun(): void { // 绘制太阳和月亮
+    if (!sunContainer) {return;}
+    // 通过时间得到天体位置
     sun.x = room.width * clock.timer / (clock.daylong / 2);
     const sun_normalizedX: number = (2 * sun.x - room.width) / room.width;
     sun.y = -(room.height - 128) * Math.sqrt(1 - sun_normalizedX * sun_normalizedX) + room.height;
@@ -239,30 +306,18 @@ function drawSun() { //绘制太阳和月亮
     const moon_normalizedX: number = (2 * moon.x - room.width) / room.width;
     moon.y = -(room.height - 128) * Math.sqrt(1 - moon_normalizedX * moon_normalizedX) + room.height;
 
-    //绘制太阳
-    ctx_sky.shadowColor = 'white'; //颜色
-    ctx_sky.shadowBlur = 32; //模糊半径
-    ctx_sky.shadowOffsetX = 0; //偏移为0
-    ctx_sky.shadowOffsetY = 0;
-    ctx_sky.fillStyle = 'white';
-    ctx_sky.fillRect(sun.x, sun.y, 64, 64);
-    ctx_sky.shadowColor = 'transparent'; //重置阴影，避免影响后续绘制
+    // 绘制太阳（本体 64x64 的左上角对齐 sun.x/sun.y，与 fillRect(sun.x, sun.y, 64, 64) 一致）
+    sunContainer.position.set(sun.x + 32, sun.y + 32);
 
-    //绘制月亮
-    if (sky_isDrawing) {
-        let alpha: number = Math.max(0, Math.min(1, moon.x / 512));
-        ctx_sky.globalAlpha = alpha;
-        ctx_sky.shadowColor = '#3d5aa1';
-        ctx_sky.shadowBlur = 32;
-        ctx_sky.shadowOffsetX = 0;
-        ctx_sky.shadowOffsetY = 0;
-        ctx_sky.drawImage(sky_img.moon, 12, 12, 8, 8, moon.x, moon.y, 64, 64);
-        ctx_sky.globalAlpha = 1.0; // 恢复，避免影响后续绘制
-        ctx_sky.shadowColor = 'transparent';
+    // 绘制月亮（随时间渐入淡出，与原版 alpha = moon.x/512 一致）
+    if (moonContainer) {
+        moonContainer.alpha = Math.max(0, Math.min(1, moon.x / 512));
+        moonContainer.position.set(moon.x + 32, moon.y + 32);
     }
 }
 
-function getSkyGradient(t: number): {top: string; bottom: string} {
+// 返回天空渐变顶部/底部颜色（数值形式，与原版插值逻辑一致）
+function getSkyGradient(t: number): { topR: number; topG: number; topB: number; botR: number; botG: number; botB: number } {
     let topR: number, topG: number, topB: number, botR: number, botG: number, botB: number;
 
     if (t < SUNRISE_END) {
@@ -315,47 +370,59 @@ function getSkyGradient(t: number): {top: string; bottom: string} {
     }
 
     return {
-        top: `rgb(${Math.round(topR)}, ${Math.round(topG)}, ${Math.round(topB)})`,
-        bottom: `rgb(${Math.round(botR)}, ${Math.round(botG)}, ${Math.round(botB)})`
+        topR: Math.round(topR), topG: Math.round(topG), topB: Math.round(topB),
+        botR: Math.round(botR), botG: Math.round(botG), botB: Math.round(botB)
     };
 }
 
 function drawSkyBackground(): void {
-    const { top, bottom } = getSkyGradient(clock.timer);
-    const gradient: CanvasGradient = ctx_sky.createLinearGradient(0, 0, 0, room.height);
-    gradient.addColorStop(0, top);
-    gradient.addColorStop(1, bottom);
-    ctx_sky.fillStyle = gradient;
-    ctx_sky.fillRect(0, 0, room.width, room.height);
+    if (lastGradientTimer === clock.timer) {return;} // 计时器每秒变化一次，仅在其变化时重绘
+    lastGradientTimer = clock.timer;
+    const { topR, topG, topB, botR, botG, botB } = getSkyGradient(clock.timer);
+    gradientGraphics.clear();
+    for (let y = 0; y < room.height; y += GRADIENT_STRIP_H) {
+        // 按 canvas 线性渐变相同的插值方式计算每层颜色
+        const p = y / (room.height - 1);
+        const r = Math.round(topR + (botR - topR) * p);
+        const g = Math.round(topG + (botG - topG) * p);
+        const b = Math.round(topB + (botB - topB) * p);
+        gradientGraphics.beginFill((r << 16) | (g << 8) | b);
+        gradientGraphics.drawRect(0, y, room.width, Math.min(GRADIENT_STRIP_H, room.height - y));
+        gradientGraphics.endFill();
+    }
 }
 
-function drawTiledBackground(
-    ctx: CanvasRenderingContext2D,
-    img: HTMLCanvasElement,
-    offsetX: number,
-    offsetY: number
-): void {
-    const imgW = new BgImages(0).width * 32;
+function drawTiledBackground(offsetX: number, offsetY: number): void {
     // 水平方向平铺起始点
-    let startX = ((offsetX % imgW) + imgW) % imgW;
+    let startX = ((offsetX % BG_TILE_W) + BG_TILE_W) % BG_TILE_W;
     let drawX = -startX;
-    while (drawX < room.width) {
+    let i: number = 0;
+    while (drawX < room.width && i < bgTiles.length) {
+        const tile: PIXI.Sprite = bgTiles[i];
         // 垂直方向只画一次，从 0 开始
-        ctx.drawImage(img, drawX, offsetY);
-        drawX += imgW;
+        tile.position.set(drawX, offsetY);
+        tile.visible = true;
+        drawX += BG_TILE_W;
+        i++;
+    }
+    // 隐藏多余的平铺精灵
+    for (; i < bgTiles.length; i++) {
+        bgTiles[i].visible = false;
     }
 }
 
 export function skyLoop(): void {
+    if (!sunContainer) {return;} // 图片加载完成前跳过
+
     drawSkyBackground();
     drawSun();
 
-    const parallaxFactor: number = 0.05; //极慢视差因子（远景微微移动）
+    const parallaxFactor: number = 0.05; // 极慢视差因子（远景微微移动）
     const offsetX = (player.x - chunk.left_number*chunk.width*64) * parallaxFactor;
     let offsetY: number = -(player.y - world_height*32) * parallaxFactor * 4;
-    offsetY = Math.max(-64, offsetY); //最大竖直位移
+    offsetY = Math.max(-64, offsetY); // 最大竖直位移
 
-    drawTiledBackground(ctx_sky, offCanvas, offsetX, offsetY + 128);
+    drawTiledBackground(offsetX, offsetY + 128);
 }
 
-export { ctx_sky, canvas_sky, initSkyBackground, clock };
+export { initSkyBackground, clock };

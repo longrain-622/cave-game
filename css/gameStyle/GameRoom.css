@@ -9,7 +9,6 @@ canvas {
     background-color: transparent !important;
 }
 
-#gamebackground { z-index: 0; }
 #pixi { z-index: 1; }
 #drawEntity { z-index: 2; }
 #gui { z-index: 3; }

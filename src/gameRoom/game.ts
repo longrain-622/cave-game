@@ -11,7 +11,7 @@ import { dropArray, dropLoop } from './dropped/droppedItem.js';
 import { drawDeadPage } from './gui/gameGUI/death.js';
 
 import { particleArray, particleAct, drawParticles } from './particle.js';
-import { skyLoop, ctx_sky, canvas_sky } from './nature/sky.js';
+import { skyLoop } from './nature/sky.js';
 import { createChunkAnyTime } from './nature/createWorld.js';
 import { entityBlock_array, look_entityBlock } from './nature/entityBlock.js';
 import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
@@ -27,7 +27,6 @@ gameRoom.domstyle('height', String(room.height) + 'px');
 export function gameLoop(): void {
     //先清空画布
     ctx_entity.clearRect(0, 0, canvas_entity.width, canvas_entity.height);
-    ctx_sky.clearRect(0, 0, canvas_sky.width, canvas_sky.height);
 
     createChunkAnyTime();
 

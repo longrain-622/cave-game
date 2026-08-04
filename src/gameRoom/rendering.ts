@@ -2,7 +2,7 @@
 import { isOutOfBounds, world } from "./const.js";
 import { room } from "../constants/generic.js";
 import { player } from "./player.js";
-import { initSkyBackground } from "./nature/sky.js";
+import { initSkyBackground, initSkyContainer } from "./nature/sky.js";
 import { mouse } from "./mouse.js";
 import { idOfBlock } from "./nature/blockMecha/blockMechanism.js";
 
@@ -24,6 +24,9 @@ viewStyle.top = '0';
 viewStyle.width = room.width + 'px';
 viewStyle.height = room.height + 'px';
 app.stage.sortableChildren = true;
+
+//天空图层挂载到舞台最底层（zIndex=0），位于世界图层之下
+initSkyContainer(app.stage);
 
 //将 Pixi 画布插入到游戏容器中，放置于其他 Canvas 之上
 const gameRoom = apiMethod.select('.GameRoom');
