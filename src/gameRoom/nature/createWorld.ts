@@ -157,6 +157,9 @@ const temperatureNoise = new PerlinNoise(seed + 2); // 温度噪声，不同种�
 const caveNoise2D = new PerlinNoise(seed + 3); // 专门用于洞穴的二维噪声
 const ironNoise2D = new PerlinNoise(seed + 4);
 const coalNoise2D = new PerlinNoise(seed + 5);
+const andesiteNoise2D = new PerlinNoise(seed + 6); // 安山岩
+const dioriteNoise2D = new PerlinNoise(seed + 7); // 闪长岩
+const graniteNoise2D = new PerlinNoise(seed + 8); // 花岗岩
 
 /** 根据 X 坐标和温度噪声实例获取温度类型 */
 function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
@@ -238,7 +241,77 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
         worlding.push(worldLine);
     }
 
-    // 生成树
+    // 生成树、杂草、仙人掌
+    generateTrees(worlding);
+    generateWeeds(worlding);
+    generateCacti(worlding);
+
+    // 洞穴生成（在填充方块之后执行）
+    for (let y = 0; y < world_height; y++) {
+        for (let x = 0; x < chunk.width; x++) {
+            const globalX: number = startX + x;
+            const block: number = worlding[y][x];
+            if (block !== 2) {continue;} //只在石头中挖洞
+
+            const stoneTop: number = terrain_stone[x];
+            if (y < stoneTop + 4 || y > world_height - 10) {continue;} //垂直范围
+
+            //使用二维噪声，x 和 y 频率不同，使洞穴沿水平方向延伸更好
+            let noiseVal = caveNoise2D.fbm2D(
+                globalX * 0.025, //横向频率（控制洞穴水平间隔）
+                y * 0.025, //纵向频率（控制洞穴垂直分层）
+                3, //八度
+                0.5, //持久性
+                2.0 //倍频
+            );
+            let secondary = caveNoise2D.fbm2D( //增加一个次要噪声来添加不规则度
+                globalX * 0.08,
+                y * 0.06,
+                2,
+                0.5,
+                2.0
+            );
+            let combined: number = noiseVal * 0.7 + secondary * 0.3;
+
+            function getFbm2D(noiseObj: PerlinNoise): number {
+                return noiseObj.fbm2D(globalX * 0.07, y * 0.07, 2, 0.5, 2.0);
+            }
+            const ore_combined = {
+                iron: getFbm2D(ironNoise2D),
+                coal: getFbm2D(coalNoise2D),
+            };
+
+            // 安山岩、闪长岩、花岗岩（优先级高于矿石，后赋值覆盖矿石）
+            const rock_combined = {
+                andesite: getFbm2D(andesiteNoise2D),
+                diorite: getFbm2D(dioriteNoise2D),
+                granite: getFbm2D(graniteNoise2D),
+            };
+
+            //阈值 控制洞穴密度
+            const threshold = {
+                cave: -0.12, iron: 0.36, coal: 0.32,
+                andesite: 0.34, diorite: 0.34, granite: 0.34,
+            }
+            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = 11;}
+            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = 10;}
+            if (Math.abs(rock_combined.andesite) > threshold.andesite) {worlding[y][x] = idOfBlock.andesite;}
+            if (Math.abs(rock_combined.diorite) > threshold.diorite) {worlding[y][x] = idOfBlock.diorite;}
+            if (Math.abs(rock_combined.granite) > threshold.granite) {worlding[y][x] = idOfBlock.granite;}
+            if (combined < threshold.cave) {worlding[y][x] = idOfBlock.stone_dark;}
+        }
+    }
+
+    //将当前区块追加到全局世界末尾
+    pushChunkToWorld(worlding, behind);
+    chunk.num++;
+    if (!behind) {chunk.left_number++;}
+    chunk.start_x = chunk.num * chunk.width;
+    eventBus.emit('chunk:create', behind);
+}
+
+// 生成树
+function generateTrees(worlding: number[][]): void {
     let oak_x: number[] = [];
     for (let a = 0; a < chunk.width / 20; a++) {
         oak_x.push(getRandomInt(4, chunk.width - 4));
@@ -272,8 +345,10 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
             }
         }
     }
+}
 
-    //杂草
+// 生成杂草
+function generateWeeds(worlding: number[][]): void {
     let inviconGrass_x: number[] = [];
     for (let c = 0; c < chunk.width / 3; c++) {
         inviconGrass_x.push(getRandomInt(0, chunk.width));
@@ -287,8 +362,10 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
             case 5: worlding[y - 1][x] = -5; break;
         }
     }
+}
 
-    //仙人掌
+// 生成仙人掌
+function generateCacti(worlding: number[][]): void {
     let cactus_x: number[] = [];
     for (let c = 0; c < chunk.width / 16; c++) {
         cactus_x.push(getRandomInt(0, chunk.width));
@@ -305,58 +382,6 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
             cactus_height--;
         }
     }
-
-    // 洞穴生成（在填充方块之后执行）
-    for (let y = 0; y < world_height; y++) {
-        for (let x = 0; x < chunk.width; x++) {
-            const globalX: number = startX + x;
-            const block: number = worlding[y][x];
-            if (block !== 2) {continue;} //只在石头中挖洞
-
-            const stoneTop: number = terrain_stone[x];
-            if (y < stoneTop + 4 || y > world_height - 10) {continue;} //垂直范围
-
-            //使用二维噪声，x 和 y 频率不同，使洞穴沿水平方向延伸更好
-            let noiseVal = caveNoise2D.fbm2D(
-                globalX * 0.025, //横向频率（控制洞穴水平间隔）
-                y * 0.025, //纵向频率（控制洞穴垂直分层）
-                3, //八度
-                0.5, //持久性
-                2.0 //倍频
-            );
-            let secondary = caveNoise2D.fbm2D( //增加一个次要噪声来添加不规则度
-                globalX * 0.08,
-                y * 0.06,
-                2,
-                0.5,
-                2.0
-            );
-            let combined: number = noiseVal * 0.7 + secondary * 0.3;
-
-            function ore_getFbm2D(noiseObj: PerlinNoise): number {
-                return noiseObj.fbm2D(globalX * 0.07, y * 0.07, 2, 0.5, 2.0);
-            }
-            const ore_combined = {
-                iron: ore_getFbm2D(ironNoise2D),
-                coal: ore_getFbm2D(coalNoise2D),
-            };
-
-            //阈值 控制洞穴密度
-            const threshold = {
-                cave: -0.12, iron: 0.36, coal: 0.32,
-            }
-            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = 11;}
-            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = 10;}
-            if (combined < threshold.cave) {worlding[y][x] = idOfBlock.stone_dark;}
-        }
-    }
-
-    //将当前区块追加到全局世界末尾
-    pushChunkToWorld(worlding, behind);
-    chunk.num++;
-    if (!behind) {chunk.left_number++;}
-    chunk.start_x = chunk.num * chunk.width;
-    eventBus.emit('chunk:create', behind);
 }
 
 function createChunkAnyTime() {

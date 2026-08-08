@@ -12,7 +12,7 @@ interface DelayPos extends BlockPos {
     time: number;
 }
 const grassDirtDelay: DelayPos[] = [];
-const GRASS_DELAY_FRAMES: number = 64;
+const GRASS_DELAY_FRAMES: number = 256;
 
 // 是否满足草/泥土的变化条件
 function shouldChangeGrassDirt(x: number, y: number): boolean {
