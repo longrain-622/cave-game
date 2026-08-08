@@ -51,6 +51,9 @@ class SoundManager {
             { name: 'cactus_break', url: 'assets/sounds/dig/cactus_break.ogg' },
             { name: 'grassDig1', url: 'assets/sounds/dig/Grass_dig1.ogg' },
             { name: 'grassDig2', url: 'assets/sounds/dig/Grass_dig2.ogg' },
+            { name: 'glassBreak1', url: 'assets/sounds/dig/glassBreak1.ogg' },
+            { name: 'glassBreak2', url: 'assets/sounds/dig/glassBreak2.ogg' },
+            { name: 'glassBreak3', url: 'assets/sounds/dig/glassBreak3.ogg' },
             //此处继续添加其他音效
         ];
         await Promise.all(soundList.map(s => this.loadSound(s.name, s.url)));

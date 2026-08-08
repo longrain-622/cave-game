@@ -62,7 +62,7 @@ function lookDrops(targetBlock: number): number { //返回对应方块掉落物�
     );
 
     switch(targetBlock) {
-        case idOfBlock.invicon_grass: dropObj = idOfBlock.air; break;
+        case idOfBlock.invicon_grass: case idOfBlock.glass: dropObj = idOfBlock.air; break;
         case idOfBlock.grass: case idOfBlock.snowGrass: dropObj = idOfBlock.dirt; break;
         case idOfBlock.stone: case idOfBlock.cobblestone:
             if (isTakingPickaxe) {dropObj = idOfBlock.cobblestone;}

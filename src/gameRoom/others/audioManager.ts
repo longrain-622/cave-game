@@ -4,38 +4,67 @@ import { soundManager } from './soundManager.js';
 import { getRandomInt } from '../const.js';
 import { idOfBlock } from '../nature/blockMecha/blockMechanism.js';
 
-function playBlockSound(blockId: number): void {
-    switch (blockId) {
+function playBlockSound(id: number, isBreaking: boolean): void {
+    switch (id) {
         case idOfBlock.grass: case idOfBlock.invicon_grass: case idOfBlock.deadBush:
-            soundManager.play('grassDig' + String(getRandomInt(1, 2)));
+            switch (getRandomInt(0, 1)) {
+                case 0: soundManager.play('grassDig1'); break;
+                case 1: soundManager.play('grassDig2'); break;
+            }
             break;
+
         case idOfBlock.dirt: case idOfBlock.sand: case idOfBlock.snowGrass:
-            soundManager.play('gravel' + String(getRandomInt(1, 4)));
+            switch (getRandomInt(0, 3)) {
+                case 0: soundManager.play('gravel1'); break;
+                case 1: soundManager.play('gravel2'); break;
+                case 2: soundManager.play('gravel3'); break;
+                case 3: soundManager.play('gravel4'); break;
+            }
             break;
+
         case idOfBlock.stone: case idOfBlock.cobblestone: case idOfBlock.sandstone:
         case idOfBlock.coal_ore: case idOfBlock.iron_ore:
         case idOfBlock.furnace:
             soundManager.play('stone4');
             break;
+
         case idOfBlock.oak: case idOfBlock.planks: case idOfBlock.crafting_table:
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
         case idOfBlock.chest:
-            soundManager.play('woodbreak' + String(getRandomInt(1, 3)));
+            switch (getRandomInt(0, 2)) {
+                case 0: soundManager.play('woodbreak1'); break;
+                case 1: soundManager.play('woodbreak2'); break;
+                case 2: soundManager.play('woodbreak3'); break;
+            }
             break;
+
         case idOfBlock.leaves:
             soundManager.play('leavebreak');
             break;
+
         case idOfBlock.cactus:
             soundManager.play('cactus_break');
+            break;
+
+        case idOfBlock.glass:
+            if (isBreaking) {
+                switch (getRandomInt(0, 2)) {
+                    case 0: soundManager.play('glassBreak1'); break;
+                    case 1: soundManager.play('glassBreak2'); break;
+                    case 2: soundManager.play('glassBreak3'); break;
+                }
+            } else {
+                soundManager.play('stone4');
+            }
             break;
     }
 }
 
 eventBus.on('block:break', (blockId: number) => {
-    playBlockSound(blockId);
+    playBlockSound(blockId, true);
 });
 eventBus.on('block:put', (blockId: number) => {
-    playBlockSound(blockId);
+    playBlockSound(blockId, false);
 });
 
 eventBus.on('item:pickup', () => {

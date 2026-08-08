@@ -18,6 +18,7 @@ export enum idOfBlock {
     iron_ore = 10, coal_ore = 11,
     oak_door_bottom = 12, oak_door_top = 13,
     furnace = 14,
+    glass = 15,
 }
 
 //方块类，用于存储方块属性
@@ -65,6 +66,7 @@ const block = {
     stone_dark: newBlock(idOfBlock.stone_dark, -1),
     chest: newBlock(idOfBlock.chest, hardness.planks),
     furnace: newBlock(idOfBlock.furnace, hardness.stone),
+    glass: newBlock(idOfBlock.glass, 2),
 };
 
 const blocksArray: Blocks[] = [
@@ -72,9 +74,9 @@ const blocksArray: Blocks[] = [
     block.sand, block.snowGrass, block.sandstone, block.planks, block.crafting_table, block.iron_ore, block.coal_ore,
     block.invicon_grass, block.cactus, block.deadBush,
     block.oak_door_bottom, block.oak_door_top, block.oak_door_bottom_open, block.oak_door_top_open,
-    block.stone_dark, block.chest, block.furnace
+    block.stone_dark, block.chest, block.furnace,
+    block.glass
 ];
-blocksArray.sort((a, b) => a.id - b.id);
 
 const look_range: number = 16; //渲染的范围的一半
 let times: number = 0;
@@ -104,5 +106,10 @@ function lookBlocks() { //检测方块并触发方块的机制
         look_y += 1;
     }
 }
+
+function main(): void {
+    blocksArray.sort((a, b) => a.id - b.id);
+}
+main();
 
 export { blocksArray, lookBlocks };

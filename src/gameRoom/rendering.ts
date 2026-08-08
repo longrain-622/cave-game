@@ -62,6 +62,7 @@ const img = {
     oak_door_bottom: new Image(), oak_door_top: new Image(), oak_door_bottom_open: new Image(), oak_door_top_open: new Image(),
     stone_dark: new Image(),
     chest: new Image(), furnace: new Image(),
+    glass: new Image(),
 };
 img.destory.src = '/assets/images/games/blocks/destory/destory_strip10.png';
 img.grass.src = '/assets/images/games/blocks/grass.png';
@@ -87,6 +88,7 @@ img.oak_door_top_open.src = '/assets/images/games/blocks/oak_door_top.png';
 img.stone_dark.src = '/assets/images/games/blocks/others/stone_dark.png';
 img.chest.src = '/assets/images/games/blocks/chest.png';
 img.furnace.src = '/assets/images/games/blocks/furnace.png';
+img.glass.src = '/assets/images/games/blocks/glass.png';
 
 const images = [
     img.destory,
@@ -96,7 +98,8 @@ const images = [
     img.invicon_grass, img.cactus, img.deadBush,
     img.oak_door_bottom, img.oak_door_top, img.oak_door_bottom_open, img.oak_door_top_open,
     img.stone_dark,
-    img.chest, img.furnace
+    img.chest, img.furnace,
+    img.glass
 ];
 let imagesLoaded: number = 0;
 function checkAllLoaded(): void {
@@ -166,6 +169,7 @@ function initBlockTextures() {
     blockTextures[idOfBlock.stone_dark] = PIXI.Texture.from(img.stone_dark);
     blockTextures[idOfBlock.chest] = PIXI.Texture.from(img.chest);
     blockTextures[idOfBlock.furnace] = PIXI.Texture.from(img.furnace);
+    blockTextures[idOfBlock.glass] = PIXI.Texture.from(img.glass);
     blockTextures['destory'] = PIXI.Texture.from(img.destory);
 }
 
@@ -294,6 +298,7 @@ sw: number=16, sh: number=16): void {
         case idOfBlock.stone_dark: ctx.drawImage(img.stone_dark, sx, sy, sw, sh, x, y, width, height); break;
         case idOfBlock.chest: ctx.drawImage(img.chest, sx, sy, sw, sh, x, y, width, height); break;
         case idOfBlock.furnace: ctx.drawImage(img.furnace, sx, sy, sw, sh, x, y, width, height); break;
+        case idOfBlock.glass: ctx.drawImage(img.glass, sx, sy, sw, sh, x, y, width, height); break;
     }
 }
 
