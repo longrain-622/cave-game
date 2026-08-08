@@ -29,7 +29,7 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
         if (!target) {return;}
         const isEnabled: boolean = target.domProperty('checked') as boolean;
 
-        switch(target.id) {
+        switch (target.id) {
             case 'touchKeys':
                 setting.phoneButton_isOpening = isEnabled;
                 console.log(`phone button was ${isEnabled ? 'opened' : 'closed'}`);

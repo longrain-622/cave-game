@@ -37,7 +37,7 @@ function createParticles(type: number, x: number, y: number): void {
 }
 
 function particleAct(): void { // 控制粒子的行为
-    for(let i = 0; i < particleArray.length; i++) {
+    for (let i = 0; i < particleArray.length; i++) {
         const particle: Particles = particleArray[i];
 
         // 删除到时间的

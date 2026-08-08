@@ -20,12 +20,12 @@ function getBlockHardnessById(blockId: number): number {
 }
 
 export function calculateHardness(id: number): number { //根据工具等计算方块硬度
-    switch(id) {
+    switch (id) {
         case idOfBlock.stone: case idOfBlock.cobblestone: case idOfBlock.sandstone:
         case idOfBlock.iron_ore: case idOfBlock.coal_ore:
         case idOfBlock.furnace:
         case idOfBlock.andesite: case idOfBlock.diorite: case idOfBlock.granite:
-            switch(inventory.items[widgets.select].item) {
+            switch (inventory.items[widgets.select].item) {
                 case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe: case idOfItem.iron_pickaxe:
                     return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
                     //break;

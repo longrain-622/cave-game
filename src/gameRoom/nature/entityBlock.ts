@@ -55,12 +55,12 @@ function sand_fall(obj: EntityBlock, i: number): number {
 }
 
 function look_entityBlock() {
-    for(let i = 0; i < entityBlock_array.length; i++) {
+    for (let i = 0; i < entityBlock_array.length; i++) {
         const looking: EntityBlock = entityBlock_array[i];
 
         checkBlock(ctx_entity, looking.id, player.screen_x + looking.x - player.x, player.screen_y + looking.y - player.y, 64, 64); //绘制实体方块
 
-        switch(looking.id) {
+        switch (looking.id) {
             case 5: i = sand_fall(looking, i); break;
         }
     }

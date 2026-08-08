@@ -147,7 +147,7 @@ function ctrlShow(): void { //控制各种功能的显示和隐藏
         if (last_choose === choose) {return;}
 
         if (choose !== 3) {bgimg.domstyle('filter', 'blur(5px)');}
-        switch(choose) {
+        switch (choose) {
             case 0:
                 whiteBlock2.show('flex');
                 starting.show('flex');

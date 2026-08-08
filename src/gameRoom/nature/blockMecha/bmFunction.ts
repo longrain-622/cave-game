@@ -124,7 +124,7 @@ export function cactus_and_deadBush(looking_block: number, lookx: number, looky:
 export function door(looking_block: number, lookx: number, looky: number): number {
     if (isOutOfBounds(looky - 1, lookx) || isOutOfBounds(looky + 1, lookx)) {return looking_block;}
 
-    switch(looking_block) {
+    switch (looking_block) {
         case idOfBlock.oak_door_bottom:
             if (world[looky - 1][lookx] !== idOfBlock.oak_door_top) {return idOfBlock.air;}
             break;
@@ -146,7 +146,7 @@ export function door_openOrClose(): void { //run it when mouseup
     const mouse_x: number = mouse.world_x;
     const mouse_y: number = mouse.world_y;
 
-    switch(world[mouse_y][mouse_x]) {
+    switch (world[mouse_y][mouse_x]) {
         case idOfBlock.oak_door_bottom:
             setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_bottom_open });
             setWorldState({ x: mouse_x, y: mouse_y - 1 }, { type: idOfBlock.oak_door_top_open });

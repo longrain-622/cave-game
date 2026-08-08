@@ -24,7 +24,7 @@ const inventory: Inventories = {
     items: [],
     width: 704, height: 664,
     initSlots(num: number) {
-        for(let i = 0; i < num; i++) {
+        for (let i = 0; i < num; i++) {
             this.items.push(new Slots(-1, 0));
         }
     },

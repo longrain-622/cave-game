@@ -480,7 +480,7 @@ export function breakChest(chest_world_x: number, chest_world_y: number): void {
 
         for (let i = 0; i < target.fold.length; i++) {
             if (target.fold[i].item === -1) {continue;}
-            for(let k = 0; k < target.fold[i].num; k++) {
+            for (let k = 0; k < target.fold[i].num; k++) {
                 createDrop(target.fold[i].item, chest_world_x * 64 + getRandomInt(0, 64), chest_world_y * 64 + getRandomInt(0, 64));
             }
         }

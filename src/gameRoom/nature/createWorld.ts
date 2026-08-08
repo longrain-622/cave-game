@@ -222,7 +222,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
 
             //根据温度选择方块
             let surfaceBlock, dirtBlock, stoneBlock;
-            switch(temp) {
+            switch (temp) {
                 case TEMP.HOT:
                     surfaceBlock = 5; dirtBlock = 5; stoneBlock = 2; break;
                 case TEMP.COLD:
@@ -356,8 +356,8 @@ function generateWeeds(worlding: number[][]): void {
     for (let c = 0; c < inviconGrass_x.length; c++) {
         const x: number = inviconGrass_x[c];
         let y: number = 0;
-        while(y < world_height && worlding[y][x] === -1) {y++;}
-        switch(worlding[y][x]) {
+        while (y < world_height && worlding[y][x] === -1) {y++;}
+        switch (worlding[y][x]) {
             case 0: worlding[y - 1][x] = -3; break;
             case 5: worlding[y - 1][x] = -5; break;
         }
@@ -373,11 +373,11 @@ function generateCacti(worlding: number[][]): void {
     for (let c = 0; c < cactus_x.length; c++) {
         const x: number = cactus_x[c];
         let y: number = 0;
-        while(y < world_height && worlding[y][x] === -1) {y++;}
+        while (y < world_height && worlding[y][x] === -1) {y++;}
         if (worlding[y][x] !== 5) {continue;}
 
         let cactus_height: number = getRandomInt(1, 3);
-        while(cactus_height > 0) {
+        while (cactus_height > 0) {
             worlding[y - cactus_height][x] = -4;
             cactus_height--;
         }

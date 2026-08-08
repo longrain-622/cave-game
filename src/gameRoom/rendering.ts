@@ -282,7 +282,7 @@ x: number, y: number,
 width: number, height: number,
 sx: number=0, sy: number=0,
 sw: number=16, sh: number=16): void {
-    switch(drawingObj) {
+    switch (drawingObj) {
         case 0: ctx.drawImage(img.grass, sx, sy, sw, sh, x, y, width, height); break;
         case 1: ctx.drawImage(img.dirt, sx, sy, sw, sh, x, y, width, height); break;
         case 2: ctx.drawImage(img.stone, sx, sy, sw, sh, x, y, width, height); break;

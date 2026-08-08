@@ -76,7 +76,7 @@ function initItemTextures() {
 
 function checkItem(ctx: CanvasRenderingContext2D, drawingObj: number, x: number, y: number, width: number, height: number, sx=0, sy=0, sw=16, sh=16) {
     /*512=beef 513=chicken 514=mutton 515=porkchop*/
-    switch(drawingObj) {
+    switch (drawingObj) {
         case idOfItem.beef: ctx.drawImage(img_items.beef, sx, sy, sw, sh, x, y, width, height); break;
         case idOfItem.chicken: ctx.drawImage(img_items.chicken, sx, sy, sw, sh, x, y, width, height); break;
         case idOfItem.mutton: ctx.drawImage(img_items.mutton, sx, sy, sw, sh, x, y, width, height); break;
@@ -97,7 +97,7 @@ function putDoor(doorId: number): void {
     let doorBlockId_b: number;
     let doorBlockId_t: number;
 
-    switch(doorId) {
+    switch (doorId) {
         case idOfItem.oak_door: doorBlockId_b = idOfBlock.oak_door_bottom; doorBlockId_t = idOfBlock.oak_door_top; break;
     }
 
@@ -112,7 +112,7 @@ function putDoor(doorId: number): void {
 function useItem(item: Slots): Slots { //使用物品栏中的物品
     let plusHp: number = 0;
 
-    switch(item.item) {
+    switch (item.item) {
         case idOfItem.beef: plusHp = 3; break;
         case idOfItem.chicken: plusHp = 2; break;
         case idOfItem.mutton: plusHp = 2; break;

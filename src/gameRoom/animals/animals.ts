@@ -68,7 +68,7 @@ class Animal {
 
     setY(): void { //初始化y坐标
         let a: number = 0;
-        while(world[a][Math.floor(this.x / 64)] === -1) {
+        while (world[a][Math.floor(this.x / 64)] === -1) {
             a++;
         }
         this.y = a*64 - 256;
@@ -77,7 +77,7 @@ class Animal {
     beginMove(): void { //开始移动
         this.can_move = true;
         this.dir = getRandomInt(2, 4) - 3;
-        while(this.dir === 0){this.dir = getRandomInt(2, 4) - 3;}
+        while (this.dir === 0){this.dir = getRandomInt(2, 4) - 3;}
     }
 
     injured(wouldJump: boolean, harm: number): void { //动物受伤
@@ -232,7 +232,7 @@ function killAnimal(which: Animal): void {
     which.flashFrames = 0;      // 死亡时清除闪红
 
     //掉落物
-    switch(which.type) {
+    switch (which.type) {
         case idOfAnimal.pig: createDrop(515, which.x, which.y); break;
         case idOfAnimal.cow: createDrop(512, which.x, which.y); break;
         case idOfAnimal.sheep: createDrop(514, which.x, which.y); break;

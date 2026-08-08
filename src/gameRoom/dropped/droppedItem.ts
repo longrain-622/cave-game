@@ -11,7 +11,7 @@ import { ctx_entity } from '../animals/animalDraw.js';
 import '../others/audioManager.js';
 import { apioxEvent } from '../../apiox/event.js';
 
-class Droppeds {
+interface Droppeds {
     type: number;
     x: number;
     y: number;
@@ -20,20 +20,17 @@ class Droppeds {
     width: number;
     height: number;
     timer: number;  // 计时器，达到阈值后才允许拾取
+}
 
-    constructor(type: number, x: number, y: number) {
-        this.type = type;
-        this.x = x;
-        this.y = y;
-        this.width = 32;
-        this.height = 32;
-
-        // 斜抛初速度：水平随机 -3 到 3，垂直向上 -5 到 -3
-        this.hsp = getRandomInt(-3, 3);
-        this.vsp = getRandomInt(-5, -3);
-
-        this.timer = 0;   // 初始为0，开始计时
-    }
+function newDroppeds(type: number, x: number, y: number): Droppeds {
+    return {
+        type: type,
+        x: x, y: y,
+        width: 32, height: 32,
+        vsp: getRandomInt(-5, -3),
+        hsp: getRandomInt(-3, 3),
+        timer: 0,
+    };
 }
 
 let dropArray: Droppeds[] = [];
@@ -41,7 +38,7 @@ let look_range = 32; // 渲染范围 单位：格
 
 function createDrop(type: number, x: number, y: number) {
     if (type !== -1) {
-        const newDrop = new Droppeds(type, x, y);
+        const newDrop = newDroppeds(type, x, y);
         dropArray.push(newDrop);
     }
 
@@ -62,7 +59,7 @@ function lookDrops(targetBlock: number): number { //返回对应方块掉落物�
         inventory.items[widgets.select].item === idOfItem.iron_pickaxe
     );
 
-    switch(targetBlock) {
+    switch (targetBlock) {
         case idOfBlock.invicon_grass: case idOfBlock.glass: dropObj = idOfBlock.air; break;
         case idOfBlock.grass: case idOfBlock.snowGrass: dropObj = idOfBlock.dirt; break;
         case idOfBlock.stone: case idOfBlock.cobblestone:
@@ -203,8 +200,7 @@ function dropsX() {
             // 清除原有的速度，避免脱离吸引后乱飞
             drop.hsp = 0;
             drop.vsp = 0;
-        } 
-        else { //未接近时：普通物理运动
+        } else { //未接近时：普通物理运动
             applyNormalPhysics(drop);
         }
     }

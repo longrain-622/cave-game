@@ -168,7 +168,7 @@ class BgImages {
         for (let k = 0; k < this.height; k++) {
             if (!this.blocks[k]) {break;}
             let draw_x: number = initx;
-            for(let i = 0; i < this.width; i++) {
+            for (let i = 0; i < this.width; i++) {
                 checkBlock(offCtx, this.blocks[k][i], draw_x, draw_y, 32, 32);
                 draw_x += 32;
             }
