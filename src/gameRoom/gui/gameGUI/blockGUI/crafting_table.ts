@@ -3,7 +3,7 @@ import { selecting, locateHighWhite } from "../gameGuiState.js";
 import { updateSelectingItem, inventory } from "../inventory.js";
 import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
 import { mouse } from "../../../mouse.js";
-import { world } from "../../../const.js";
+import { world } from "../../../world.js";
 import { room } from "../../../../constants/generic.js";
 import { blockTextures, genericTextStyle } from "../../../rendering.js";
 import { itemTextures } from "../../../dropped/items.js";

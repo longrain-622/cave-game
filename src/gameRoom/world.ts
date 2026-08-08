@@ -1,7 +1,7 @@
 // 世界的属性等
 const world_height: number = 256;
 let worldName: string = "New World";
-export function setWorldName(val: string) { worldName = val; }
+function setWorldName(val: string) { worldName = val; }
 const sealevel: number = world_height / 2;
 
 // 定义区块对象
@@ -20,8 +20,22 @@ const chunk: Chunk = {
 }
 
 let world: number[][] = Array.from({ length: world_height }, (): number[] => []);
-export function loadWorld(theWorld: number[][]): void {
+
+function loadWorld(theWorld: number[][]): void {
     world = theWorld;
+}
+
+interface BlockPos {
+    x: number; y: number;
+}
+
+interface BlockState {
+    type: number;
+}
+
+function setWorldState(pos: BlockPos, state: BlockState): void {
+    if (isOutOfBounds(pos.y, pos.x)) {return;}
+    world[pos.y][pos.x] = state.type;
 }
 
 // 检测点与对象的碰撞
@@ -52,3 +66,18 @@ function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
         }
     }
 }
+
+export {
+    world_height,
+    worldName,
+    setWorldName,
+    Chunk,
+    chunk,
+    world,
+    loadWorld,
+    setWorldState,
+    sealevel,
+    place_meeting,
+    isOutOfBounds,
+    pushChunkToWorld
+};

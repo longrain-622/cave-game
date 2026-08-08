@@ -1,8 +1,9 @@
 import { checkBlock } from "../rendering.js";
 import { ctx_entity } from "../animals/animalDraw.js";
 import { player } from "../player.js";
-import { place_meeting, world } from "../const.js";
+import { place_meeting, setWorldState } from "../world.js";
 import { coverWhenSave, readingWorld } from "../gameState.js";
+import { idOfBlock } from "./blockMecha/blocks.js";
 
 class EntityBlock {
     id: number;
@@ -38,7 +39,7 @@ function sand_fall(obj: EntityBlock, i: number): number {
     obj.y += obj.vsp;
 
     if (place_meeting(obj.x + 32, obj.y + 64)) {
-        world[Math.floor(obj.y / 64)][Math.floor(obj.x / 64)] = 5;
+        setWorldState({ x: Math.floor(obj.x / 64), y: Math.floor(obj.y / 64) }, { type: idOfBlock.sand });
 
         entityBlock_array.splice(i, 1);
         i--;

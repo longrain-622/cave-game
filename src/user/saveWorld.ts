@@ -1,5 +1,5 @@
 import { getDate } from "../apiox/time.js";
-import { worldName, world, chunk } from "../gameRoom/const.js";
+import { worldName, world, chunk } from "../gameRoom/world.js";
 import { player } from "../gameRoom/player.js";
 import { Animal, animalArray } from "../gameRoom/animals/animals.js";
 import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";

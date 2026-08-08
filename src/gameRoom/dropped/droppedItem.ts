@@ -1,4 +1,5 @@
-import { getRandomInt, place_meeting, point_coll_rect, distance, isOnScreen } from '../const.js';
+import { place_meeting } from '../world.js';
+import { getRandomInt, point_coll_rect, distance, isOnScreen } from '../const.js';
 import { checkBlock } from '../rendering.js';
 import { player } from '../player.js';
 import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';

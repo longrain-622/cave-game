@@ -1,4 +1,4 @@
-import { setWorldName } from '../gameRoom/const.js';
+import { setWorldName } from '../gameRoom/world.js';
 import { ApioxObject } from '../apiox/dom.js';
 import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';

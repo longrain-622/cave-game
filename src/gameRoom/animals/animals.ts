@@ -1,4 +1,5 @@
-import { world, getRandomInt, place_meeting, point_coll_rect } from '../const.js';
+import { world, place_meeting } from '../world.js';
+import { getRandomInt, point_coll_rect } from '../const.js';
 import { room } from '../../constants/generic.js';
 import { player } from '../player.js';
 import { mouse } from '../mouse.js';

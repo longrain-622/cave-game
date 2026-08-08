@@ -1,4 +1,5 @@
-import { world_height, world, chunk, place_meeting, enableKeyDoubleClickDetection } from './const.js';
+import { world_height, world, chunk, place_meeting } from './world.js';
+import { enableKeyDoubleClickDetection } from './const.js';
 import { room } from '../constants/generic.js';
 import { uistate } from './gui/uiState.js';
 import { mouse } from './mouse.js';

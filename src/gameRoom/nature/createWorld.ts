@@ -1,4 +1,5 @@
-import { world_height, getRandomInt, pushChunkToWorld, chunk, loadWorld, sealevel } from "../const.js";
+import { world_height, pushChunkToWorld, chunk, loadWorld, sealevel } from "../world.js";
+import { getRandomInt } from "../const.js";
 import { player } from "../player.js";
 import { eventBus } from "../others/eventBus.js";
 import { idOfBlock } from "./blockMecha/blocks.js";

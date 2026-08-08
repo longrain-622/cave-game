@@ -5,6 +5,7 @@ export async function loadScripts() {
   const modulePaths = [
     '/js/gameRoom/others/loadingPage.js',
     '/js/gameRoom/const.js',
+    '/js/gameRoom/world.js',
     '/js/gameRoom/nature/createWorld.js',
     '/js/gameRoom/others/soundManager.js',
     '/js/gameRoom/game.js',

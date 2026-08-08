@@ -1,4 +1,4 @@
-import { world, isOutOfBounds } from '../../const.js';
+import { world, isOutOfBounds, setWorldState } from '../../world.js';
 import { player } from '../../player.js';
 import { sand_gravity, cactus_and_deadBush, grass_and_dirt, inviconGrass, door } from './bmFunction.js';
 import { blocksArray } from './blocks.js';
@@ -24,7 +24,7 @@ function lookBlocks() { //检测方块并触发方块的机制
             looking_block = cactus_and_deadBush(looking_block, look_x, look_y);
             looking_block = door(looking_block, look_x, look_y);
 
-            world[look_y][look_x] = looking_block;
+            setWorldState({ x: look_x, y: look_y }, { type: looking_block });
             look_x += 1;
         }
 

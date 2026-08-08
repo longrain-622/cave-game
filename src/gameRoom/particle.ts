@@ -1,4 +1,5 @@
-import { getRandomInt, isOnScreen, place_meeting } from "./const.js";
+import { place_meeting } from "./world.js";
+import { getRandomInt, isOnScreen } from "./const.js";
 import { player } from "./player.js";
 import { checkBlock } from './rendering.js';
 import { ctx_entity } from "./animals/animalDraw.js";

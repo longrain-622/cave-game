@@ -1,4 +1,5 @@
-import { world_height, getRandomInt, chunk } from "../const.js";
+import { world_height, chunk } from "../world.js";
+import { getRandomInt } from "../const.js";
 import { room } from "../../constants/generic.js";
 import { checkBlock } from "../rendering.js";
 import { player } from "../player.js";

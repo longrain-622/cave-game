@@ -1,5 +1,6 @@
 import { player } from './player.js';
-import { world, distance, getRandomInt } from './const.js';
+import { world, setWorldState } from './world.js';
+import { distance, getRandomInt } from './const.js';
 import { room } from '../constants/generic.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
 import { uistate } from './gui/uiState.js';
@@ -99,7 +100,7 @@ apioxEvent.onMouseUp(
             if (taking.item < 512 || taking.item === idOfItem.oak_door) { //放置
                 switch (taking.item) {
                     case idOfItem.oak_door: putDoor(taking.item); break;
-                    default: world[mouse.world_y][mouse.world_x] = taking.item; break;
+                    default: setWorldState({ x: mouse.world_x, y: mouse.world_y }, { type: taking.item }); break;
                 }
                 taking.num -= 1;
                 inventory.items[widgets.select] = taking;
@@ -184,7 +185,7 @@ export function mouseAct(): void {
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); //生成掉落物
             specialMouseBreak(mine_mousex, mine_mousey);
             if (mine_mousey > lowest_point) {targetBlock = idOfBlock.stone_dark;} else {targetBlock = idOfBlock.air;}
-            world[mine_mousey][mine_mousex] = targetBlock;
+            setWorldState({ x: mine_mousex, y: mine_mousey }, { type: targetBlock });
         }
     }
 }

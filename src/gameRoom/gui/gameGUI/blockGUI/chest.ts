@@ -3,7 +3,8 @@ import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from
 import { inventory, updateSelectingItem, guiContainer } from '../inventory.js';
 import { genericTextStyle, blockTextures } from '../../../rendering.js';
 import { itemTextures } from '../../../dropped/items.js';
-import { getRandomInt, world } from '../../../const.js';
+import { world } from '../../../world.js';
+import { getRandomInt } from '../../../const.js';
 import { room } from '../../../../constants/generic.js';
 import { mouse } from '../../../mouse.js';
 import { uistate } from '../../uiState.js';

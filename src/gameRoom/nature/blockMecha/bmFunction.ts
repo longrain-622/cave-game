@@ -1,5 +1,6 @@
 import { entityBlock_array, EntityBlock } from "../entityBlock.js";
-import { world , getRandomInt, isOutOfBounds } from "../../const.js";
+import { world, isOutOfBounds, setWorldState } from "../../world.js";
+import { getRandomInt } from "../../const.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
 import { idOfBlock } from "./blocks.js";
@@ -102,20 +103,20 @@ export function door_openOrClose(): void { //run it when mouseup
 
     switch(world[mouse_y][mouse_x]) {
         case idOfBlock.oak_door_bottom:
-            world[mouse_y][mouse_x] = idOfBlock.oak_door_bottom_open;
-            world[mouse_y - 1][mouse_x] = idOfBlock.oak_door_top_open;
+            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_bottom_open });
+            setWorldState({ x: mouse_x, y: mouse_y - 1 }, { type: idOfBlock.oak_door_top_open });
             break;
         case idOfBlock.oak_door_top:
-            world[mouse_y][mouse_x] = idOfBlock.oak_door_top_open;
-            world[mouse_y + 1][mouse_x] = idOfBlock.oak_door_bottom_open;
+            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_top_open });
+            setWorldState({ x: mouse_x, y: mouse_y + 1 }, { type: idOfBlock.oak_door_bottom_open });
             break;
         case idOfBlock.oak_door_bottom_open:
-            world[mouse_y][mouse_x] = idOfBlock.oak_door_bottom;
-            world[mouse_y - 1][mouse_x] = idOfBlock.oak_door_top;
+            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_bottom });
+            setWorldState({ x: mouse_x, y: mouse_y - 1 }, { type: idOfBlock.oak_door_top });
             break;
         case idOfBlock.oak_door_top_open:
-            world[mouse_y][mouse_x] = idOfBlock.oak_door_top;
-            world[mouse_y + 1][mouse_x] = idOfBlock.oak_door_bottom;
+            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_top });
+            setWorldState({ x: mouse_x, y: mouse_y + 1 }, { type: idOfBlock.oak_door_bottom });
             break;
     }
 }
