@@ -1,40 +1,31 @@
-import { world, isOutOfBounds, setWorldState } from '../../world.js';
-import { player } from '../../player.js';
-import { sand_gravity, cactus_and_deadBush, grass_and_dirt, inviconGrass, door } from './bmFunction.js';
-import { blocksArray } from './blocks.js';
+import { world, isOutOfBounds, setWorldState, changePos, BlockPos } from '../../world.js';
+import { sand_gravity, cactus_and_deadBush, grass_and_dirt, inviconGrass, door, setGrassDirt } from './bmFunction.js';
 
-const look_range: number = 16; //渲染的范围的一半
-let times: number = 0;
+function lookBlocks(): void { // 检测方块并触发方块的机制
+    setGrassDirt();
 
-function lookBlocks() { //检测方块并触发方块的机制
-    times = (times + 1) % 4;
+    if (changePos.length === 0) {return;}
 
-    let look_y: number = Math.floor(player.y / 64) - look_range;
-    for(let i = 0; i < 2*look_range; i++) {
-        let look_x: number = Math.floor(player.x / 64) + Math.floor((times / 2 - 1) * look_range);
-        if (isOutOfBounds(look_y, look_x)) {continue;}
+    // 取出本帧要处理的坐标并清空列表（splice 返回被移除元素的副本）
+    //（处理过程中 setWorldState 会加入新坐标，留到下帧再处理，避免同帧内无限循环）
+    const positions: BlockPos[] = changePos.splice(0);
 
-        for(let k = 0; k < look_range / 2; k++) {
-            if (isOutOfBounds(look_y, look_x)) {continue;}
-            let looking_block = world[look_y][look_x];
+    for (const pos of positions) {
+        if (isOutOfBounds(pos.y, pos.x)) {continue;}
+        const { x, y } = pos;
+        let looking_block = world[y][x];
 
-            looking_block = grass_and_dirt(looking_block, look_x, look_y);
-            looking_block = sand_gravity(looking_block, look_x, look_y);
-            looking_block = inviconGrass(looking_block, look_x, look_y);
-            looking_block = cactus_and_deadBush(looking_block, look_x, look_y);
-            looking_block = door(looking_block, look_x, look_y);
+        looking_block = grass_and_dirt(looking_block, x, y);
+        looking_block = sand_gravity(looking_block, x, y);
+        looking_block = inviconGrass(looking_block, x, y);
+        looking_block = cactus_and_deadBush(looking_block, x, y);
+        looking_block = door(looking_block, x, y);
 
-            setWorldState({ x: look_x, y: look_y }, { type: looking_block });
-            look_x += 1;
+        // 只有方块发生变化才写入，否则会反复加入待处理列表导致死循环
+        if (looking_block !== world[y][x]) {
+            setWorldState({ x, y }, { type: looking_block });
         }
-
-        look_y += 1;
     }
 }
-
-function main(): void {
-    blocksArray.sort((a, b) => a.id - b.id);
-}
-main();
 
 export { lookBlocks };

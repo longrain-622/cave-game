@@ -74,4 +74,9 @@ const blocksArray: Blocks[] = [
     block.glass
 ];
 
+function main(): void {
+    blocksArray.sort((a, b) => a.id - b.id);
+}
+main();
+
 export { blocksArray, Blocks, idOfBlock };
