@@ -10,7 +10,7 @@ import { WorldArchive, FurnaceArchive } from '../../../../types/worldArchive.js'
 import { mouse } from '../../../mouse.js';
 import { player } from '../../../player.js';
 import { uistate } from '../../uiState.js';
-import { idOfBlock } from '../../../nature/blockMecha/blockMechanism.js';
+import { idOfBlock } from '../../../nature/blockMecha/blocks.js';
 import { createDrop } from '../../../dropped/droppedItem.js';
 import { notNullUndefined } from '../../../../constants/utils.js';
 import * as PIXI from 'pixi.js';

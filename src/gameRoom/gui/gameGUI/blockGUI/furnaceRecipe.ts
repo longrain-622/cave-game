@@ -1,4 +1,4 @@
-import { idOfBlock } from "../../../nature/blockMecha/blockMechanism.js";
+import { idOfBlock } from "../../../nature/blockMecha/blocks.js";
 import { idOfItem } from "../../../dropped/items.js";
 
 interface FurnaceRecipe {

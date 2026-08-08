@@ -1,4 +1,4 @@
-import { Blocks, blocksArray, idOfBlock } from "../nature/blockMecha/blockMechanism.js";
+import { Blocks, blocksArray, idOfBlock } from "../nature/blockMecha/blocks.js";
 import { inventory, widgets } from "../gui/gameGUI/inventory.js";
 import { idOfItem } from "./items.js";
 

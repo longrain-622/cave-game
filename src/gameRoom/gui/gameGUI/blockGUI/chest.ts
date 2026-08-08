@@ -7,7 +7,7 @@ import { getRandomInt, world } from '../../../const.js';
 import { room } from '../../../../constants/generic.js';
 import { mouse } from '../../../mouse.js';
 import { uistate } from '../../uiState.js';
-import { idOfBlock } from '../../../nature/blockMecha/blockMechanism.js';
+import { idOfBlock } from '../../../nature/blockMecha/blocks.js';
 import { createDrop } from '../../../dropped/droppedItem.js';
 import { coverWhenSave, readingWorld } from '../../../gameState.js';
 import * as PIXI from 'pixi.js';

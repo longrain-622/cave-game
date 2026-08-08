@@ -5,7 +5,7 @@ import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
 import { eventBus } from '../others/eventBus.js';
 import { checkItem, idOfItem } from './items.js';
-import { idOfBlock } from '../nature/blockMecha/blockMechanism.js';
+import { idOfBlock } from '../nature/blockMecha/blocks.js';
 import { ctx_entity } from '../animals/animalDraw.js';
 import '../others/audioManager.js';
 import { apioxEvent } from '../../apiox/event.js';

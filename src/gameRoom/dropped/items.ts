@@ -1,6 +1,6 @@
 import { player } from "../player.js";
 import { Slots } from "../gui/gameGUI/inventoryConfig.js";
-import { idOfBlock } from "../nature/blockMecha/blockMechanism.js";
+import { idOfBlock } from "../nature/blockMecha/blocks.js";
 import { isOutOfBounds, world } from "../const.js";
 import { mouse } from "../mouse.js";
 import { createDrop } from "./droppedItem.js";

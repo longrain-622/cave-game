@@ -4,7 +4,7 @@ import { room } from "../constants/generic.js";
 import { player } from "./player.js";
 import { initSkyBackground, initSkyContainer } from "./nature/sky.js";
 import { mouse } from "./mouse.js";
-import { idOfBlock } from "./nature/blockMecha/blockMechanism.js";
+import { idOfBlock } from "./nature/blockMecha/blocks.js";
 import { eventBus } from "./others/eventBus.js";
 
 import * as PIXI from 'pixi.js';

@@ -2,7 +2,7 @@
 import { eventBus } from './eventBus.js';
 import { soundManager } from './soundManager.js';
 import { getRandomInt } from '../const.js';
-import { idOfBlock } from '../nature/blockMecha/blockMechanism.js';
+import { idOfBlock } from '../nature/blockMecha/blocks.js';
 
 function playBlockSound(id: number, isBreaking: boolean): void {
     switch (id) {

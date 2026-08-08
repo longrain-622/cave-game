@@ -8,7 +8,7 @@ import { room } from "../../../../constants/generic.js";
 import { blockTextures, genericTextStyle } from "../../../rendering.js";
 import { itemTextures } from "../../../dropped/items.js";
 import { uistate } from "../../uiState.js";
-import { idOfBlock } from "../../../nature/blockMecha/blockMechanism.js";
+import { idOfBlock } from "../../../nature/blockMecha/blocks.js";
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from "../../../../apiox/event.js";
 

@@ -6,7 +6,7 @@ import { apioxTime } from "../../apiox/time.js";
 import { coverWhenSave, readingWorld } from "../gameState.js";
 import { notNullUndefined } from "../../constants/utils.js";
 import * as PIXI from 'pixi.js';
-import { idOfBlock } from "./blockMecha/blockMechanism.js";
+import { idOfBlock } from "./blockMecha/blocks.js";
 
 // 时间常量 单位：秒
 //const DAY_LENGTH: number = 1440; // 一天总秒数

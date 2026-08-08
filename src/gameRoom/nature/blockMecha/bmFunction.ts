@@ -2,7 +2,7 @@ import { entityBlock_array, EntityBlock } from "../entityBlock.js";
 import { world , getRandomInt, isOutOfBounds } from "../../const.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
-import { idOfBlock } from "./blockMechanism.js";
+import { idOfBlock } from "./blocks.js";
 import { mouse } from "../../mouse.js";
 import { lowest_point } from "../createWorld.js";
 

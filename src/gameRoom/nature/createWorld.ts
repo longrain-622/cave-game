@@ -1,7 +1,7 @@
 import { world_height, getRandomInt, pushChunkToWorld, chunk, loadWorld, sealevel } from "../const.js";
 import { player } from "../player.js";
 import { eventBus } from "../others/eventBus.js";
-import { idOfBlock } from "./blockMecha/blockMechanism.js";
+import { idOfBlock } from "./blockMecha/blocks.js";
 import { readingWorld, coverWhenSave } from "../gameState.js";
 import { notNullUndefined } from "../../constants/utils.js";
 
