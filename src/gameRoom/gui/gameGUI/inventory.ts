@@ -71,7 +71,7 @@ let craftingSlotSprites: PIXI.Sprite[] = []; // 合成网格（4个）
 let craftingSlotTexts: PIXI.Text[] = [];
 let craftingResultSprite: PIXI.Sprite;
 let craftingResultText: PIXI.Text;
-let playerPreviewContainer: PIXI.Container; // 背包中的玩家预览（原 canvas 绘制人物部分）
+let playerPreviewContainer: PIXI.Container; // 背包中的玩家预览
 let highlightGraphics: PIXI.Graphics; // 鼠标悬停高亮（通用）
 let selectingSprite: PIXI.Sprite; // 鼠标拖拽物品图标
 let selectingText: PIXI.Text; // 鼠标拖拽物品数量

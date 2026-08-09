@@ -1,23 +1,8 @@
 import { player } from '../player.js';
 import { isOnScreen } from '../const.js';
-import { room } from '../../constants/generic.js';
 import { animalArray, Animal } from './animals.js';
 import { app } from '../rendering.js';
 import * as PIXI from 'pixi.js';
-import { ApioxObject } from '../../apiox/dom.js';
-
-const canvas_entity = new ApioxObject('drawEntity');
-canvas_entity.domstyle({
-    width: room.width + 'px',
-    height: room.height + 'px',
-    position: 'absolute',
-    left: '0',
-    top: '0',
-});
-canvas_entity.domProperty('width', room.width);
-canvas_entity.domProperty('height', room.height);
-const ctx_entity = canvas_entity.getContext('2d').raw();
-ctx_entity.imageSmoothingEnabled = false;
 
 export let can_drawEntity: boolean = false;
 
@@ -201,4 +186,4 @@ function drawAnimals(): void {
     }
 }
 
-export { drawAnimals, ctx_entity };
+export { drawAnimals };

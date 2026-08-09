@@ -1,7 +1,7 @@
 import { world_height, chunk } from "../world.js";
 import { getRandomInt } from "../const.js";
 import { room } from "../../constants/generic.js";
-import { checkBlock } from "../rendering.js";
+import { app, blockTextures } from "../rendering.js";
 import { player } from "../player.js";
 import { apioxTime } from "../../apiox/time.js";
 import { coverWhenSave, readingWorld } from "../gameState.js";
@@ -58,13 +58,14 @@ const GRADIENT_STRIP_H: number = 4; // 每条色带高度（4px 一层，视觉�
 let gradientGraphics: PIXI.Graphics;
 let lastGradientTimer: number = -1;
 
-// 离屏canvas用于背景地形的绘制（作为平铺纹理源）
-const offCanvas = document.createElement('canvas');
-offCanvas.width = room.width;
-offCanvas.height = room.height;
-const offCtx = offCanvas.getContext('2d');
-offCtx.imageSmoothingEnabled = false;
-const bgTex: PIXI.Texture = PIXI.Texture.from(offCanvas);
+// 背景地形离屏渲染：逐格 Sprite + 天色染色矩形渲染进 RenderTexture，作为平铺纹理源
+const bgContainer: PIXI.Container = new PIXI.Container();
+// 天色染色矩形（SRC_ATOP 只染已绘制的地形像素，不污染透明区域）
+const tintRectA: PIXI.Graphics = new PIXI.Graphics();
+const tintRectB: PIXI.Graphics = new PIXI.Graphics();
+tintRectA.blendMode = PIXI.BLEND_MODES.SRC_ATOP;
+tintRectB.blendMode = PIXI.BLEND_MODES.SRC_ATOP;
+let bgTex: PIXI.RenderTexture; // 背景地形离屏纹理（initSkyBackground 中创建）
 
 // 平铺背景精灵（initSkyBackground 中创建）
 const bgTiles: PIXI.Sprite[] = [];
@@ -163,41 +164,65 @@ class BgImages {
         }
     }
 
-    drawBgBlocks(initx: number, inity: number, alpha: number = 0.5) { // 绘制背景图片
+    buildSprites(initx: number, inity: number) { // 把背景地形逐格绘制成 Sprite 加入离屏容器
         let draw_y: number = inity;
         for (let k = 0; k < this.height; k++) {
             if (!this.blocks[k]) {break;}
             let draw_x: number = initx;
             for (let i = 0; i < this.width; i++) {
-                checkBlock(offCtx, this.blocks[k][i], draw_x, draw_y, 32, 32);
+                const texture: PIXI.Texture | undefined = blockTextures[this.blocks[k][i]];
+                if (texture) {
+                    const sprite: PIXI.Sprite = new PIXI.Sprite(texture);
+                    sprite.width = 32;
+                    sprite.height = 32;
+                    sprite.position.set(draw_x, draw_y);
+                    bgContainer.addChild(sprite);
+                }
                 draw_x += 32;
             }
             draw_y += 32;
         }
-
-        switch (getPhase()) {
-            case 0: offCtx.fillStyle = `rgba(${0 + 2*clock.timer}, ${0 + (20/9)*clock.timer}, ${0 + 2.8*clock.timer}, ${alpha})`; break;
-            case 1: offCtx.fillStyle = `rgba(180, 200, 255, ${alpha})`; break;
-            case 2: offCtx.fillStyle = `rgba(${180 - 2*(clock.timer - DAY_END)}, ${200 - 20/9*(clock.timer - DAY_END)}, ${255 - 2.8*(clock.timer - DAY_END)}, ${alpha})`; break;
-            default: offCtx.fillStyle = `rgba(0, 0, 0, ${alpha})`; break;
-        }
-        offCtx.globalCompositeOperation = 'source-atop';
-        offCtx.fillRect(0, 0, room.width, room.height);
-        offCtx.globalCompositeOperation = 'source-over';
     }
+}
+
+// 天色染色：按当前时间阶段计算覆盖色，重绘染色矩形
+function updateTint(): void {
+    let tintR: number, tintG: number, tintB: number;
+    switch (getPhase()) {
+        case 0: tintR = 0 + 2 * clock.timer; tintG = (20 / 9) * clock.timer; tintB = 2.8 * clock.timer; break;
+        case 1: tintR = 180; tintG = 200; tintB = 255; break;
+        case 2: tintR = 180 - 2 * (clock.timer - DAY_END); tintG = 200 - (20 / 9) * (clock.timer - DAY_END); tintB = 255 - 2.8 * (clock.timer - DAY_END); break;
+        default: tintR = 0; tintG = 0; tintB = 0; break;
+    }
+    const color: number = (Math.max(0, Math.min(255, Math.round(tintR))) << 16) |
+        (Math.max(0, Math.min(255, Math.round(tintG))) << 8) |
+        Math.max(0, Math.min(255, Math.round(tintB)));
+
+    tintRectA.clear();
+    tintRectA.beginFill(color, 0.4); // 远景层（y=-128 起）染色 alpha
+    tintRectA.drawRect(0, 0, room.width, room.height);
+    tintRectA.endFill();
+    tintRectB.clear();
+    tintRectB.beginFill(color, 0.5); // 近景层（y=0 起）染色 alpha
+    tintRectB.drawRect(0, 0, room.width, room.height);
+    tintRectB.endFill();
 }
 
 const bg_a = new BgImages(0);
 const bg_b = new BgImages(0);
 
 function initSkyBackground(): void {
-    // 把背景地形绘制进离屏画布，再上传为纹理
-    offCtx.clearRect(0, 0, room.width, room.height);
+    // 背景地形渲染进离屏 RenderTexture，再作为平铺纹理
+    bgTex = PIXI.RenderTexture.create({ width: room.width, height: room.height });
+    bgTex.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
     bg_a.createBlocks();
-    bg_a.drawBgBlocks(0, -128, 0.4);
+    bg_a.buildSprites(0, -128); // 远景层
+    bgContainer.addChild(tintRectA);
     bg_b.createBlocks();
-    bg_b.drawBgBlocks(0, 0);
-    bgTex.baseTexture.update();
+    bg_b.buildSprites(0, 0); // 近景层
+    bgContainer.addChild(tintRectB);
+    updateTint();
+    app.renderer.render(bgContainer, { renderTexture: bgTex });
 
     // 创建天空精灵（添加顺序即绘制层级：渐变 -> 太阳 -> 月亮 -> 平铺地形）
 
@@ -254,12 +279,10 @@ const clock: { timer: number; daylong: number; addTimer: () => void } = {
         this.timer++;
         if (this.timer >= this.daylong) {this.timer = 0;}
 
-        // 定时重绘背景地形（含天色染色），并重新上传纹理
+        // 定时重染背景地形（天色随时间变化），并重新渲染离屏纹理
         if (this.timer % 10 === 0) {
-            offCtx.clearRect(0, 0, room.width, room.height);
-            bg_a.drawBgBlocks(0, -128, 0.4);
-            bg_b.drawBgBlocks(0, 0);
-            bgTex.baseTexture.update();
+            updateTint();
+            app.renderer.render(bgContainer, { renderTexture: bgTex });
         }
     }
 };

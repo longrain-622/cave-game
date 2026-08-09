@@ -10,5 +10,3 @@ canvas {
 }
 
 #pixi { z-index: 1; }
-#drawEntity { z-index: 2; }
-#gui { z-index: 3; }

@@ -51,69 +51,55 @@ export function genericTextStyle(fontSize: number=24): PIXI.TextStyle {
 }
 
 export let isDrawing: boolean = false;
-const img = {
-    destory: new Image(),
-    grass: new Image(), dirt: new Image(), stone: new Image(),
-    oak: new Image(), leaves: new Image(), cobblestone: new Image(),
-    sand: new Image(), snowGrass: new Image(), sandstone: new Image(),
-    planks: new Image(), crafting_table: new Image(),
-    iron_ore: new Image(), coal_ore: new Image(),
-    invicon_grass: new Image(), cactus: new Image(), deadBush: new Image(),
-    oak_door_bottom: new Image(), oak_door_top: new Image(), oak_door_bottom_open: new Image(), oak_door_top_open: new Image(),
-    stone_dark: new Image(),
-    chest: new Image(), furnace: new Image(),
-    glass: new Image(),
-    andesite: new Image(), diorite: new Image(), granite: new Image()
-};
-img.destory.src = '/assets/images/games/blocks/destory/destory_strip10.png';
-img.grass.src = '/assets/images/games/blocks/grass.png';
-img.dirt.src = '/assets/images/games/blocks/dirt.png';
-img.stone.src = '/assets/images/games/blocks/stone.png';
-img.oak.src = '/assets/images/games/blocks/oak.png';
-img.leaves.src = '/assets/images/games/blocks/leaves.png';
-img.cobblestone.src = '/assets/images/games/blocks/cobblestone.png';
-img.sand.src = '/assets/images/games/blocks/sand.png';
-img.snowGrass.src = '/assets/images/games/blocks/grass_block_snow.png';
-img.sandstone.src = '/assets/images/games/blocks/sandstone.png';
-img.planks.src = '/assets/images/games/blocks/planks.png';
-img.crafting_table.src = '/assets/images/games/blocks/crafting_table.png';
-img.iron_ore.src = '/assets/images/games/blocks/ore/iron_ore.png';
-img.coal_ore.src = '/assets/images/games/blocks/ore/coal_ore.png';
-img.invicon_grass.src = '/assets/images/games/blocks/Invicon_Grass.png';
-img.cactus.src = '/assets/images/games/blocks/cactus.png';
-img.deadBush.src = '/assets/images/games/blocks/deadBush.png';
-img.oak_door_bottom.src = '/assets/images/games/blocks/others/oak_door_bottom_closed.png';
-img.oak_door_top.src = '/assets/images/games/blocks/others/oak_door_top_closed.png';
-img.oak_door_bottom_open.src = '/assets/images/games/blocks/oak_door_bottom.png';
-img.oak_door_top_open.src = '/assets/images/games/blocks/oak_door_top.png';
-img.stone_dark.src = '/assets/images/games/blocks/others/stone_dark.png';
-img.chest.src = '/assets/images/games/blocks/chest.png';
-img.furnace.src = '/assets/images/games/blocks/furnace.png';
-img.glass.src = '/assets/images/games/blocks/glass.png';
-img.andesite.src = '/assets/images/games/blocks/andesite.png';
-img.diorite.src = '/assets/images/games/blocks/diorite.png';
-img.granite.src = '/assets/images/games/blocks/granite.png';
 
-const images = [
-    img.destory,
-    img.grass, img.dirt, img.stone, img.oak, img.leaves, img.cobblestone,
-    img.sand, img.snowGrass, img.sandstone, img.planks, img.crafting_table,
-    img.coal_ore, img.iron_ore,
-    img.invicon_grass, img.cactus, img.deadBush,
-    img.oak_door_bottom, img.oak_door_top, img.oak_door_bottom_open, img.oak_door_top_open,
-    img.stone_dark,
-    img.chest, img.furnace,
-    img.glass,
-    img.andesite, img.diorite, img.granite
-];
-let imagesLoaded: number = 0;
-function checkAllLoaded(): void {
-    imagesLoaded++;
-    if (imagesLoaded === images.length) {
+// 方块贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
+const blockAssets: Record<string, string> = {
+    destory: '/assets/images/games/blocks/destory/destory_strip10.png',
+    grass: '/assets/images/games/blocks/grass.png',
+    dirt: '/assets/images/games/blocks/dirt.png',
+    stone: '/assets/images/games/blocks/stone.png',
+    oak: '/assets/images/games/blocks/oak.png',
+    leaves: '/assets/images/games/blocks/leaves.png',
+    cobblestone: '/assets/images/games/blocks/cobblestone.png',
+    sand: '/assets/images/games/blocks/sand.png',
+    snowGrass: '/assets/images/games/blocks/grass_block_snow.png',
+    sandstone: '/assets/images/games/blocks/sandstone.png',
+    planks: '/assets/images/games/blocks/planks.png',
+    crafting_table: '/assets/images/games/blocks/crafting_table.png',
+    iron_ore: '/assets/images/games/blocks/ore/iron_ore.png',
+    coal_ore: '/assets/images/games/blocks/ore/coal_ore.png',
+    invicon_grass: '/assets/images/games/blocks/Invicon_Grass.png',
+    cactus: '/assets/images/games/blocks/cactus.png',
+    deadBush: '/assets/images/games/blocks/deadBush.png',
+    oak_door_bottom: '/assets/images/games/blocks/others/oak_door_bottom_closed.png',
+    oak_door_top: '/assets/images/games/blocks/others/oak_door_top_closed.png',
+    oak_door_bottom_open: '/assets/images/games/blocks/oak_door_bottom.png',
+    oak_door_top_open: '/assets/images/games/blocks/oak_door_top.png',
+    stone_dark: '/assets/images/games/blocks/others/stone_dark.png',
+    chest: '/assets/images/games/blocks/chest.png',
+    furnace: '/assets/images/games/blocks/furnace.png',
+    glass: '/assets/images/games/blocks/glass.png',
+    andesite: '/assets/images/games/blocks/andesite.png',
+    diorite: '/assets/images/games/blocks/diorite.png',
+    granite: '/assets/images/games/blocks/granite.png',
+};
+
+// Assets.load 按 url 返回纹理，转成 alias 索引便于 initBlockTextures 使用
+function toAliasTextures(textures: Record<string, PIXI.Texture>): Record<string, PIXI.Texture> {
+    const byAlias: Record<string, PIXI.Texture> = {};
+    for (const [alias, url] of Object.entries(blockAssets)) {
+        byAlias[alias] = textures[url];
+    }
+    return byAlias;
+}
+
+function main(): void {
+    // 用 PixiJS Assets 加载方块贴图（替代 Image 对象），全部就绪后再初始化渲染
+    PIXI.Assets.load<Record<string, PIXI.Texture>>(Object.values(blockAssets)).then((textures: Record<string, PIXI.Texture>) => {
+        initBlockTextures(toAliasTextures(textures));
         isDrawing = true;
 
         initSkyBackground();
-        initBlockTextures();
         eventBus.emit('textures:ready'); // 通知依赖 blockTextures 的模块可以安全创建纹理了
 
         //鼠标 UI 容器
@@ -141,44 +127,46 @@ function checkAllLoaded(): void {
         destroySprite.visible = false;
         destroySprite.alpha = 0.6;
         mouseUIContainer.addChild(destroySprite);
-    }
+    }).catch((error: unknown) => {
+        console.error('load block textures error', error);
+    });
 }
-images.forEach(img => img.addEventListener('load', checkAllLoaded));
+main();
 
 let cursorSprite: PIXI.Graphics;
 let destroySprite: PIXI.Sprite;
 let destroyFrames: PIXI.Texture[] = [];
 
 export const blockTextures: Record<number | string, PIXI.Texture> = {};
-function initBlockTextures() {
-    blockTextures[idOfBlock.grass] = PIXI.Texture.from(img.grass);
-    blockTextures[idOfBlock.dirt] = PIXI.Texture.from(img.dirt);
-    blockTextures[idOfBlock.stone] = PIXI.Texture.from(img.stone);
-    blockTextures[idOfBlock.oak] = PIXI.Texture.from(img.oak);
-    blockTextures[idOfBlock.leaves] = PIXI.Texture.from(img.leaves);
-    blockTextures[idOfBlock.cobblestone] = PIXI.Texture.from(img.cobblestone);
-    blockTextures[idOfBlock.sand] = PIXI.Texture.from(img.sand);
-    blockTextures[idOfBlock.snowGrass] = PIXI.Texture.from(img.snowGrass);
-    blockTextures[idOfBlock.sandstone] = PIXI.Texture.from(img.sandstone);
-    blockTextures[idOfBlock.planks] = PIXI.Texture.from(img.planks);
-    blockTextures[idOfBlock.crafting_table] = PIXI.Texture.from(img.crafting_table);
-    blockTextures[idOfBlock.iron_ore] = PIXI.Texture.from(img.iron_ore);
-    blockTextures[idOfBlock.coal_ore] = PIXI.Texture.from(img.coal_ore);
-    blockTextures[idOfBlock.invicon_grass] = PIXI.Texture.from(img.invicon_grass);
-    blockTextures[idOfBlock.cactus] = PIXI.Texture.from(img.cactus);
-    blockTextures[idOfBlock.deadBush] = PIXI.Texture.from(img.deadBush);
-    blockTextures[idOfBlock.oak_door_bottom] = PIXI.Texture.from(img.oak_door_bottom);
-    blockTextures[idOfBlock.oak_door_top] = PIXI.Texture.from(img.oak_door_top);
-    blockTextures[idOfBlock.oak_door_bottom_open] = PIXI.Texture.from(img.oak_door_bottom_open);
-    blockTextures[idOfBlock.oak_door_top_open] = PIXI.Texture.from(img.oak_door_top_open);
-    blockTextures[idOfBlock.stone_dark] = PIXI.Texture.from(img.stone_dark);
-    blockTextures[idOfBlock.chest] = PIXI.Texture.from(img.chest);
-    blockTextures[idOfBlock.furnace] = PIXI.Texture.from(img.furnace);
-    blockTextures[idOfBlock.glass] = PIXI.Texture.from(img.glass);
-    blockTextures[idOfBlock.andesite] = PIXI.Texture.from(img.andesite);
-    blockTextures[idOfBlock.diorite] = PIXI.Texture.from(img.diorite);
-    blockTextures[idOfBlock.granite] = PIXI.Texture.from(img.granite);
-    blockTextures['destory'] = PIXI.Texture.from(img.destory);
+function initBlockTextures(textures: Record<string, PIXI.Texture>): void {
+    blockTextures[idOfBlock.grass] = textures['grass'];
+    blockTextures[idOfBlock.dirt] = textures['dirt'];
+    blockTextures[idOfBlock.stone] = textures['stone'];
+    blockTextures[idOfBlock.oak] = textures['oak'];
+    blockTextures[idOfBlock.leaves] = textures['leaves'];
+    blockTextures[idOfBlock.cobblestone] = textures['cobblestone'];
+    blockTextures[idOfBlock.sand] = textures['sand'];
+    blockTextures[idOfBlock.snowGrass] = textures['snowGrass'];
+    blockTextures[idOfBlock.sandstone] = textures['sandstone'];
+    blockTextures[idOfBlock.planks] = textures['planks'];
+    blockTextures[idOfBlock.crafting_table] = textures['crafting_table'];
+    blockTextures[idOfBlock.iron_ore] = textures['iron_ore'];
+    blockTextures[idOfBlock.coal_ore] = textures['coal_ore'];
+    blockTextures[idOfBlock.invicon_grass] = textures['invicon_grass'];
+    blockTextures[idOfBlock.cactus] = textures['cactus'];
+    blockTextures[idOfBlock.deadBush] = textures['deadBush'];
+    blockTextures[idOfBlock.oak_door_bottom] = textures['oak_door_bottom'];
+    blockTextures[idOfBlock.oak_door_top] = textures['oak_door_top'];
+    blockTextures[idOfBlock.oak_door_bottom_open] = textures['oak_door_bottom_open'];
+    blockTextures[idOfBlock.oak_door_top_open] = textures['oak_door_top_open'];
+    blockTextures[idOfBlock.stone_dark] = textures['stone_dark'];
+    blockTextures[idOfBlock.chest] = textures['chest'];
+    blockTextures[idOfBlock.furnace] = textures['furnace'];
+    blockTextures[idOfBlock.glass] = textures['glass'];
+    blockTextures[idOfBlock.andesite] = textures['andesite'];
+    blockTextures[idOfBlock.diorite] = textures['diorite'];
+    blockTextures[idOfBlock.granite] = textures['granite'];
+    blockTextures['destory'] = textures['destory'];
 }
 
 const worldContainer: PIXI.Container = new PIXI.Container();
@@ -275,42 +263,4 @@ function updateMouseSprites(): void {
     }
 }
 
-function checkBlock(
-ctx: CanvasRenderingContext2D,
-drawingObj: number,
-x: number, y: number,
-width: number, height: number,
-sx: number=0, sy: number=0,
-sw: number=16, sh: number=16): void {
-    switch (drawingObj) {
-        case 0: ctx.drawImage(img.grass, sx, sy, sw, sh, x, y, width, height); break;
-        case 1: ctx.drawImage(img.dirt, sx, sy, sw, sh, x, y, width, height); break;
-        case 2: ctx.drawImage(img.stone, sx, sy, sw, sh, x, y, width, height); break;
-        case -2: ctx.drawImage(img.oak, sx, sy, sw, sh, x, y, width, height); break;
-        case 3: ctx.drawImage(img.leaves, sx, sy, sw, sh, x, y, width, height); break;
-        case 4: ctx.drawImage(img.cobblestone, sx, sy, sw, sh, x, y, width, height); break;
-        case 5: ctx.drawImage(img.sand, sx, sy, sw, sh, x, y, width, height); break;
-        case 6: ctx.drawImage(img.snowGrass, sx, sy, sw, sh, x, y, width, height); break;
-        case 7: ctx.drawImage(img.sandstone, sx, sy, sw, sh, x, y, width, height); break;
-        case 8: ctx.drawImage(img.planks, sx, sy, sw, sh, x, y, width, height); break;
-        case 9: ctx.drawImage(img.crafting_table, sx, sy, sw, sh, x, y, width, height); break;
-        case 10: ctx.drawImage(img.iron_ore, sx, sy, sw, sh, x, y, width, height); break;
-        case 11: ctx.drawImage(img.coal_ore, sx, sy, sw, sh, x, y, width, height); break;
-        case -3: ctx.drawImage(img.invicon_grass, sx, sy, sw, sh, x, y, width, height); break;
-        case -4: ctx.drawImage(img.cactus, sx, sy, sw, sh, x, y, width, height); break;
-        case -5: ctx.drawImage(img.deadBush, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.oak_door_bottom: ctx.drawImage(img.oak_door_bottom, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.oak_door_top: ctx.drawImage(img.oak_door_top, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.oak_door_bottom_open: ctx.drawImage(img.oak_door_bottom_open, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.oak_door_top_open: ctx.drawImage(img.oak_door_top_open, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.stone_dark: ctx.drawImage(img.stone_dark, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.chest: ctx.drawImage(img.chest, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.furnace: ctx.drawImage(img.furnace, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.glass: ctx.drawImage(img.glass, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.andesite: ctx.drawImage(img.andesite, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.diorite: ctx.drawImage(img.diorite, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfBlock.granite: ctx.drawImage(img.granite, sx, sy, sw, sh, x, y, width, height); break;
-    }
-}
-
-export { updateWorldPixi, updateMouseSprites, img, checkBlock, app, gameRoom };
+export { updateWorldPixi, updateMouseSprites, app, gameRoom };

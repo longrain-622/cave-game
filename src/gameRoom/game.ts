@@ -4,7 +4,7 @@ import { mouseAct } from './mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering.js';
 
 import { animalArray, animalsLoop } from './animals/animals.js';
-import { drawAnimals, ctx_entity } from './animals/animalDraw.js';
+import { drawAnimals } from './animals/animalDraw.js';
 
 import { gameGuiLoop } from './gui/gameGUI/gameGuiState.js';
 import { dropArray, dropLoop } from './dropped/droppedItem.js';
@@ -25,9 +25,6 @@ gameRoom.domstyle('height', String(room.height) + 'px');
 
 //主循环
 export function gameLoop(): void {
-    //先清空画布
-    ctx_entity.clearRect(0, 0, room.width, room.height);
-
     createChunkAnyTime();
 
     playerLoop();

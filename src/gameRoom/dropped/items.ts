@@ -13,65 +13,59 @@ export enum idOfItem {
     iron_ingot, iron_pickaxe
 }
 
-const img_items = {
-    beef: new Image(), chicken: new Image(), mutton: new Image(), porkchop: new Image(),
-    apple: new Image(),
-    stick: new Image(),
-    wooden_pickaxe: new Image(), stone_pickaxe: new Image(),
-    coal: new Image(), raw_iron: new Image(),
-    oak_door: new Image(),
-    iron_ingot: new Image(), iron_pickaxe: new Image()
-}
-img_items.beef.src = 'assets/images/games/items/beef.png';
-img_items.chicken.src = 'assets/images/games/items/chicken.png';
-img_items.mutton.src = 'assets/images/games/items/mutton.png';
-img_items.porkchop.src = 'assets/images/games/items/porkchop.png';
-img_items.apple.src = 'assets/images/games/items/apple.png';
-img_items.stick.src = 'assets/images/games/items/stick.png';
-img_items.wooden_pickaxe.src = 'assets/images/games/items/wooden_pickaxe.png';
-img_items.stone_pickaxe.src = 'assets/images/games/items/stone_pickaxe.png';
-img_items.coal.src = 'assets/images/games/items/coal.png';
-img_items.raw_iron.src = 'assets/images/games/items/raw_iron.png';
-img_items.oak_door.src = 'assets/images/games/items/oak_door.png';
-img_items.iron_ingot.src = 'assets/images/games/items/iron_ingot.png';
-img_items.iron_pickaxe.src = 'assets/images/games/items/iron_pickaxe.png';
+// 物品贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
+const itemAssets: Record<string, string> = {
+    beef: '/assets/images/games/items/beef.png',
+    chicken: '/assets/images/games/items/chicken.png',
+    mutton: '/assets/images/games/items/mutton.png',
+    porkchop: '/assets/images/games/items/porkchop.png',
+    apple: '/assets/images/games/items/apple.png',
+    stick: '/assets/images/games/items/stick.png',
+    wooden_pickaxe: '/assets/images/games/items/wooden_pickaxe.png',
+    stone_pickaxe: '/assets/images/games/items/stone_pickaxe.png',
+    coal: '/assets/images/games/items/coal.png',
+    raw_iron: '/assets/images/games/items/raw_iron.png',
+    oak_door: '/assets/images/games/items/oak_door.png',
+    iron_ingot: '/assets/images/games/items/iron_ingot.png',
+    iron_pickaxe: '/assets/images/games/items/iron_pickaxe.png',
+};
 
-//加载图片
-const item_images = [
-    img_items.beef, img_items.chicken, img_items.mutton, img_items.porkchop,
-    img_items.apple,
-    img_items.stick,
-    img_items.wooden_pickaxe, img_items.stone_pickaxe,
-    img_items.coal, img_items.raw_iron,
-    img_items.oak_door,
-    img_items.iron_ingot, img_items.iron_pickaxe,
-];
-let imagesLoaded: number = 0;
 let item_isDrawing: boolean = false;
-function checkAllLoaded() {
-    imagesLoaded++;
-    if (imagesLoaded === item_images.length) {
+function main(): void {
+    // 用 PixiJS Assets 加载物品贴图（替代 Image 对象），全部就绪后再填充 itemTextures
+    PIXI.Assets.load<Record<string, PIXI.Texture>>(Object.values(itemAssets)).then((textures: Record<string, PIXI.Texture>) => {
+        initItemTextures(toAliasTextures(textures));
         item_isDrawing = true;
-        initItemTextures();
-    }
+    }).catch((error: unknown) => {
+        console.error('load item textures error', error);
+    });
 }
-item_images.forEach(img => img.addEventListener('load', checkAllLoaded));
+main();
+
+// Assets.load 按 url 返回纹理，转成 alias 索引便于 initItemTextures 使用
+function toAliasTextures(textures: Record<string, PIXI.Texture>): Record<string, PIXI.Texture> {
+    const byAlias: Record<string, PIXI.Texture> = {};
+    for (const [alias, url] of Object.entries(itemAssets)) {
+        byAlias[alias] = textures[url];
+    }
+    return byAlias;
+}
 
 export const itemTextures: Record<number | string, PIXI.Texture> = {};
-function initItemTextures() {
-    itemTextures[idOfItem.beef] = PIXI.Texture.from(img_items.beef);
-    itemTextures[idOfItem.chicken] = PIXI.Texture.from(img_items.chicken);
-    itemTextures[idOfItem.mutton] = PIXI.Texture.from(img_items.mutton);
-    itemTextures[idOfItem.porkchop] = PIXI.Texture.from(img_items.porkchop);
-    itemTextures[idOfItem.apple] = PIXI.Texture.from(img_items.apple);
-    itemTextures[idOfItem.stick] = PIXI.Texture.from(img_items.stick);
-    itemTextures[idOfItem.wooden_pickaxe] = PIXI.Texture.from(img_items.wooden_pickaxe);
-    itemTextures[idOfItem.stone_pickaxe] = PIXI.Texture.from(img_items.stone_pickaxe);
-    itemTextures[idOfItem.coal] = PIXI.Texture.from(img_items.coal);
-    itemTextures[idOfItem.raw_iron] = PIXI.Texture.from(img_items.raw_iron);
-    itemTextures[idOfItem.oak_door] = PIXI.Texture.from(img_items.oak_door);
-    itemTextures[idOfItem.iron_ingot] = PIXI.Texture.from(img_items.iron_ingot);
-    itemTextures[idOfItem.iron_pickaxe] = PIXI.Texture.from(img_items.iron_pickaxe);
+function initItemTextures(textures: Record<string, PIXI.Texture>): void {
+    itemTextures[idOfItem.beef] = textures['beef'];
+    itemTextures[idOfItem.chicken] = textures['chicken'];
+    itemTextures[idOfItem.mutton] = textures['mutton'];
+    itemTextures[idOfItem.porkchop] = textures['porkchop'];
+    itemTextures[idOfItem.apple] = textures['apple'];
+    itemTextures[idOfItem.stick] = textures['stick'];
+    itemTextures[idOfItem.wooden_pickaxe] = textures['wooden_pickaxe'];
+    itemTextures[idOfItem.stone_pickaxe] = textures['stone_pickaxe'];
+    itemTextures[idOfItem.coal] = textures['coal'];
+    itemTextures[idOfItem.raw_iron] = textures['raw_iron'];
+    itemTextures[idOfItem.oak_door] = textures['oak_door'];
+    itemTextures[idOfItem.iron_ingot] = textures['iron_ingot'];
+    itemTextures[idOfItem.iron_pickaxe] = textures['iron_pickaxe'];
 }
 
 function putDoor(doorId: number): void {
