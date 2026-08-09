@@ -1,15 +1,15 @@
 import { place_meeting } from '../world.js';
 import { getRandomInt, point_coll_rect, distance, isOnScreen } from '../const.js';
-import { checkBlock } from '../rendering.js';
+import { app, blockTextures } from '../rendering.js';
 import { player } from '../player.js';
 import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
 import { eventBus } from '../others/eventBus.js';
-import { checkItem, idOfItem } from './items.js';
+import { idOfItem, itemTextures } from './items.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
-import { ctx_entity } from '../animals/animalDraw.js';
 import '../others/audioManager.js';
 import { apioxEvent } from '../../apiox/event.js';
+import * as PIXI from 'pixi.js';
 
 interface Droppeds {
     type: number;
@@ -36,6 +36,29 @@ function newDroppeds(type: number, x: number, y: number): Droppeds {
 let dropArray: Droppeds[] = [];
 let look_range = 32; // 渲染范围 单位：格
 
+const dropLayer: PIXI.Container = new PIXI.Container(); // 掉落物渲染层
+const dropSpriteMap: Map<Droppeds, PIXI.Sprite> = new Map(); // 每个掉落物对应的渲染 Sprite（掉落物移除时同步销毁）
+let can_drawDrop: boolean = false; // 纹理未就绪时等待
+
+function main(): void {
+    app.stage.addChild(dropLayer);
+    dropLayer.zIndex = 3.55;
+
+    // 纹理就绪前不绘制
+    eventBus.once('textures:ready', () => { can_drawDrop = true; });
+}
+main();
+
+// 移除掉落物时同步销毁其渲染 Sprite
+function removeDropSprite(drop: Droppeds): void {
+    const sprite: PIXI.Sprite = dropSpriteMap.get(drop);
+    if (sprite) {
+        dropLayer.removeChild(sprite);
+        sprite.destroy();
+        dropSpriteMap.delete(drop);
+    }
+}
+
 function createDrop(type: number, x: number, y: number) {
     if (type !== -1) {
         const newDrop = newDroppeds(type, x, y);
@@ -46,7 +69,9 @@ function createDrop(type: number, x: number, y: number) {
     for (let i = 0; i < dropArray.length; i++) {
         if (Math.abs(dropArray[i].x - player.x) >= look_range * 64 ||
             Math.abs(dropArray[i].y - player.y) >= look_range * 64) {
+            removeDropSprite(dropArray[i]);
             dropArray.splice(i, 1);
+            i--; // 调整索引，避免跳过下一个掉落物
         }
     }
 }
@@ -76,14 +101,50 @@ function lookDrops(targetBlock: number): number { //返回对应方块掉落物�
     return dropObj;
 }
 
-function drawDrops() {
+function drawDrops(): void {
+    if (!can_drawDrop) {return;}
+
+    // 兜底清理已移除掉落物的渲染 Sprite（正常情况下在移除处已同步销毁）
+    const aliveDrops: Set<Droppeds> = new Set(dropArray);
+    for (const [drop, sprite] of dropSpriteMap) {
+        if (aliveDrops.has(drop)) {continue;}
+        dropLayer.removeChild(sprite);
+        sprite.destroy();
+        dropSpriteMap.delete(drop);
+    }
+
     for (let k = 0; k < dropArray.length; k++) {
         const drop: Droppeds = dropArray[k];
         const screenX: number = player.screen_x + drop.x - player.x;
         const screenY: number = player.screen_y + drop.y - player.y;
-        if (!isOnScreen(screenX, screenY, drop.width, drop.height)) {continue;}
-        checkBlock(ctx_entity, drop.type, screenX, screenY, drop.width, drop.height);
-        checkItem(ctx_entity, drop.type, screenX, screenY, drop.width, drop.height);
+
+        let sprite: PIXI.Sprite = dropSpriteMap.get(drop);
+        if (!sprite) {
+            sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
+            dropLayer.addChild(sprite);
+            dropSpriteMap.set(drop, sprite);
+        }
+
+        if (!isOnScreen(screenX, screenY, drop.width, drop.height)) {
+            sprite.visible = false;
+            continue;
+        }
+
+        // 方块掉落物用方块贴图，物品掉落物用物品贴图（两者 ID 不冲突）
+        const texture: PIXI.Texture = blockTextures[drop.type] || itemTextures[drop.type];
+        if (!texture) {
+            sprite.visible = false; // 无对应贴图（如空气），不绘制
+            continue;
+        }
+
+        // 纹理与尺寸在掉落物生命周期内不变，仅在首次（或纹理变化时）赋值
+        if (sprite.texture !== texture) {
+            sprite.texture = texture;
+            sprite.width = drop.width;
+            sprite.height = drop.height;
+        }
+        sprite.position.set(screenX, screenY);
+        sprite.visible = true;
     }
 }
 
@@ -125,9 +186,9 @@ function applyNormalPhysics(drop: Droppeds) {
 }
 
 function dropsX() {
-    const MAGNET_DIST: number = 200;      // 触发吸引的距离（像素）
+    const MAGNET_DIST: number = 200; // 触发吸引的距离（像素）
     const PICKUP_DELAY_FRAMES: number = 64; // 延迟帧数，期间不可吸引和拾取
-    let MAGNET_SPEED: number = 4;       // 吸引速度（每帧移动像素数）
+    let MAGNET_SPEED: number = 4; // 吸引速度（每帧移动像素数）
 
     for (let i = 0; i < dropArray.length; i++) {
         const drop: Droppeds = dropArray[i];
@@ -139,7 +200,7 @@ function dropsX() {
             continue;
         }
 
-        //延迟已过，可被吸引和拾取
+        // 延迟已过，可被吸引和拾取
         MAGNET_SPEED = 4 + 1024/distance(drop.x, drop.y, player.x, player.y);
         const dropCenterX: number = drop.x + drop.width / 2;
         const dropCenterY: number = drop.y + drop.height / 2;
@@ -158,7 +219,7 @@ function dropsX() {
             let moveX: number = (dx / len) * MAGNET_SPEED;
             let moveY: number = (dy / len) * MAGNET_SPEED;
 
-            //水平移动
+            // 水平移动
             let stepX: number = Math.abs(moveX);
             for (let a = 0; a < stepX; a++) {
                 const sign: number = moveX > 0 ? 1 : -1;
@@ -171,7 +232,7 @@ function dropsX() {
                 }
             }
 
-            //垂直移动
+            // 垂直移动
             let stepY: number = Math.abs(moveY);
             for (let a = 0; a < stepY; a++) {
                 const sign: number = moveY > 0 ? 1 : -1;
@@ -191,6 +252,7 @@ function dropsX() {
                 point_coll_rect(drop.x + drop.width, drop.y + drop.height, player.x, player.y, player.width, player.height)
             ) {
                 pickupObj(drop.type);
+                removeDropSprite(drop);
                 dropArray.splice(i, 1);
                 i--; // 调整索引，因为数组长度改变
                 eventBus.emit('item:pickup');
@@ -200,13 +262,13 @@ function dropsX() {
             // 清除原有的速度，避免脱离吸引后乱飞
             drop.hsp = 0;
             drop.vsp = 0;
-        } else { //未接近时：普通物理运动
+        } else { // 未接近时：普通物理运动
             applyNormalPhysics(drop);
         }
     }
 }
 
-apioxEvent.onKeyDown((e) => { //丢弃物品
+apioxEvent.onKeyDown((e) => { // 丢弃物品
     if (e.key !== 'q') {return;}
     if (inventory.items[widgets.select].num >= 1) {
         inventory.items[widgets.select].num -= 1;

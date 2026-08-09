@@ -74,25 +74,6 @@ function initItemTextures() {
     itemTextures[idOfItem.iron_pickaxe] = PIXI.Texture.from(img_items.iron_pickaxe);
 }
 
-function checkItem(ctx: CanvasRenderingContext2D, drawingObj: number, x: number, y: number, width: number, height: number, sx=0, sy=0, sw=16, sh=16) {
-    /*512=beef 513=chicken 514=mutton 515=porkchop*/
-    switch (drawingObj) {
-        case idOfItem.beef: ctx.drawImage(img_items.beef, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.chicken: ctx.drawImage(img_items.chicken, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.mutton: ctx.drawImage(img_items.mutton, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.porkchop: ctx.drawImage(img_items.porkchop, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.apple: ctx.drawImage(img_items.apple, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.stick: ctx.drawImage(img_items.stick, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.wooden_pickaxe: sw = 32; sh = 32; ctx.drawImage(img_items.wooden_pickaxe, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.stone_pickaxe: sw = 32; sh = 32; ctx.drawImage(img_items.stone_pickaxe, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.coal: sw = 32; sh = 32; ctx.drawImage(img_items.coal, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.raw_iron: sw = 32; sh = 32; ctx.drawImage(img_items.raw_iron, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.oak_door: ctx.drawImage(img_items.oak_door, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.iron_ingot: ctx.drawImage(img_items.iron_ingot, sx, sy, sw, sh, x, y, width, height); break;
-        case idOfItem.iron_pickaxe: sw = 32; sh = 32; ctx.drawImage(img_items.iron_pickaxe, sx, sy, sw, sh, x, y, width, height); break;
-    }
-}
-
 function putDoor(doorId: number): void {
     let doorBlockId_b: number;
     let doorBlockId_t: number;
@@ -131,4 +112,4 @@ function useItem(item: Slots): Slots { //使用物品栏中的物品
     else {return item;}
 }
 
-export { checkItem, item_isDrawing, useItem, putDoor };
+export { item_isDrawing, useItem, putDoor };
