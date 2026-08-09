@@ -90,7 +90,6 @@ class Animal {
         this.flashFrames = 8;
     }
 }
-if (coverWhenSave) {loadAnimals(readingWorld);}
 
 // 加载存档中的动物
 function loadAnimals(readingWorld: WorldArchive) {
@@ -136,7 +135,6 @@ function createAnimals(): void {
         }
     }
 }
-apioxTime.setInt(createAnimals, 2000);
 
 // 实体的行为
 function animalActions(): void {
@@ -256,6 +254,12 @@ apioxEvent.listenGlobal('click', (): void => {
         }
     }
 });
+
+function main(): void {
+    if (coverWhenSave) {loadAnimals(readingWorld);}
+    apioxTime.setInt(createAnimals, 2000);
+}
+main();
 
 function animalsLoop(): void {
     animalActions();

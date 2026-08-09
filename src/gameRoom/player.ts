@@ -15,36 +15,44 @@ import { notNullUndefined } from '../constants/utils.js';
 export let can_drawPlayer: boolean = false;
 //let playerContainer: PIXI.Container | null = null;
 
+interface PlayerParts {
+    container: PIXI.Container | null;
+    head: PIXI.Sprite | null;
+    body: PIXI.Sprite | null;
+    leftArm: PIXI.Sprite | null;
+    rightArm: PIXI.Sprite | null;
+    leftLeg: PIXI.Sprite | null;
+    rightLeg: PIXI.Sprite | null;
+}
+
 class Players {
     hp: number;
-    face: number; x: number; y: number;
+    face: number;
+    x: number; y: number;
     screen_x: number; screen_y: number;
-    left: number; right: number; move_speed: number; acc: number;
+    left: number; right: number;
+    move_speed: number; acc: number;
     grav: number; jumpspeed: number; vsp: number; can_jump: boolean;
     width: number; height: number;
     leg_rad: number; hand_rad: number; needRotateHand: boolean; isRotateRighthand: boolean;
-    parts: {
-        container: PIXI.Container | null;
-        head: PIXI.Sprite | null;
-        body: PIXI.Sprite | null;
-        leftArm: PIXI.Sprite | null;
-        rightArm: PIXI.Sprite | null;
-        leftLeg: PIXI.Sprite | null;
-        rightLeg: PIXI.Sprite | null;
-    };
+    parts: PlayerParts;
 
     constructor() {
         this.hp = 20;
         this.face = -1;
-        this.x = (world[0].length/2)*64; this.y = Math.floor(world_height / 2) * 64 - 300;
-        this.screen_x = room.width/2; this.screen_y = room.height/2-40;
+        this.x = (world[0].length / 2) * 64;
+        this.y = Math.floor(world_height / 2) * 64 - 300;
+        this.screen_x = room.width / 2;
+        this.screen_y = room.height / 2 - 40;
         this.left = 0; this.right = 0; this.move_speed = 7; this.acc = 0;
         this.grav = 0.5; this.jumpspeed = -10; this.vsp = 0; this.can_jump = false;
         this.width = 64; this.height = 128;
         this.leg_rad = 0; this.hand_rad = 0; this.needRotateHand = false; this.isRotateRighthand = false;
-        this.parts = {
-            container: null, head: null, body: null, leftArm: null, rightArm: null, leftLeg: null, rightLeg: null,
-        };
+        this.parts = this.nullParts();
+    }
+
+    private nullParts(): PlayerParts {
+        return { container: null, head: null, body: null, leftArm: null, rightArm: null, leftLeg: null, rightLeg: null };
     }
 
     initPlayer(readingWorld: WorldArchive): void {
@@ -72,7 +80,6 @@ const player: Players = new Players();
 
 // 初始化 Pixi 相关资源（应在 Pixi Application 创建后调用）
 const baseTexture = PIXI.BaseTexture.from('assets/images/games/player/players.png');
-baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
 baseTexture.on('loaded', (): void => {
     const headTexture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(8, 8, 8, 8));
     const bodyTexture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(20, 20, 8, 12));
@@ -124,7 +131,6 @@ baseTexture.on('loaded', (): void => {
     can_drawPlayer = true;
 });
 
-enableKeyDoubleClickDetection();
 apioxEvent.onKeyDoubleClick((detail) => {
     const key = detail.key;
     if (key === 'a' || key === 'd') {
@@ -248,10 +254,12 @@ function updatePlayerRender(): void {
     player.parts.rightLeg.rotation = legAngle;
 }
 
-function playerMain(): void {
+function main(): void {
+    baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
     player.initPlayer(readingWorld);
+    enableKeyDoubleClickDetection();
 }
-playerMain();
+main();
 
 function playerLoop(): void {
     // 打开背包无法移动
