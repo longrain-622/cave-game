@@ -1,7 +1,8 @@
-import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, img_gui } from "../inventoryConfig.js";
+import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, guiTextures } from "../inventoryConfig.js";
 import { selecting, locateHighWhite } from "../gameGuiState.js";
 import { updateSelectingItem, inventory } from "../inventory.js";
-import { updateResultForGrid, consumeFromGrid, recipes } from './crafting.js';
+import { updateResultForGrid, consumeFromGrid } from './crafting.js';
+import { recipes } from "./craftingRecipe.js";
 import { mouse } from "../../../mouse.js";
 import { world } from "../../../world.js";
 import { room } from "../../../../constants/generic.js";
@@ -101,7 +102,7 @@ function initWorkbenchUI() {
     wbOverlay.endFill();
     craftingTableContainer.addChild(wbOverlay);
 
-    const craftingTableAllTex: PIXI.BaseTexture = PIXI.Texture.from(img_gui.crafting_table).baseTexture;
+    const craftingTableAllTex: PIXI.BaseTexture = guiTextures.crafting_table.baseTexture;
     const craftingTableTex: PIXI.Texture = new PIXI.Texture(craftingTableAllTex, new PIXI.Rectangle(0, 0, 176, 166));
 
     //背景

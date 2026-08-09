@@ -1,4 +1,4 @@
-import { Slots, img_gui, furnaceConfig_fuel, furnaceConfig_input, furnaceConfig_output, invenConfig, iC_hand, gui_isDrawing, InventoryConfig } from '../inventoryConfig.js';
+import { Slots, guiTextures, furnaceConfig_fuel, furnaceConfig_input, furnaceConfig_output, invenConfig, iC_hand, gui_isDrawing, InventoryConfig } from '../inventoryConfig.js';
 import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../gameGuiState.js';
 import { guiContainer, inventory, updateSelectingItem } from '../inventory.js';
 import { room } from '../../../../constants/generic.js';
@@ -129,7 +129,7 @@ const furnaceGui: FurnacePixi = {
 
     furnaceContainer: new PIXI.Container(),
     blackBg: new PIXI.Graphics(),
-    furnaceTex: PIXI.Texture.from(img_gui.furnace).baseTexture,
+    furnaceTex: null, // 在 initFurnacePixi 中赋值（此时 guiTextures 已可用）
     furnacePage: new PIXI.Sprite(),
 
     inputSprite: new PIXI.Sprite(), inputCount: new PIXI.Text(),
@@ -152,6 +152,8 @@ const furnaceGui: FurnacePixi = {
         }
         this.furnaceContainer.removeChildren();
         this.furnaceContainer.zIndex = 9;
+
+        this.furnaceTex = guiTextures.furnace.baseTexture; // 纹理已随 gui_isDrawing 就绪
 
         this.draw_x = room.width / 2 - this.width / 2;
         this.draw_y = room.height / 2 - this.height / 2;

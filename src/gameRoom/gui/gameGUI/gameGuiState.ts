@@ -3,7 +3,8 @@ import { handleChestClick, handleChestContextMenu, getChestSelectedIndex, handle
 import { uistate } from "../uiState.js";
 import { player } from "../../player.js";
 import { widgets, inventory, drawInventory } from "./inventory.js";
-import { craftingResultSlot, craftingSlots, updateCraftingResult, recipes, consumeCraftingMaterials } from "./blockGUI/crafting.js";
+import { craftingResultSlot, craftingSlots, updateCraftingResult, consumeCraftingMaterials } from "./blockGUI/crafting.js";
+import { recipes } from "./blockGUI/craftingRecipe.js";
 import { handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType, draw_craftingTable } from "./blockGUI/crafting_table.js";
 import { apioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent } from "../../../apiox/event.js";
 import { Slots, InventoryConfig } from "./inventoryConfig.js";

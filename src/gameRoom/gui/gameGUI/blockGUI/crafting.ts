@@ -1,7 +1,6 @@
 // crafting.ts
 import { Slots } from "../inventoryConfig.js";
-import { idOfBlock } from "../../../nature/blockMecha/blocks.js";
-import { idOfItem } from "../../../dropped/items.js";
+import { RecipeShape, recipes } from "./craftingRecipe.js";
 
 export function slotsToMatrix(slots: Slots[], cols: number, rows: number): (Slots | null)[][] {
     const matrix: (Slots | null)[][] = [];
@@ -18,112 +17,6 @@ export function slotsToMatrix(slots: Slots[], cols: number, rows: number): (Slot
     }
     return matrix;
 }
-
-// 配方定义：每个格子 { itemId, amount } 或 null
-export interface RecipeShape {
-    cells: ({ itemId: number; amount: number } | null)[][];
-    outputId: number;
-    outputCount: number; // 单次合成产出数量
-    gridWidth: number;
-    gridHeight: number;
-}
-
-// 配方库
-export const recipes: RecipeShape[] = [
-    { // 木板
-        cells: [[{ itemId: idOfBlock.oak, amount: 1 }]],
-        outputId: idOfBlock.planks,
-        outputCount: 4,
-        gridWidth: 1,
-        gridHeight: 1
-    },
-    { // 工作台
-        cells: [
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }]
-        ],
-        outputId: idOfBlock.crafting_table,
-        outputCount: 1,
-        gridWidth: 2,
-        gridHeight: 2
-    },
-    { // 木棍
-        cells: [
-            [{ itemId: idOfBlock.planks, amount: 1 }],
-            [{ itemId: idOfBlock.planks, amount: 1 }]
-        ],
-        outputId: idOfItem.stick,
-        outputCount: 4,
-        gridWidth: 1,
-        gridHeight: 2
-    },
-    { // 木镐
-        cells: [
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
-            [null, { itemId: idOfItem.stick, amount: 1 }, null],
-            [null, { itemId: idOfItem.stick, amount: 1 }, null],
-        ],
-        outputId: idOfItem.wooden_pickaxe,
-        outputCount: 1,
-        gridWidth: 3,
-        gridHeight: 3
-    },
-    { // 石镐
-        cells: [
-            [{ itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }],
-            [null, { itemId: idOfItem.stick, amount: 1 }, null],
-            [null, { itemId: idOfItem.stick, amount: 1 }, null],
-        ],
-        outputId: idOfItem.stone_pickaxe,
-        outputCount: 1,
-        gridWidth: 3,
-        gridHeight: 3
-    },
-    { // 橡木门
-        cells: [
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
-        ],
-        outputId: idOfItem.oak_door,
-        outputCount: 3,
-        gridWidth: 2,
-        gridHeight: 3
-    },
-    { // 箱子
-        cells: [
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
-            [{ itemId: idOfBlock.planks, amount: 1 }, null, { itemId: idOfBlock.planks, amount: 1 }],
-            [{ itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }, { itemId: idOfBlock.planks, amount: 1 }],
-        ],
-        outputId: idOfBlock.chest,
-        outputCount: 1,
-        gridWidth: 3,
-        gridHeight: 3
-    },
-    { // 熔炉
-        cells: [
-            [{ itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }],
-            [{ itemId: idOfBlock.cobblestone, amount: 1 }, null, { itemId: idOfBlock.cobblestone, amount: 1 }],
-            [{ itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }, { itemId: idOfBlock.cobblestone, amount: 1 }],
-        ],
-        outputId: idOfBlock.furnace,
-        outputCount: 1,
-        gridWidth: 3,
-        gridHeight: 3
-    },
-    { // 铁镐
-        cells: [
-            [{ itemId: idOfItem.iron_ingot, amount: 1 }, { itemId: idOfItem.iron_ingot, amount: 1 }, { itemId: idOfItem.iron_ingot, amount: 1 }],
-            [null, { itemId: idOfItem.stick, amount: 1 }, null],
-            [null, { itemId: idOfItem.stick, amount: 1 }, null],
-        ],
-        outputId: idOfItem.iron_pickaxe,
-        outputCount: 1,
-        gridWidth: 3,
-        gridHeight: 3
-    }
-];
 
 // 匹配配方，返回最大可合成次数
 export function findMatchingRecipe(

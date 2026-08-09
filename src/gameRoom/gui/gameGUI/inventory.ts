@@ -1,5 +1,5 @@
 import { room } from "../../../constants/generic.js";
-import { img_gui, gui_isDrawing, invenConfig, iC_hand, Slots, iC_make, iC_get, iC_clothe, iC_otherHand } from "./inventoryConfig.js";
+import { guiTextures, gui_isDrawing, invenConfig, iC_hand, Slots, iC_make, iC_get, iC_clothe, iC_otherHand } from "./inventoryConfig.js";
 import { mouse } from "../../mouse.js";
 import { craftingResultSlot, craftingSlots } from "./blockGUI/crafting.js";
 import { craftingTableContainer } from "./blockGUI/crafting_table.js";
@@ -91,7 +91,7 @@ export function initInventoryUI() {
     inventoryContainer.removeChildren();
     widgetContainer.removeChildren();
 
-    const widgetTex: PIXI.BaseTexture = PIXI.Texture.from(img_gui.widgets).baseTexture;
+    const widgetTex: PIXI.BaseTexture = guiTextures.widgets.baseTexture;
     const widgetBgTex: PIXI.Texture = new PIXI.Texture(widgetTex, new PIXI.Rectangle(0, 0, 190, 22));
     const widgetSelectTex: PIXI.Texture = new PIXI.Texture(widgetTex, new PIXI.Rectangle(0, 22, 24, 24));
 
@@ -109,7 +109,7 @@ export function initInventoryUI() {
     widgetSelectHighlight.position.set(widgets.x - 4 + widgets.select * 80, widgets.y - 4);
     widgetContainer.addChild(widgetSelectHighlight);
 
-    const invenTex: PIXI.BaseTexture = PIXI.Texture.from(img_gui.inventory).baseTexture;
+    const invenTex: PIXI.BaseTexture = guiTextures.inventory.baseTexture;
     const invenBgTex: PIXI.Texture = new PIXI.Texture(invenTex, new PIXI.Rectangle(0, 0, 176, 166));
 
     blackBg = new PIXI.Graphics();
@@ -236,7 +236,7 @@ export function initInventoryUI() {
     inventoryContainer.addChild(craftingResultText);
 
     //配方书按钮
-    bookSprite = new PIXI.Sprite(PIXI.Texture.from(img_gui.inventory));
+    bookSprite = new PIXI.Sprite(guiTextures.inventory);
     bookSprite.texture.frame = new PIXI.Rectangle(178, 0, 20, 18);
     bookSprite.width = 80;
     bookSprite.height = 72;
@@ -251,7 +251,7 @@ export function initInventoryUI() {
     const offsetx: number = -4, offsety: number = 16;
     const baseX: number = invenX + 112 * scale + offsetx;
     const baseY: number = invenY + 28 * scale + offsety;
-    const playerBaseTex = PIXI.Texture.from(img_gui.player).baseTexture;//获取玩家纹理的基础纹理（避免帧覆盖）
+    const playerBaseTex = guiTextures.player.baseTexture;//获取玩家纹理的基础纹理（避免帧覆盖）
     function createPlayerPart(sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): PIXI.Sprite {
         //辅助函数：创建身体部位的 Sprite
         const tex = new PIXI.Texture(playerBaseTex, new PIXI.Rectangle(sx, sy, sw, sh));

@@ -20,7 +20,7 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
 
-    "types": ["jquery"]
+    "types": []
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "js"]

@@ -1,4 +1,4 @@
-import { img_gui, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from '../inventoryConfig.js';
+import { guiTextures, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from '../inventoryConfig.js';
 import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../gameGuiState.js';
 import { inventory, updateSelectingItem, guiContainer } from '../inventory.js';
 import { genericTextStyle, blockTextures } from '../../../rendering.js';
@@ -105,7 +105,7 @@ const chestGui: {
     draw_x: 0, draw_y: 0,
     chestContainer: new PIXI.Container(),
     blackBg: new PIXI.Graphics(),
-    chestTex: PIXI.Texture.from(img_gui.chest).baseTexture,
+    chestTex: null, // 在 initChestPixi 中赋值（此时 guiTextures 已可用）
     chestPage: new PIXI.Sprite(),
     slotSprites: [] as PIXI.Sprite[],
     slotTexts: [] as PIXI.Text[],
@@ -123,6 +123,8 @@ const chestGui: {
         }
         this.chestContainer.removeChildren();
         this.chestContainer.zIndex = 9;
+
+        this.chestTex = guiTextures.chest.baseTexture; // 纹理已随 gui_isDrawing 就绪
 
         this.draw_x = room.width / 2 - this.width / 2;
         this.draw_y = room.height / 2 - this.height / 2;

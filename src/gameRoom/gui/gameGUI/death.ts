@@ -1,6 +1,6 @@
 import { player } from "../../player.js";
 import { gui_isDrawing } from "./inventory.js";
-import { img_gui } from "./inventoryConfig.js";
+import { guiTextures } from "./inventoryConfig.js";
 import { genericTextStyle } from "../../rendering.js";
 import { room } from "../../../constants/generic.js";
 import { apiObjects } from "../../../apiox/dom.js";
@@ -62,8 +62,8 @@ function initDeathUI(): void {
     if (deathPixi.deathInitialized) {return;}
     deathContainer.removeChildren();
 
-    // 在函数内创建纹理，此时 img_gui 已可用
-    const widgetsTex = PIXI.Texture.from(img_gui.widgets);
+    // 在函数内创建纹理，此时 guiTextures 已可用
+    const widgetsTex = guiTextures.widgets;
     const btnNormal = new PIXI.Texture(widgetsTex.baseTexture, new PIXI.Rectangle(0, 66, 200, 20));
     const btnHover = new PIXI.Texture(widgetsTex.baseTexture, new PIXI.Rectangle(0, 86, 200, 20));
 

@@ -1,6 +1,6 @@
 import { player } from "../../player.js";
 import { widgets } from "./inventory.js";
-import { img_gui } from "./inventoryConfig.js";
+import { guiTextures, gui_isDrawing } from "./inventoryConfig.js";
 import * as PIXI from 'pixi.js';
 
 // 心形血量容器
@@ -33,8 +33,8 @@ function initHearts(): void {
     if (heartInitialized) {return;}
     heartContainer.removeChildren();
 
-    // 在函数内创建纹理，此时 img_gui 已可用
-    const iconTex: PIXI.Texture = PIXI.Texture.from(img_gui.icons);
+    // 在函数内创建纹理，此时 guiTextures 已可用
+    const iconTex: PIXI.Texture = guiTextures.icons;
     heartTextures = {
         empty: new PIXI.Texture(iconTex.baseTexture, new PIXI.Rectangle(16, 0, 9, 9)),
         half: new PIXI.Texture(iconTex.baseTexture, new PIXI.Rectangle(61, 0, 9, 9)),
@@ -90,6 +90,7 @@ function heartsAct(): void {
 }
 
 function drawHeart(): void {
+    if (!gui_isDrawing) {return;} // GUI 贴图未加载完成，跳过绘制
     initHearts();
     if (!heartTextures) {return;} // 防御
     const isWhitePhase: boolean = (heart.drawWhite_phaser % 2 === 0);
