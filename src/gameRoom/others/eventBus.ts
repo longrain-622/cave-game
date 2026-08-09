@@ -42,7 +42,7 @@ class EventBus {
                 try {
                     callback(...args);
                 } catch (error) {
-                    console.error(`执行事件 ${event} 的回调时出错:`, error);
+                    console.error(`playing event ${event} error:`, error);
                 }
             });
         }

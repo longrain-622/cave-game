@@ -136,7 +136,7 @@ apioxEvent.onKeyDown((e) => {
     switch (e.key) {
         case 'a': player.face = -1; player.left = 1; break;
         case 'd': player.face = 1; player.right = 1; break;
-        case 'w':
+        case 'w': case ' ':
             if (player.can_jump && !uistate.invenUI_isOpening()) {
                 player.vsp = player.jumpspeed;
                 player.can_jump = false;
