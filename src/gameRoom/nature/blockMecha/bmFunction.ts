@@ -1,4 +1,4 @@
-import { entityBlock_array, EntityBlock } from "../entityBlock.js";
+import { entityBlock_array, newEntityBlock } from "../entityBlock.js";
 import { world, isOutOfBounds, setWorldState, BlockPos } from "../../world.js";
 import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
@@ -92,7 +92,7 @@ export function inviconGrass(looking_block: number, lookx: number, looky: number
 
 export function sand_gravity(looking_block: number, look_x: number, look_y: number): number {
     if (looking_block === 5 && world[look_y+1][look_x] <= -1) {
-        entityBlock_array.push(new EntityBlock(5, look_x, look_y));
+        entityBlock_array.push(newEntityBlock(idOfBlock.sand, look_x, look_y));
         if (look_y > lowest_point) {return idOfBlock.stone_dark;}
         else {return idOfBlock.air;}
     }
