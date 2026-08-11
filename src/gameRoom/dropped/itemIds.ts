@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
 // 物品 ID 枚举（与贴图资源、加载集中于此模块，供物品系统与配方使用）
-export enum idOfItem {
+enum idOfItem {
     beef = 512, chicken, mutton, porkchop, apple,
     stick, wooden_pickaxe, stone_pickaxe, coal, raw_iron,
     oak_door,
@@ -37,9 +37,9 @@ const itemAssets: Record<string, string> = {
     iron_shovel: '/assets/images/games/items/iron_shovel.png',
 };
 
-export const itemTextures: Record<number | string, PIXI.Texture> = {};
+const itemTextures: Record<number | string, PIXI.Texture> = {};
 
-export let item_isDrawing: boolean = false;
+let item_isDrawing: boolean = false;
 function main(): void {
     // 用 PixiJS Assets 加载物品贴图（替代 Image 对象），全部就绪后再填充 itemTextures
     PIXI.Assets.load<Record<string, PIXI.Texture>>(Object.values(itemAssets)).then((textures: Record<string, PIXI.Texture>) => {
@@ -84,3 +84,16 @@ function initItemTextures(textures: Record<string, PIXI.Texture>): void {
     itemTextures[idOfItem.iron_axe] = textures['iron_axe'];
     itemTextures[idOfItem.iron_shovel] = textures['iron_shovel'];
 }
+
+function isTool(id: number): boolean {
+    switch (id) {
+        case idOfItem.wooden_pickaxe: case idOfItem.wooden_axe: case idOfItem.wooden_sword: case idOfItem.wooden_shovel:
+        case idOfItem.stone_pickaxe: case idOfItem.stone_axe: case idOfItem.stone_sword: case idOfItem.stone_shovel:
+        case idOfItem.iron_pickaxe: case idOfItem.iron_axe: case idOfItem.iron_sword: case idOfItem.iron_shovel:
+            return true;
+        default:
+            return false;
+    }
+}
+
+export { idOfItem, itemTextures, item_isDrawing, isTool };

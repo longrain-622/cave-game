@@ -61,7 +61,7 @@
 #blocktext1 {
     color: black;
     font-size: 20px;
-    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
     list-style: none;
     margin: 0;
     padding: 0 1rem;
@@ -110,13 +110,13 @@
 }
 
 #text1 {
-    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
     font-size: 16px;
     margin: 0 16px;
 }
 
 #text2 {
-    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
     font-size: 14px;
     text-align: center;
     margin-top: auto;

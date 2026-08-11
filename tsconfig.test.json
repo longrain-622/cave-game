@@ -1,6 +1,4 @@
 {
-  // 测试专用类型检查配置：npx tsc -p tsconfig.test.json --noEmit
-  // （主 tsconfig 保持 src 布局用于编译产物，测试不参与 emit）
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,

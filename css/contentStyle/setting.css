@@ -8,7 +8,7 @@
     flex-direction: column;
     border: 1px solid rgba(0,0,0,0.08);
     border-radius: 1.5rem;
-    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
     background: none;
 }
 #setting .header {
@@ -95,7 +95,7 @@
     border-radius: 2rem;
     padding: 0.4rem 1rem;
     font-size: 0.9rem;
-    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
     cursor: pointer;
     outline: none;
     transition: all 0.2s;

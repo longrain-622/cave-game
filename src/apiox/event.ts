@@ -273,8 +273,42 @@ class DomEventManager {
 
 export const domEventManager = new DomEventManager();
 
+interface ApioxEventConfig {
+    listenGlobal<K extends keyof WindowEventMap>(event: K, listener: (e: ApioxEvent) => void): () => void;
+    listenGlobalOnce<K extends keyof WindowEventMap>(event: K, listener: (e: ApioxEvent) => void): void;
+    dispatchGlobal(eventType: string, detail?: any, options?: { bubbles?: boolean; cancelable?: boolean }): boolean;
+    listenWindow<K extends keyof WindowEventMap>(event: K, listener: (e: ApioxEvent) => void): () => void;
+
+    onClick(listener: (e: ApioxMouseEvent) => void): () => void;
+    onMouseMove(listener: (e: ApioxMouseEvent) => void): () => void;
+    onMouseDown(listener: (e: ApioxMouseEvent) => void): () => void;
+    onMouseUp(listener: (e: ApioxMouseEvent) => void): () => void;
+    onContextMenu(listener: (e: ApioxMouseEvent) => void): () => void;
+    onWheel(listener: (e: ApioxWheelEvent) => void): () => void;
+
+    onKeyDown(listener: (e: ApioxKeyboardEvent) => void): () => void;
+    onKeyUp(listener: (e: ApioxKeyboardEvent) => void): () => void;
+    listenKeyOn(obj: ApioxObject, type: 'keydown' | 'keyup', listener: (e: ApioxKeyboardEvent) => void): () => void;
+    onKeyDoubleClick(listener: (detail: { key: string }) => void): () => void;
+    dispatchKeyboard(
+        type: 'keydown' | 'keyup' | 'keypress',
+        key: string,
+        options?: {
+            code?: string;
+            keyCode?: number;
+            ctrlKey?: boolean;
+            shiftKey?: boolean;
+            altKey?: boolean;
+            metaKey?: boolean;
+            bubbles?: boolean;
+            cancelable?: boolean;
+            composed?: boolean;
+        }
+    ): boolean;
+}
+
 //对外 API
-export const apioxEvent = {
+export const apioxEvent: ApioxEventConfig = {
     listenGlobal<K extends keyof WindowEventMap>( //监听document
         event: K,
         listener: (e: ApioxEvent) => void

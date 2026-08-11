@@ -28,9 +28,26 @@ export function calculateHardness(id: number): number { //根据工具等计算�
             switch (inventory.items[widgets.select].item) {
                 case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe: case idOfItem.iron_pickaxe:
                     return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
-                    //break;
             }
             break;
+
+        case idOfBlock.chest:
+        case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
+        case idOfBlock.oak: case idOfBlock.planks:
+        case idOfBlock.crafting_table:
+            switch (inventory.items[widgets.select].item) {
+                case idOfItem.wooden_axe: case idOfItem.stone_axe: case idOfItem.iron_axe:
+                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
+            }
+            break;
+
+        case idOfBlock.grass: case idOfBlock.dirt:
+        case idOfBlock.sand: case idOfBlock.snowGrass:
+            switch (inventory.items[widgets.select].item) {
+                case idOfItem.wooden_shovel: case idOfItem.stone_shovel: case idOfItem.iron_shovel:
+                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
+            }
+
         default: return getBlockHardnessById(id);
     }
     return getBlockHardnessById(id);

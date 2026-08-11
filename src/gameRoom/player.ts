@@ -4,13 +4,16 @@ import { room } from '../constants/generic.js';
 import { uistate } from './gui/uiState.js';
 import { mouse } from './mouse.js';
 import { eventBus } from './others/eventBus.js';
-import { app } from './rendering.js';
-import './others/audioManager.js';
+import { app, blockTextures } from './rendering.js';
+import { inventory, widgets } from './gui/gameGUI/inventory.js';
+import { itemTextures } from './dropped/items.js';
 import { WorldArchive } from '../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from './gameState.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent } from '../apiox/event.js';
 import { notNullUndefined } from '../constants/utils.js';
+import { idOfBlock } from './nature/blockMecha/blocks.js';
+import { isTool } from './dropped/itemIds.js';
 
 export let can_drawPlayer: boolean = false;
 //let playerContainer: PIXI.Container | null = null;
@@ -23,6 +26,7 @@ interface PlayerParts {
     rightArm: PIXI.Sprite | null;
     leftLeg: PIXI.Sprite | null;
     rightLeg: PIXI.Sprite | null;
+    taking: PIXI.Sprite | null;
 }
 
 class Players {
@@ -35,6 +39,7 @@ class Players {
     grav: number; jumpspeed: number; vsp: number; can_jump: boolean;
     width: number; height: number;
     leg_rad: number; hand_rad: number; needRotateHand: boolean; isRotateRighthand: boolean;
+    rightOnMouse: boolean;
     parts: PlayerParts;
 
     constructor() {
@@ -48,11 +53,12 @@ class Players {
         this.grav = 0.5; this.jumpspeed = -10; this.vsp = 0; this.can_jump = false;
         this.width = 64; this.height = 128;
         this.leg_rad = 0; this.hand_rad = 0; this.needRotateHand = false; this.isRotateRighthand = false;
+        this.rightOnMouse = false;
         this.parts = this.nullParts();
     }
 
     private nullParts(): PlayerParts {
-        return { container: null, head: null, body: null, leftArm: null, rightArm: null, leftLeg: null, rightLeg: null };
+        return { container: null, head: null, body: null, leftArm: null, rightArm: null, leftLeg: null, rightLeg: null, taking: null };
     }
 
     initPlayer(readingWorld: WorldArchive): void {
@@ -121,13 +127,18 @@ baseTexture.on('loaded', (): void => {
     rightLeg.anchor.set(0.5, 0);
     rightLeg.position.set(40, 80);
 
+    // 热键栏选中的物品（尺寸在 updateTakingItem 中按纹理动态计算，此处不设 width/height）
+    const taking = new PIXI.Sprite(PIXI.Texture.EMPTY);
+    taking.anchor.set(0.5);
+    taking.position.set(0, 60);
+
     const container = new PIXI.Container();
 
-    container.addChild(head, body, leftArm, rightArm, leftLeg, rightLeg);
+    container.addChild(head, body, leftArm, rightArm, leftLeg, rightLeg, taking);
     app.stage.addChild(container);
     container.zIndex = 3;
 
-    player.parts = { container, head, body, leftArm, rightArm, leftLeg, rightLeg };
+    player.parts = { container, head, body, leftArm, rightArm, leftLeg, rightLeg, taking };
     can_drawPlayer = true;
 });
 
@@ -137,6 +148,7 @@ apioxEvent.onKeyDoubleClick((detail) => {
         player.acc = 3;
     }
 });
+
 apioxEvent.onKeyDown((e) => {
     if (uistate.invenUI_isOpening()) {return;}
     switch (e.key) {
@@ -150,12 +162,14 @@ apioxEvent.onKeyDown((e) => {
             break;
     }
 });
+
 apioxEvent.onKeyUp((e) => {
     if (e.key === 'a' || e.key === 'd') {
         player.left = 0; player.right = 0;
         player.acc = 0;
     }
 });
+
 apioxEvent.listenGlobal('mousedown', () => {
     if (!uistate.invenUI_isOpening() && mouse.can_use) { // 玩家手部旋转触发
         player.needRotateHand = true;
@@ -185,7 +199,7 @@ function playerMove(): void { // 玩家移动
 
     // 改变玩家手旋转方向
     if (player.needRotateHand) {
-        if (mouse.x > player.screen_x + player.width / 2) {player.isRotateRighthand = true;}
+        if (player.rightOnMouse) {player.isRotateRighthand = true;}
         else {player.isRotateRighthand = false;}
 
         player.hand_rad += 0.3;
@@ -204,9 +218,9 @@ function playerJump(): void { // 玩家跳跃
         for (let i = 0; i < Math.abs(player.vsp); i++) {
             if (player.vsp > 0) {
                 if (!(place_meeting(player.x+8, player.y+128) || place_meeting(player.x + 56, player.y + 128))) {
-                    player.y += 1;
+                    player.y++;
                 } else {
-                    // 落地瞬间根据当前下落速度计算摔落伤害
+                    // 计算摔落伤害
                     const fallSpeed = player.vsp;
                     if (fallSpeed > 16) {
                         player.hurt(Math.floor((fallSpeed - 16) / 2));
@@ -218,7 +232,7 @@ function playerJump(): void { // 玩家跳跃
                 }
             } else {
                 if (!place_meeting(player.x+32, player.y)) {
-                    player.y -= 1;
+                    player.y--;
                 } else {
                     player.vsp = 0;
                     break;
@@ -226,14 +240,90 @@ function playerJump(): void { // 玩家跳跃
             }
         }
     }
-    if (!(place_meeting(player.x+8, player.y+128) || place_meeting(player.x + 56, player.y + 128))){
+    if (!(place_meeting(player.x + 8, player.y + 128) || place_meeting(player.x + 56, player.y + 128))){
         player.can_jump = false;
     }
+}
+
+// 手末端偏移向量 (8, 48) 的长度 旋转不改变长度，外推用常量避免每帧开方
+const tipLen: number = Math.hypot(8, 48);
+
+// 更新手持物品显示
+function updateTakingItem(): void {
+    if (!can_drawPlayer || !player.parts || !player.parts.taking) {return;}
+    if (inventory.items[widgets.select].item === idOfBlock.air) {
+        player.parts.taking.visible = false;
+        return;
+    }
+
+    const slot = inventory.items[widgets.select];
+    const isToolItem: boolean = isTool(slot.item);
+    let tex: PIXI.Texture | null = null;
+    if (slot.item < 512) {tex = blockTextures[slot.item] || null;}
+    else {tex = itemTextures[slot.item] || null;}
+
+    if (uistate.invenUI_isOpening() || slot.item === -1 || tex === null) {
+        player.parts.taking.visible = false;
+        return;
+    }
+    player.parts.taking.visible = true;
+    player.parts.taking.texture = tex;
+
+    // 先赋值纹理再按纹理尺寸算 scale，避免 width/height setter 残留 _width 导致拉伸
+    if (isToolItem) {
+        // 工具
+        player.parts.taking.anchor.set(0, 1);
+        player.parts.taking.scale.set(
+            (player.rightOnMouse ? 1 : -1) * 48 / tex.orig.width,
+            48 / tex.orig.height
+        );
+    } else {
+        // 普通物品
+        player.parts.taking.anchor.set(0.5);
+        player.parts.taking.scale.set(24 / tex.orig.width, 24 / tex.orig.height);
+    }
+
+    // 根据玩家朝向决定物品在哪只手以及旋转
+    let armAngle: number = 0;
+    if (player.needRotateHand) {
+        const handAngle: number = Math.sin(player.hand_rad) / 2;
+        if (player.rightOnMouse && player.isRotateRighthand) {armAngle = -handAngle;}
+        else if (!player.rightOnMouse && !player.isRotateRighthand) {armAngle = handAngle;}
+    }
+
+    // 与手末端中心相对锚点的偏移
+    const armX: number = player.rightOnMouse ? 48 : 16;
+    const armY: number = 32;
+    const tipX: number = player.rightOnMouse ? 8 : -8;
+    const tipY: number = 48;
+
+    // 手末端中心（旋转后的位置）
+    const dx: number = tipX * Math.cos(armAngle) - tipY * Math.sin(armAngle);
+    const dy: number = tipX * Math.sin(armAngle) + tipY * Math.cos(armAngle);
+    const handX: number = armX + dx;
+    const handY: number = armY + dy;
+
+    if (isToolItem) {
+        // 工具末端精确位于手末端中心
+        player.parts.taking.position.set(handX, handY);
+    } else {
+        // 普通物品中心沿手臂方向外推
+        const push: number = 4; // 物品中心到手的额外距离
+        player.parts.taking.position.set(
+            handX + dx / tipLen * push,
+            handY + dy / tipLen * push
+        );
+    }
+
+    // 物品随所在的手一起旋转
+    player.parts.taking.rotation = armAngle;
 }
 
 function updatePlayerRender(): void {
     if (!can_drawPlayer || !player.parts) {return;}
     if (!player.parts.container || !player.parts.leftArm || !player.parts.rightArm || !player.parts.leftLeg || !player.parts.rightLeg) return;
+
+    updateTakingItem();
 
     player.parts.container.position.set(player.screen_x, player.screen_y);
 
@@ -262,6 +352,8 @@ function main(): void {
 main();
 
 function playerLoop(): void {
+    player.rightOnMouse = mouse.x > player.screen_x + player.width / 2;
+
     // 打开背包无法移动
     if (!uistate.invenUI_isOpening() && player.hp > 0){ 
         playerMove();

@@ -49,7 +49,7 @@
     "ok": "Loading complete"
   },
   "toast": {
-    "text1": "Enable screen rotation when launching the game (Recommended for mobile devices)",
+    "text1": "Enable screen rotation when launching the game?\n(Recommended for mobile devices)",
     "cancel": "Cancel",
     "sure": "Sure"
   }

@@ -38,7 +38,7 @@ export const mouse: Mouse = {
     x: 0, y: 0,
     world_x: 0, world_y: 0,
     can_use: true,
-    can_put: true,
+    can_put: false,
     isDown: false, timer: 0, destory: 0,
     downingButton: 0,
     blockhardness: 0,
@@ -61,17 +61,6 @@ apioxEvent.onMouseMove(
             mouse.can_use = true;
         } else {
             mouse.can_use = false;
-        }
-
-        if (!isOutOfBounds(mouse.world_y - 1, mouse.world_x - 1) && !isOutOfBounds(mouse.world_y + 1, mouse.world_x + 1)) {
-            mouse.can_put = mouse.can_use && (
-                world[mouse.world_y][mouse.world_x - 1] !== idOfBlock.air ||
-                world[mouse.world_y][mouse.world_x + 1] !== idOfBlock.air ||
-                world[mouse.world_y - 1][mouse.world_x] !== idOfBlock.air ||
-                world[mouse.world_y + 1][mouse.world_x] !== idOfBlock.air
-            );
-        } else {
-            mouse.can_put = false;
         }
     }
 );
@@ -137,6 +126,18 @@ function specialMouseBreak(mine_mousex: number, mine_mousey: number) {
 export function mouseAct(): void {
     mouse.world_x = Math.round((player.x + mouse.x - player.screen_x) / 64);
     mouse.world_y = Math.round((player.y + mouse.y - player.screen_y) / 64);
+
+    // 不能在 mousemove 里计算
+    if (!isOutOfBounds(mouse.world_y - 1, mouse.world_x - 1) && !isOutOfBounds(mouse.world_y + 1, mouse.world_x + 1)) {
+        mouse.can_put = mouse.can_use && (
+            world[mouse.world_y][mouse.world_x - 1] !== idOfBlock.air ||
+            world[mouse.world_y][mouse.world_x + 1] !== idOfBlock.air ||
+            world[mouse.world_y - 1][mouse.world_x] !== idOfBlock.air ||
+            world[mouse.world_y + 1][mouse.world_x] !== idOfBlock.air
+        );
+    } else {
+        mouse.can_put = false;
+    }
 
     //鼠标挖方块计时器
     if (mouse.isDown && mouse.downingButton === 0 && world[mouse.world_y][mouse.world_x] !== -1) {
