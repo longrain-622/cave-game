@@ -6,14 +6,14 @@ import { mouse } from './mouse.js';
 import { eventBus } from './others/eventBus.js';
 import { app, blockTextures } from './rendering.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
-import { itemTextures } from './dropped/items.js';
 import { WorldArchive } from '../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from './gameState.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent } from '../apiox/event.js';
 import { notNullUndefined } from '../constants/utils.js';
 import { idOfBlock } from './nature/blockMecha/blocks.js';
-import { isTool } from './dropped/itemIds.js';
+import { isTool, itemTextures } from './dropped/itemIds.js';
+import { flipDraw } from './dropped/items.js';
 
 export let can_drawPlayer: boolean = false;
 //let playerContainer: PIXI.Container | null = null;
@@ -258,6 +258,7 @@ function updateTakingItem(): void {
 
     const slot = inventory.items[widgets.select];
     const isToolItem: boolean = isTool(slot.item);
+    const flipDiag: boolean = flipDraw(slot.item); // 需要沿左下-右上对角线翻转的物品
     let tex: PIXI.Texture | null = null;
     if (slot.item < 512) {tex = blockTextures[slot.item] || null;}
     else {tex = itemTextures[slot.item] || null;}
@@ -271,10 +272,10 @@ function updateTakingItem(): void {
 
     // 先赋值纹理再按纹理尺寸算 scale，避免 width/height setter 残留 _width 导致拉伸
     if (isToolItem) {
-        // 工具
+        // 工具（flipDraw 物品的 scale.x 再取反：对角镜像 = 轴翻转 + 旋转 90°，旋转见下方）
         player.parts.taking.anchor.set(0, 1);
         player.parts.taking.scale.set(
-            (player.rightOnMouse ? 1 : -1) * 48 / tex.orig.width,
+            (player.rightOnMouse ? 1 : -1) * (flipDiag ? -1 : 1) * 48 / tex.orig.width,
             48 / tex.orig.height
         );
     } else {
@@ -315,8 +316,9 @@ function updateTakingItem(): void {
         );
     }
 
-    // 物品随所在的手一起旋转
-    player.parts.taking.rotation = armAngle;
+    // 物品随所在的手一起旋转；flipDraw 物品再沿左下-右上对角线镜像
+    // （右手 +90°、左手 -90°，与 scale.x 的所在手翻转组合后左右对称）
+    player.parts.taking.rotation = armAngle + (flipDiag ? (player.rightOnMouse ? Math.PI / 2 : -Math.PI / 2) : 0);
 }
 
 function updatePlayerRender(): void {

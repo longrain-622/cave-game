@@ -7,6 +7,17 @@ import { isOutOfBounds, setWorldState, world } from "../world.js";
 import { mouse } from "../mouse.js";
 import { createDrop } from "./droppedItem.js";
 
+function flipDraw(id: number): boolean {
+    switch (id) {
+        case idOfItem.wooden_axe:
+        case idOfItem.stone_axe:
+        case idOfItem.iron_axe:
+            return true;
+        default:
+            return false;
+    }
+}
+
 function putDoor(doorId: number): void {
     let doorBlockId_b: number;
     let doorBlockId_t: number;
@@ -45,4 +56,4 @@ function useItem(item: Slots): Slots { // 使用物品栏中的物品
     else {return item;}
 }
 
-export { useItem, putDoor };
+export { useItem, putDoor, flipDraw };

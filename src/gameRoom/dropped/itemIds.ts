@@ -1,6 +1,5 @@
 import * as PIXI from 'pixi.js';
 
-// 物品 ID 枚举（与贴图资源、加载集中于此模块，供物品系统与配方使用）
 enum idOfItem {
     beef = 512, chicken, mutton, porkchop, apple,
     stick, wooden_pickaxe, stone_pickaxe, coal, raw_iron,
@@ -11,7 +10,7 @@ enum idOfItem {
     wooden_shovel, stone_shovel, iron_shovel,
 }
 
-// 物品贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
+// 物品贴图资源表
 const itemAssets: Record<string, string> = {
     beef: '/assets/images/games/items/beef.png',
     chicken: '/assets/images/games/items/chicken.png',
