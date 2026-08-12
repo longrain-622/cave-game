@@ -16,9 +16,12 @@ function copyRuntimeAssets(): Plugin {
         name: 'copy-runtime-assets',
         closeBundle() {
             for (const [src, dest] of RUNTIME_DEPS) {
-                if (existsSync(src)) {
-                    cpSync(src, dest, { recursive: true });
+                // 运行时依赖缺失会让部署后的游戏 404,必须在构建时直接失败暴露
+                if (!existsSync(src)) {
+                    throw new Error(`[copy-runtime-assets] 运行时依赖缺失: ${src}。` +
+                        '请确认已运行 tsc(js/)且依赖产物文件名未变化(如升级 pixi/localforage 后需核对 importmap 路径)。');
                 }
+                cpSync(src, dest, { recursive: true });
             }
         },
     };

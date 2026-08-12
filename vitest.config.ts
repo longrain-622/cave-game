@@ -7,7 +7,7 @@ export default defineConfig({
         exclude: [
             '**/node_modules/**',
             '**/dist/**',
-            'test/craftingRecipe.test.ts',
+            // test/math.test.ts 为待开发占位文件,暂不纳入测试运行
             'test/math.test.ts',
         ],
         setupFiles: ['./test/setup/globals.ts'],

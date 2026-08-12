@@ -26,3 +26,4 @@ This is a [2D pixel game] project.
 - [ ] When API interfaces change, update the API documentation accordingly.
 - [ ] Do not write Web APIs code directly; instead, use the wrapper in `src/apiox`.
 - [ ] At the top level of a module, only declarative constructs such as variables, arrays, and interfaces are permitted. All other executable code or business logic must be encapsulated within standalone functions or the main entry function.
+- [ ] Run `npm run typecheck` before committing (validates `src/` and `test/` with `tsc --noEmit`).

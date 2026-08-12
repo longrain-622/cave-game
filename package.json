@@ -5,8 +5,10 @@
   "main": "./src/main.ts",
   "scripts": {
     "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "dev": "vite --host",
-    "build": "tsc && vite build"
+    "build": "tsc && vite build",
+    "serve:dist": "node bin/serveDist.mjs dist"
   },
   "repository": {
     "type": "git",
@@ -21,7 +23,7 @@
     "email": "3685585221@qq.com"
   },
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "localforage": "^1.10.0",
     "pixi.js": "^7.4.2"
