@@ -1,4 +1,4 @@
-import { lang } from "../../others/i18n.js";
+import { getLang } from "../../others/i18nLang.js";
 import { apioxHttp } from "../../apiox/http.js";
 import { ApioxObject } from "../../apiox/dom.js";
 import { apioxTime } from "../../apiox/time.js";
@@ -11,7 +11,7 @@ const speakerObj = new ApioxObject('loadingSpeaker');
 //加载随机提示
 async function loadLoadingTip() {
   try {
-    const tips = await apioxHttp.get<any>(`/assets/locales/${lang}/loading.json`);
+    const tips = await apioxHttp.get<any>(`/assets/locales/${getLang()}/loading.json`);
     const randomTip = tips[Math.floor(Math.random() * tips.length)];
     speakerObj.domProperty('textContent', randomTip);
   } catch {
@@ -21,7 +21,7 @@ async function loadLoadingTip() {
 loadLoadingTip();
 
 //获取国际化文本
-apioxHttp.get<any>(`assets/locales/${lang}/ui.json`)
+apioxHttp.get<any>(`assets/locales/${getLang()}/ui.json`)
   .then(data => {
     loadText = data.loadPage.text;
     loadedText = data.loadPage.ok;

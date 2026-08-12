@@ -50,8 +50,12 @@ apioxEvent.onMouseMove(
     (event: ApioxMouseEvent): void => {
         gameRoom.getRect();
 
-        const scaleX: number = room.width / gameRoom.getRectWidth(); // 内部像素宽/显示宽
-        const scaleY: number = room.height / gameRoom.getRectHeight();
+        const rectWidth: number = gameRoom.getRectWidth();
+        const rectHeight: number = gameRoom.getRectHeight();
+        if (rectWidth <= 0 || rectHeight <= 0) {return;}
+
+        const scaleX: number = room.width / rectWidth; // 内部像素宽/显示宽
+        const scaleY: number = room.height / rectHeight;
 
         // 计算鼠标在 canvas 内部的像素坐标
         mouse.x = (event.clientX - gameRoom.getRectLeft()) * scaleX;

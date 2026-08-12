@@ -1,15 +1,15 @@
 import { apiObjects } from "../apiox/dom.js";
 import { apiMethod } from "../apiox/method.js";
 import { apioxEvent } from "../apiox/event.js";
+import { getLang, setLang, initLang } from "./i18nLang.js";
 
 let i18nData: Record<string, any> | null = null;
-let lang: string = 'zh-CN';
 
 // 加载 JSON 文件
 async function loadI18n() {
     try {
-        const uiRes = await fetch(`../../assets/locales/${lang}/ui.json`);
-        const gameRes = await fetch(`../../assets/locales/${lang}/game.json`);
+        const uiRes = await fetch(`../../assets/locales/${getLang()}/ui.json`);
+        const gameRes = await fetch(`../../assets/locales/${getLang()}/game.json`);
 
         if (!uiRes.ok) throw new Error(`UI JSON HTTP ${uiRes.status}`);
         if (!gameRes.ok) throw new Error(`Game JSON HTTP ${gameRes.status}`);
@@ -59,8 +59,8 @@ function applyI18n() {
 
 // 对外暴露：动态切换语言
 export async function setLanguage(newLang: string) {
-    if (newLang === lang) {return;}
-    lang = newLang;
+    if (newLang === getLang()) {return;}
+    setLang(newLang);
     // 可存储用户偏好
     localStorage.setItem('cavegame_lang', newLang);
     await loadI18n();
@@ -88,14 +88,7 @@ apiObjects.win.t = (path) => {
 
 // 读取存储的语言偏好并启动
 function initLanguage() {
-    const savedLang: string = localStorage.getItem('cavegame_lang');
-    if (savedLang && (savedLang === 'zh-CN' || savedLang === 'en')) {
-        lang = savedLang;
-    } else {
-        // 根据浏览器语言自动选择
-        const browserLang: string = navigator.language;
-        lang = browserLang.startsWith('zh') ? 'zh-CN' : 'en';
-    }
+    initLang(localStorage.getItem('cavegame_lang'), navigator.language);
     loadI18n();
 }
 
@@ -104,5 +97,3 @@ if (apiObjects.docum.readyState === 'loading') {
 } else {
     initLanguage();
 }
-
-export { lang };

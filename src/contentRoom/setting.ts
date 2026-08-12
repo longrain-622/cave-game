@@ -1,23 +1,12 @@
-import { lang, setLanguage } from '../others/i18n.js';
+import { getLang } from '../others/i18nLang.js';
+import { setLanguage } from '../others/i18n.js';
 import { apioxEvent, ApioxAnyEvent } from '../apiox/event.js';
 import { apiObjects, ApioxObject } from '../apiox/dom.js';
-import { detectPlatform } from '../apiox/method.js';
 import { win } from '../apiox/global.js';
 import { toast, toastCancel, toastSure, toastText } from './content.js';
+import { getSetting, SettingConfig } from '../constants/settingConfig.js';
 
-interface SettingConfig {
-    phoneButton_isOpening: boolean;
-    screenRotate_isOpening: boolean;
-}
-const setting: SettingConfig = {
-    phoneButton_isOpening: false,
-    screenRotate_isOpening: false,
-}
-
-if (detectPlatform() === 'mobile') {
-    setting.phoneButton_isOpening = true;
-    setting.screenRotate_isOpening = true;
-}
+const setting: SettingConfig = getSetting();
 
 apioxEvent.listenGlobal('DOMContentLoaded', () => {
     const touchKeysCheckbox = new ApioxObject('touchKeys');
@@ -104,7 +93,7 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
         }
     });
 
-    languageSelect.domProperty('value', lang);
+    languageSelect.domProperty('value', getLang());
 
     languageSelect.on('change', async (event: ApioxAnyEvent) => {
         const target: ApioxObject = event.target;

@@ -1,10 +1,20 @@
-import { setWorldName } from '../gameRoom/world.js';
 import { ApioxObject } from '../apiox/dom.js';
 import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
 import { worldwindow, create_btn, getSelectedWorldName } from './editWorld.js';
 import { getRandomInt } from '../constants/utils.js';
 import { room } from '../constants/generic.js';
+
+// 游戏链通过运行时绝对路径加载(与 LoadScripts 一致)。
+// 避免 Vite 打包游戏链:循环依赖 + 顶层 await 会产生语法错误,且与 LoadScripts 运行时加载的模块构成双实例。
+const WORLD_ENTRY = '/js/gameRoom/world.js';
+const LOAD_WORLD_ENTRY = '/js/user/loadWorld.js';
+const GAME_STATE_ENTRY = '/js/gameRoom/gameState.js';
+
+async function applyWorldName(val: string): Promise<void> {
+    const { setWorldName } = await import(WORLD_ENTRY);
+    setWorldName(val);
+}
 
 export let _room_: number = 0; //当前房间
 
@@ -76,9 +86,9 @@ starting_steve.on('click', (): void => {
 
 //进入游戏
 function gotoGame(): void { _room_ = 1; gameRoom.show(); content.hide(); }
-create_btn.on('click', (): void => {
+create_btn.on('click', async (): Promise<void> => {
     const inputVal: string = worldNameInput.getProperty('value');
-    if (inputVal !== '') { setWorldName(inputVal); }
+    if (inputVal !== '') { await applyWorldName(inputVal); }
     gotoGame();
 });
 editWorldBtnGetin.on('click', async (): Promise<void> => {
@@ -87,10 +97,10 @@ editWorldBtnGetin.on('click', async (): Promise<void> => {
         console.warn('cannot reading this world');
         return;
     }
-    setWorldName(targetWorldName);
+    await applyWorldName(targetWorldName);
 
-    const { loadGameFromLocal } = await import('../user/loadWorld.js');
-    const { setReadingWorld } = await import('../gameRoom/gameState.js');
+    const { loadGameFromLocal } = await import(LOAD_WORLD_ENTRY);
+    const { setReadingWorld } = await import(GAME_STATE_ENTRY);
     const readingWorld = await loadGameFromLocal('save_' + targetWorldName);
     if (readingWorld !== null) { setReadingWorld(readingWorld); }
     else { return; }

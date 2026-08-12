@@ -6,7 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "dev": "vite --host",
-    "build": "vite build"
+    "build": "tsc && vite build"
   },
   "repository": {
     "type": "git",

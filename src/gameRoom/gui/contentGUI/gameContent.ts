@@ -3,7 +3,7 @@ import { apioxHttp } from "../../../apiox/http.js";
 import { reloadPage } from "../../../apiox/method.js";
 import { saveGameToLocal } from "../../../user/saveWorld.js";
 import { coverWhenSave } from "../../gameState.js";
-import { lang } from "../../../others/i18n.js";
+import { getLang } from '../../../others/i18nLang.js';
 import { guiApp } from "../application.js";
 import { room } from "../../../constants/generic.js";
 import { buttonTextures } from "../application.js";
@@ -95,7 +95,7 @@ interface GameContentTexts {
 
 async function loadGameContentTexts() {
     try {
-        const data = await apioxHttp.get<{ gameContent: GameContentTexts }>(`/assets/locales/${lang}/game.json`);
+        const data = await apioxHttp.get<{ gameContent: GameContentTexts }>(`/assets/locales/${getLang()}/game.json`);
         const specificOrder = ['title', 'backToGame', 'exitToContent'] as const;
         const [titleText, backText, exitText] = specificOrder.map(key => data.gameContent[key]);
 

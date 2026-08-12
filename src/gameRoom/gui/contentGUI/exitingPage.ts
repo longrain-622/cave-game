@@ -6,7 +6,7 @@ import { blockTextures } from '../../rendering.js';
 import { idOfBlock } from '../../nature/blockMecha/blocks.js';
 import { room } from '../../../constants/generic.js';
 import { apioxHttp } from '../../../apiox/http.js';
-import { lang } from '../../../others/i18n.js';
+import { getLang } from '../../../others/i18nLang.js';
 import { eventBus } from '../../others/eventBus.js';
 
 interface ExitPagePixi {
@@ -67,7 +67,7 @@ const exitPagePixi: ExitPagePixi = {
 // 获取"保存世界中"文字（异步加载本地化文本，语言由 i18n 的 lang 决定）
 async function loadSavingText(): Promise<string> {
     try {
-        const data = await apioxHttp.get<{ exitingPage: { savingText: string } }>(`/assets/locales/${lang}/game.json`);
+        const data = await apioxHttp.get<{ exitingPage: { savingText: string } }>(`/assets/locales/${getLang()}/game.json`);
         return data.exitingPage.savingText;
     } catch (error) {
         console.error('load saving text error', error);
