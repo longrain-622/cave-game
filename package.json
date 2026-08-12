@@ -4,7 +4,7 @@
   "description": "A 2d pixel-style game.",
   "main": "./src/main.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
     "dev": "vite --host",
     "build": "vite build"
   },
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/localforage": "^0.0.33",
     "typescript": "^7.0.2",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "vitest": "^4.1.10"
   }
 }

@@ -165,3 +165,14 @@ export function door_openOrClose(): void { //run it when mouseup
             break;
     }
 }
+
+export function snowGrass(lookingBlock: number, lookx: number, looky: number): number {
+    if (lookingBlock === idOfBlock.snowGrass) {
+        if (world[looky - 1][lookx] !== idOfBlock.air) {
+            return idOfBlock.dirt;
+        } else {
+            return lookingBlock;
+        }
+    }
+    return lookingBlock;
+}

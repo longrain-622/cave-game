@@ -1,5 +1,13 @@
 import { world, isOutOfBounds, setWorldState, changePos, BlockPos } from '../../world.js';
-import { sand_gravity, cactus_and_deadBush, grass_and_dirt, inviconGrass, door, setGrassDirt } from './bmFunction.js';
+import {
+    sand_gravity,
+    cactus_and_deadBush,
+    grass_and_dirt,
+    inviconGrass,
+    door,
+    setGrassDirt,
+    snowGrass
+} from './bmFunction.js';
 
 function lookBlocks(): void { // 检测方块并触发方块的机制
     setGrassDirt();
@@ -20,6 +28,7 @@ function lookBlocks(): void { // 检测方块并触发方块的机制
         looking_block = inviconGrass(looking_block, x, y);
         looking_block = cactus_and_deadBush(looking_block, x, y);
         looking_block = door(looking_block, x, y);
+        looking_block = snowGrass(looking_block, x, y);
 
         // 只有方块发生变化才写入，否则会反复加入待处理列表导致死循环
         if (looking_block !== world[y][x]) {
