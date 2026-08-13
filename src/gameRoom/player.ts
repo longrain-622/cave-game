@@ -85,8 +85,13 @@ class Players {
 const player: Players = new Players();
 
 // 初始化 Pixi 相关资源（应在 Pixi Application 创建后调用）
-const baseTexture = PIXI.BaseTexture.from('assets/images/games/player/players.png');
-baseTexture.on('loaded', (): void => {
+// 注意：与 inventory.ts 共享同一个 BaseTexture 实例（BaseTexture.from 幂等命中缓存），此路径勿改
+const playerTextureUrl: string = 'assets/images/games/player/players.png';
+
+// 贴图加载完成后构建玩家各部位精灵
+function initPlayerParts(baseTexture: PIXI.BaseTexture): void {
+    baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+
     const headTexture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(8, 8, 8, 8));
     const bodyTexture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(20, 20, 8, 12));
     const leftArmTexture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(44, 20, 4, 12));
@@ -140,7 +145,23 @@ baseTexture.on('loaded', (): void => {
 
     player.parts = { container, head, body, leftArm, rightArm, leftLeg, rightLeg, taking };
     can_drawPlayer = true;
-});
+}
+
+// 加载玩家贴图：BaseTexture.from 命中缓存时实例已加载完毕（valid=true），
+// 'loaded' 事件不会再触发，此时必须直接构建，否则玩家会一直不显示
+function loadPlayerTexture(): void {
+    const baseTexture: PIXI.BaseTexture = PIXI.BaseTexture.from(playerTextureUrl);
+    if (baseTexture.valid) {
+        initPlayerParts(baseTexture);
+    } else {
+        baseTexture.once('loaded', (): void => {
+            initPlayerParts(baseTexture);
+        });
+        baseTexture.once('error', (_baseTexture: PIXI.BaseTexture, event: ErrorEvent): void => {
+            console.error('load player texture error', event);
+        });
+    }
+}
 
 apioxEvent.onKeyDoubleClick((detail) => {
     const key = detail.key;
@@ -347,9 +368,9 @@ function updatePlayerRender(): void {
 }
 
 function main(): void {
-    baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
     player.initPlayer(readingWorld);
     enableKeyDoubleClickDetection();
+    loadPlayerTexture();
 }
 main();
 

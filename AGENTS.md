@@ -22,6 +22,7 @@ This is a [2D pixel game] project.
 - Variables/functions: `camelCase`.
 
 ## Notes
+- [ ] Absolutely prohibited to run any tests (including browser automation, dev server verification, or `npm test`/`vitest`) without explicit user permission.
 - [ ] Do not directly modify files in the `dist/` or `build/` directories.
 - [ ] When API interfaces change, update the API documentation accordingly.
 - [ ] Do not write Web APIs code directly; instead, use the wrapper in `src/apiox`.
