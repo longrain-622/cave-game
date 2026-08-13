@@ -50,11 +50,11 @@ npm run typecheck  # Type-check src + test (recommended before committing)
 │   ├── apiox/        Web API wrapper layer (browser APIs must go through this layer; direct use is prohibited)
 │   ├── constants/    Constants and shared leaf modules (incl. settingConfig, i18nLang)
 │   ├── contentRoom/  Menu, world management, settings UI logic
+│   ├── css/          Global styles (imported by src/main.ts, bundled by Vite)
 │   ├── gameRoom/     The game itself (world, player, rendering, GUI, block mechanics, animals, etc.)
 │   ├── others/       General modules such as i18n
 │   ├── types/        Type definitions
 │   └── user/         Save/load
-├── css/          Global styles (directly @import-ed by index.html)
 ├── public/assets/  Game assets (images, sounds, locale files, fonts) — Vite publicDir,
 │                    copied verbatim to dist/assets/ and served at /assets/...
 ├── test/         Vitest unit tests
