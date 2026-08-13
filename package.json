@@ -7,8 +7,8 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "dev": "vite --host",
-    "build": "tsc && vite build",
-    "serve:dist": "node bin/serveDist.mjs dist"
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",

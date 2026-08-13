@@ -9,7 +9,7 @@
     box-sizing: border-box;
     z-index: 100;
 
-    background-image: url('../../../assets/images/games/blocks/dirt.png');
+    background-image: url('assets/images/games/blocks/dirt.png');
     background-repeat: repeat;
     background-position: 0 0;
 
@@ -44,7 +44,7 @@
 
 /* 创建新世界按钮 - 放大并平铺像素图 */
 #worldwindow .create-btn, #worldwindow .back-btn, #worldwindow .gameDifficulty-btn {
-    background-image: url('../../../assets/images/games/blocks/stone.png');
+    background-image: url('assets/images/games/blocks/stone.png');
     background-repeat: repeat;
     background-position: 0 0;
 

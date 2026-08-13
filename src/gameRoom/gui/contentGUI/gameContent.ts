@@ -95,7 +95,7 @@ interface GameContentTexts {
 
 async function loadGameContentTexts() {
     try {
-        const data = await apioxHttp.get<{ gameContent: GameContentTexts }>(`/assets/locales/${getLang()}/game.json`);
+        const data = await apioxHttp.get<{ gameContent: GameContentTexts }>(`assets/locales/${getLang()}/game.json`);
         const specificOrder = ['title', 'backToGame', 'exitToContent'] as const;
         const [titleText, backText, exitText] = specificOrder.map(key => data.gameContent[key]);
 

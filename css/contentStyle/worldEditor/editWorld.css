@@ -20,7 +20,7 @@
 }
 
 #editWorld .editWorld-btn {
-    background-image: url('../../../assets/images/games/blocks/stone.png');
+    background-image: url('assets/images/games/blocks/stone.png');
     background-repeat: repeat;
     background-position: 0 0;
 

@@ -1,8 +1,5 @@
 import { WorldArchive, SaveEntry } from "../types/worldArchive.js";
-import "localforage";
-
-// localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
-declare const localforage: LocalForage;
+import localforage from 'localforage';
 
 export async function loadGameFromLocal(key: string): Promise<WorldArchive | null> {
     try {

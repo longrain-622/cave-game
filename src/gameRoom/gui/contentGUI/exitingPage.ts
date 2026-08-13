@@ -67,7 +67,7 @@ const exitPagePixi: ExitPagePixi = {
 // 获取"保存世界中"文字（异步加载本地化文本，语言由 i18n 的 lang 决定）
 async function loadSavingText(): Promise<string> {
     try {
-        const data = await apioxHttp.get<{ exitingPage: { savingText: string } }>(`/assets/locales/${getLang()}/game.json`);
+        const data = await apioxHttp.get<{ exitingPage: { savingText: string } }>(`assets/locales/${getLang()}/game.json`);
         return data.exitingPage.savingText;
     } catch (error) {
         console.error('load saving text error', error);

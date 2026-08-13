@@ -4,10 +4,7 @@ import { room } from '../constants/generic.js';
 import { textStyle1 } from '../constants/pixiStyles.js';
 import { ensureAssetsInit } from '../constants/pixiAssets.js';
 import * as PIXI from 'pixi.js';
-import "localforage";
-
-// localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
-declare const localforage: LocalForage;
+import localforage from 'localforage';
 
 // worldwindow 相关元素
 const gameDifficulty_btn = new ApioxObject(null, 'gameDifficulty-btn');

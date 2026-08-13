@@ -5,14 +5,9 @@ import { worldwindow, create_btn, getSelectedWorldName } from './editWorld.js';
 import { getRandomInt } from '../constants/utils.js';
 import { room } from '../constants/generic.js';
 
-// 游戏链通过运行时绝对路径加载(与 LoadScripts 一致)。
-// 避免 Vite 打包游戏链:循环依赖 + 顶层 await 会产生语法错误,且与 LoadScripts 运行时加载的模块构成双实例。
-const WORLD_ENTRY = '/js/gameRoom/world.js';
-const LOAD_WORLD_ENTRY = '/js/user/loadWorld.js';
-const GAME_STATE_ENTRY = '/js/gameRoom/gameState.js';
-
+// 游戏链按需懒加载(与 LoadScripts 一致):字面量动态导入供 Vite 静态分析并分割为异步 chunk。
 async function applyWorldName(val: string): Promise<void> {
-    const { setWorldName } = await import(WORLD_ENTRY);
+    const { setWorldName } = await import('../gameRoom/world.js');
     setWorldName(val);
 }
 
@@ -99,8 +94,8 @@ editWorldBtnGetin.on('click', async (): Promise<void> => {
     }
     await applyWorldName(targetWorldName);
 
-    const { loadGameFromLocal } = await import(LOAD_WORLD_ENTRY);
-    const { setReadingWorld } = await import(GAME_STATE_ENTRY);
+    const { loadGameFromLocal } = await import('../user/loadWorld.js');
+    const { setReadingWorld } = await import('../gameRoom/gameState.js');
     const readingWorld = await loadGameFromLocal('save_' + targetWorldName);
     if (readingWorld !== null) { setReadingWorld(readingWorld); }
     else { return; }

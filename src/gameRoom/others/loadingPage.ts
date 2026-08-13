@@ -11,7 +11,7 @@ const speakerObj = new ApioxObject('loadingSpeaker');
 //加载随机提示
 async function loadLoadingTip() {
   try {
-    const tips = await apioxHttp.get<any>(`/assets/locales/${getLang()}/loading.json`);
+    const tips = await apioxHttp.get<any>(`assets/locales/${getLang()}/loading.json`);
     const randomTip = tips[Math.floor(Math.random() * tips.length)];
     speakerObj.domProperty('textContent', randomTip);
   } catch {

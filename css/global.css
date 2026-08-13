@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'Unifont';
-  src: url('../assets/fonts/unifont.ttf') format('truetype');
+  src: url('assets/fonts/unifont.ttf') format('truetype');
   /* 如果需要多种格式：
      url('assets/fonts/unifont.woff2') format('woff2'),
      url('assets/fonts/unifont.woff') format('woff');

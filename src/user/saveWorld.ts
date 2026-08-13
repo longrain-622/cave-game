@@ -10,10 +10,7 @@ import { entityBlock_array, EntityBlock } from "../gameRoom/nature/entityBlock.j
 import { lowest_point, seed } from "../gameRoom/nature/createWorld.js";
 import { clock } from "../gameRoom/nature/sky.js";
 import { WorldArchive, SaveEntry, AnimalArchive, SlotMessage, ChestAichive, EntityBlockArchive, FurnaceArchive } from "../types/worldArchive.js";
-import "localforage";
-
-// localforage 的 UMD 包通过 importmap 加载后只设置 window.localforage，无 default export
-declare const localforage: LocalForage;
+import localforage from 'localforage';
 
 /*
     key 是存档在存储中的完整键名，通常格式为 "save_<世界名称>"（例如 "save_MyWorld"）。

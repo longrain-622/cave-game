@@ -251,7 +251,8 @@ export function initInventoryUI() {
     const offsetx: number = -4, offsety: number = 16;
     const baseX: number = invenX + 112 * scale + offsetx;
     const baseY: number = invenY + 28 * scale + offsety;
-    const playerBaseTex = guiTextures.player.baseTexture;//获取玩家纹理的基础纹理（避免帧覆盖）
+    // 与 player.ts 共享同一个 BaseTexture 实例（BaseTexture.from 幂等命中缓存，避免重复加载与帧覆盖）
+    const playerBaseTex = PIXI.BaseTexture.from('assets/images/games/player/players.png');
     function createPlayerPart(sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): PIXI.Sprite {
         //辅助函数：创建身体部位的 Sprite
         const tex = new PIXI.Texture(playerBaseTex, new PIXI.Rectangle(sx, sy, sw, sh));

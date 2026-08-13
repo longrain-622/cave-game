@@ -1,34 +1,26 @@
-import { _room_ } from "./contentRoom/content.js";
-
 // LoadScripts.js
 export async function loadScripts() {
-  const modulePaths = [
-    '/js/gameRoom/others/loadingPage.js',
-    '/js/gameRoom/const.js',
-    '/js/gameRoom/world.js',
-    '/js/gameRoom/nature/createWorld.js',
-    '/js/gameRoom/others/soundManager.js',
-    '/js/gameRoom/game.js',
-    '/js/gameRoom/rendering.js',
-    '/js/gameRoom/gui/contentGUI/gameContent.js',
-    '/js/gameRoom/nature/sky.js',
-    '/js/gameRoom/player.js',
-    '/js/gameRoom/nature/blockMecha/blockMechanism.js',
-    '/js/gameRoom/animals/animals.js',
-    '/js/gameRoom/gui/gameGUI/blockGUI/crafting_table.js',
-    '/js/gameRoom/nature/offsetElements.js',
-    '/js/gameRoom/others/loadingCheck.js',
-  ];
-
+  // 按加载顺序逐个动态导入(字面量 specifier 供 Vite 静态分析并分割为异步 chunk)。
   try {
-    const modules = [];
-    for (const path of modulePaths) {
-      const module = await import(path);
-      modules.push(module);
-      console.log(`was loaded: ${path}`);
-    }
+    const modules = [
+      await import('./gameRoom/others/loadingPage.js'),
+      await import('./gameRoom/const.js'),
+      await import('./gameRoom/world.js'),
+      await import('./gameRoom/nature/createWorld.js'),
+      await import('./gameRoom/others/soundManager.js'),
+      await import('./gameRoom/game.js'),
+      await import('./gameRoom/rendering.js'),
+      await import('./gameRoom/gui/contentGUI/gameContent.js'),
+      await import('./gameRoom/nature/sky.js'),
+      await import('./gameRoom/player.js'),
+      await import('./gameRoom/nature/blockMecha/blockMechanism.js'),
+      await import('./gameRoom/animals/animals.js'),
+      await import('./gameRoom/gui/gameGUI/blockGUI/crafting_table.js'),
+      await import('./gameRoom/nature/offsetElements.js'),
+      await import('./gameRoom/others/loadingCheck.js'),
+    ];
     console.log('all module is good', modules);
-    //初始化函数这里调用
+    // 初始化函数这里调用
   } catch (error) {
     console.error('oh shit, fuck Huang Hengzhi', error);
   }

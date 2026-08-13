@@ -1,6 +1,7 @@
 import { apiObjects } from "../apiox/dom.js";
 import { apiMethod } from "../apiox/method.js";
 import { apioxEvent } from "../apiox/event.js";
+import { apioxHttp } from "../apiox/http.js";
 import { getLang, setLang, initLang } from "./i18nLang.js";
 
 let i18nData: Record<string, any> | null = null;
@@ -8,14 +9,9 @@ let i18nData: Record<string, any> | null = null;
 // 加载 JSON 文件
 async function loadI18n() {
     try {
-        const uiRes = await fetch(`../../assets/locales/${getLang()}/ui.json`);
-        const gameRes = await fetch(`../../assets/locales/${getLang()}/game.json`);
-
-        if (!uiRes.ok) throw new Error(`UI JSON HTTP ${uiRes.status}`);
-        if (!gameRes.ok) throw new Error(`Game JSON HTTP ${gameRes.status}`);
-
-        const uiData = await uiRes.json();
-        const gameData = await gameRes.json();
+        // 页面相对路径:dev(根路径)与部署(dist 根目录)下均指向 assets/locales,打包后不随模块位置漂移
+        const uiData = await apioxHttp.get<Record<string, any>>(`assets/locales/${getLang()}/ui.json`);
+        const gameData = await apioxHttp.get<Record<string, any>>(`assets/locales/${getLang()}/game.json`);
 
         // 合并数据，gameData 中的键会覆盖 uiData（如有冲突，但通常没有）
         i18nData = { ...uiData, ...gameData };

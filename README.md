@@ -34,17 +34,19 @@ Requirements: Node.js 20+ and npm.
 
 ```bash
 npm install        # Install dependencies
-npm run dev        # Development mode (http://localhost:3000)
-npm run build      # Build dist (runs tsc first automatically)
-npm run serve:dist # Preview the build locally (http://localhost:8080)
+npm run dev        # Development mode with HMR (http://localhost:3000)
+npm run build      # Build dist with Vite
+npm run preview    # Preview the build locally (http://localhost:4173)
 npm test           # Run unit tests (vitest)
 npm run typecheck  # Type-check src + test (recommended before committing)
 ```
 
+> **Note**: The root `index.html` is the Vite build entry (it references `/src/*.ts`). It cannot be opened directly with a static file server or by double-clicking it (`file://`) — use `npm run dev` for development, and deploy or preview the `dist/` output from `npm run build`. Browsers run only the built `dist/` output.
+
 ## Project Structure
 
 ```
-├── src/         TypeScript source code
+├── src/         TypeScript source code (the single source of truth)
 │   ├── apiox/        Web API wrapper layer (browser APIs must go through this layer; direct use is prohibited)
 │   ├── constants/    Constants and shared leaf modules (incl. settingConfig, i18nLang)
 │   ├── contentRoom/  Menu, world management, settings UI logic
@@ -52,22 +54,23 @@ npm run typecheck  # Type-check src + test (recommended before committing)
 │   ├── others/       General modules such as i18n
 │   ├── types/        Type definitions
 │   └── user/         Save/load
-├── js/           tsc output (ESM, loaded directly by the browser at runtime, gitignored)
 ├── css/          Global styles (directly @import-ed by index.html)
-├── assets/       Game assets (images, sounds, locale files, fonts)
+├── public/assets/  Game assets (images, sounds, locale files, fonts) — Vite publicDir,
+│                    copied verbatim to dist/assets/ and served at /assets/...
 ├── test/         Vitest unit tests
 └── dist/         Vite build output (gitignored)
 ```
 
 ## Architecture Notes (Important)
 
-This project uses a **dual-directory pattern**, unlike a typical Vite project:
+Standard Vite single-source build:
 
-- **Source/runtime split**: `src/` is compiled by tsc into `js/`, and the browser **loads the ESM output in `js/` directly** (the `index.html` importmap resolves `pixi.js`/`localforage`).
-- **The game chain is loaded at runtime**: the 15 modules of the game itself are **dynamically imported by `LoadScripts` via absolute paths (`/js/gameRoom/**`)**, bypassing the bundler. Therefore, changes in `src/` require recompilation to take effect (`npm run build` already runs tsc automatically).
-- **What dist contains**: the bundled shell (UI) plus mirrors of `js/`, `assets/`, and the pixi/localforage dependencies from `node_modules`. A missing runtime dependency fails the build outright instead of producing a broken output.
+- **One source tree, one bundler**: `src/` is the only source tree; Vite compiles and bundles it directly (no intermediate `js/` output, no manual compile step). `index.html` at the repo root loads `/src/*.ts` module entries.
+- **The game chain is lazy-loaded**: the 15 game modules are dynamically imported by `LoadScripts` (and the game entry by `main`/`content`) via **relative dynamic imports**, so Vite code-splits them into async chunks that load only when the player enters the game room — preserving the original on-demand behavior.
+- **Assets as `publicDir`**: `public/assets/` is Vite's `publicDir`, copied verbatim into `dist/assets/` and served at `/assets/...`. Runtime string paths (`PIXI.Assets`, `fetch`, `Audio`) are page-relative (`assets/...`) so they resolve identically in dev and after deploy.
+- **Dependencies bundled normally**: `pixi.js` and `localforage` are resolved from `node_modules` by Vite (no importmap, no `dist/node_modules` mirroring, no `external`).
 
-> Dev workflow: `npm run dev` (Vite static server) + run `npx tsc` manually to compile `src/` changes when needed; or use `npm run build` to compile and build in one command.
+> Dev workflow: `npm run dev` — HMR works directly on `src/`, no manual compilation step. Build: `npm run build` → `dist/`, verify with `npm run preview`.
 
 ## Testing
 
