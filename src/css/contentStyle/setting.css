@@ -40,7 +40,7 @@
 #setting .label {
     font-size: 1rem;
 }
-/* 开关样式 */
+/* 开关样式（矩形轨道 + 方形滑块，滑块正下方阴影、无高光） */
 #setting .switch {
     position: relative;
     display: inline-block;
@@ -58,8 +58,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: #ccc;
-    border-radius: 1rem;
+    background: #4a4a4a; /* 取消时深灰色 */
+    border-radius: 0;    /* 矩形轨道 */
     transition: 0.2s;
 }
 #setting .slider:before {
@@ -70,11 +70,12 @@
     left: 0.15rem;
     bottom: 0.15rem;
     background: white;
-    border-radius: 50%;
+    border-radius: 0; /* 方形滑块 */
+    box-shadow: 0 3px 4px rgba(0, 0, 0, 0.35); /* 正下方阴影，无高光 */
     transition: 0.2s;
 }
 #setting .switch input:checked + .slider {
-    background: #3b82f6;
+    background: #cecece; /* 确定时浅灰色 */
 }
 #setting .switch input:checked + .slider:before {
     transform: translateX(1.2rem);
