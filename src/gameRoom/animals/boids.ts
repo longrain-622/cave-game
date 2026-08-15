@@ -1,4 +1,4 @@
-import { idOfAnimal } from './animalIds.js';
+import { isSocial } from './animalIds.js';
 import type { Animal } from './animals.js';
 import { chunk } from '../world.js';
 
@@ -72,17 +72,6 @@ function gatherFlock(animal: Animal, range: number = boidRange): FlockInfo {
 // 注入动物列表
 function setAnimalList(list: Animal[]): void {
     animalList = list;
-}
-
-// 是否为群居动物
-function isSocial(id: number): boolean {
-    switch (id) {
-        case idOfAnimal.pig: case idOfAnimal.cow:
-        case idOfAnimal.chicken: case idOfAnimal.sheep:
-            return true;
-        default:
-            return false;
-    }
 }
 
 // 有效范围内的同类邻居

@@ -17,6 +17,8 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
 
     // 弹窗隐藏定时器（出场动画播完后再真正隐藏）
     let toastHideTimer: number | null = null;
+    // 弹窗弹出期间锁定设置，禁止修改任何设置项
+    let settingLocked = false;
     // 隐藏弹窗：先播放出场动画，结束后再设置 display:none
     const hideToast = (): void => {
         toast.addClass('toast-exit');
@@ -27,9 +29,11 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
             toast.domstyle('display', 'none');
             toast.removeClass('toast-exit');
             toastHideTimer = null;
+            // 弹窗完全隐藏后才解除设置锁定
+            settingLocked = false;
         }, 220);
     };
-    // 显示弹窗：清除残留的出场状态后展示（入场动画随之播放）
+    // 显示弹窗：清除残留的出场状态后展示（入场动画随之播放），并锁定设置
     const showToast = (): void => {
         if (toastHideTimer !== null) {
             apioxTime.clearOut(toastHideTimer);
@@ -37,12 +41,18 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
         }
         toast.removeClass('toast-exit');
         toast.domstyle('display', 'block');
+        settingLocked = true;
     };
 
     const handleSettingChange = (event: ApioxAnyEvent): void => {
         const target: ApioxObject = event.target;
         if (!target) {return;}
         const isEnabled: boolean = target.domProperty('checked') as boolean;
+        if (settingLocked) {
+            // 弹窗弹出期间禁止修改，恢复原勾选状态
+            target.domProperty('checked', !isEnabled);
+            return;
+        }
 
         switch (target.id) {
             case 'touchKeys':
@@ -66,6 +76,11 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
         const target: ApioxObject = event.target as ApioxObject;
         if (!target) {return;}
         const isEnabled: boolean = target.domProperty('checked') as boolean;
+        if (settingLocked) {
+            // 弹窗弹出期间禁止修改，恢复原勾选状态
+            target.domProperty('checked', !isEnabled);
+            return;
+        }
 
         // 更新 setting 状态（保持与原逻辑一致）
         setting.screenRotate_isOpening = isEnabled;
@@ -123,11 +138,15 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
 
     languageSelect.on('change', async (event: ApioxAnyEvent) => {
         const target: ApioxObject = event.target;
-        if (target) {
-            const newLang: string = target.domProperty('value') as string;
-            await setLanguage(newLang);
-            target.domProperty('value', newLang);
+        if (!target) {return;}
+        if (settingLocked) {
+            // 弹窗弹出期间禁止修改，恢复原语言
+            target.domProperty('value', getLang());
+            return;
         }
+        const newLang: string = target.domProperty('value') as string;
+        await setLanguage(newLang);
+        target.domProperty('value', newLang);
     });
 });
 

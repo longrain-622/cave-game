@@ -1,5 +1,5 @@
 import { player } from './player.js';
-import { world, setWorldState, isOutOfBounds } from './world.js';
+import { world, setWorldState, isOutOfBounds, isBlockFold } from './world.js';
 import { distance, getRandomInt } from './const.js';
 import { room } from '../constants/generic.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
@@ -34,6 +34,7 @@ interface Mouse {
     last_world_x: number; last_world_y: number;
     last_tool: number; last_targetBlock: number;
 }
+
 export const mouse: Mouse = {
     x: 0, y: 0,
     world_x: 0, world_y: 0,
@@ -68,6 +69,7 @@ apioxEvent.onMouseMove(
         }
     }
 );
+
 apioxEvent.onMouseDown(
     (event: ApioxMouseEvent): void => {
         mouse.isDown = true;
@@ -80,11 +82,11 @@ apioxEvent.onMouseDown(
         // 如果 BGM 还没启动，则启动它
         if (!bgmStarted) {
             bgmStarted = true;
-            // 启动 BGM，音量设为 0.3
-            soundManager.startBGM(0.3).catch(e => console.error('BGM启动失败:', e));
+            soundManager.startBGM(0.3).catch(e => console.error('cannot start bgm:', e));
         }
     }
 );
+
 apioxEvent.onMouseUp(
     (event: ApioxMouseEvent): void => { // 放置方块
         mouse.isDown = false;
@@ -99,11 +101,10 @@ apioxEvent.onMouseUp(
         }
 
         if (!uistate.invenUI_isOpening()
-        && taking.num >= 1
-        && player.hp > 0) {
-            if ((taking.item < 512 || taking.item === idOfItem.oak_door)
-            && world[mouse.world_y][mouse.world_x] <= idOfBlock.air
-            && mouse.can_put) { // 放置
+            && taking.num >= 1
+            && player.hp > 0
+        ) {
+            if ((taking.item < 512 || taking.item === idOfItem.oak_door) && mouse.can_put) { // 放置
                 switch (taking.item) {
                     case idOfItem.oak_door: putDoor(taking.item); break;
                     default: setWorldState({ x: mouse.world_x, y: mouse.world_y }, { type: taking.item }); break;
@@ -114,7 +115,7 @@ apioxEvent.onMouseUp(
                     inventory.items[widgets.select] = new Slots(-1, 0);
                 }
                 eventBus.emit('block:put', taking.item);
-            } else {
+            } else { // 使用物品
                 inventory.items[widgets.select] = useItem(taking);
             }
         }
@@ -133,18 +134,23 @@ export function mouseAct(): void {
 
     // 不能在 mousemove 里计算
     if (!isOutOfBounds(mouse.world_y - 1, mouse.world_x - 1) && !isOutOfBounds(mouse.world_y + 1, mouse.world_x + 1)) {
-        mouse.can_put = mouse.can_use && (
+        mouse.can_put = (mouse.can_use && (
             world[mouse.world_y][mouse.world_x - 1] !== idOfBlock.air ||
             world[mouse.world_y][mouse.world_x + 1] !== idOfBlock.air ||
             world[mouse.world_y - 1][mouse.world_x] !== idOfBlock.air ||
             world[mouse.world_y + 1][mouse.world_x] !== idOfBlock.air
-        );
+        ) && world[mouse.world_y][mouse.world_x] <= idOfBlock.air
+        && !isBlockFold({ x: mouse.world_x, y: mouse.world_y }));
     } else {
         mouse.can_put = false;
     }
 
     //鼠标挖方块计时器
-    if (mouse.isDown && mouse.downingButton === 0 && world[mouse.world_y][mouse.world_x] !== -1) {
+    if (mouse.isDown &&
+        mouse.downingButton === 0 &&
+        world[mouse.world_y][mouse.world_x] !== idOfBlock.air &&
+        !isBlockFold({ x: mouse.world_x, y: mouse.world_y })
+    ) {
         // 检查目标方块是否改变
         if (mouse.last_world_x !== mouse.world_x || mouse.last_world_y !== mouse.world_y
             || mouse.last_tool !== inventory.items[widgets.select].item
@@ -169,8 +175,7 @@ export function mouseAct(): void {
                 mouse.destory++;
             }
         }
-    }
-    else {
+    } else {
         mouse.timer = 0;
         mouse.destory = 0;
     }
@@ -184,7 +189,7 @@ export function mouseAct(): void {
         && mouse.blockhardness !== -1
     ) { // 挖掘
         if (!player.needRotateHand) {player.needRotateHand = true;}
-        if (getRandomInt(0, 16) === 1) {createParticles(world[mouse.world_y][mouse.world_x], mouse.world_x*64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y*64 - 8 + getRandomInt(0, 1) * 72);}
+        if (getRandomInt(0, 16) === 1) {createParticles(world[mouse.world_y][mouse.world_x], mouse.world_x * 64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y * 64 - 8 + getRandomInt(0, 1) * 72);}
 
         if (mouse.destory > 9) {
             // 挖掘和掉落
@@ -197,7 +202,7 @@ export function mouseAct(): void {
 
             // 管理粒子生成
             for (let a = 0; a < getRandomInt(16, 32); a++) {
-                createParticles(world[mine_mousey][mine_mousex], mine_mousex*64 + getRandomInt(0, 64), mine_mousey*64 + getRandomInt(0, 64));
+                createParticles(world[mine_mousey][mine_mousex], mine_mousex * 64 + getRandomInt(0, 64), mine_mousey * 64 + getRandomInt(0, 64));
             }
 
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); // 生成掉落物

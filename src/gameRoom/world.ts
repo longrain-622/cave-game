@@ -56,6 +56,26 @@ function place_meeting(x: number, y: number): boolean {
     else {return false;}
 }
 
+function isBlockFold(pos: BlockPos): boolean {
+    if (isOutOfBounds(pos.y, pos.x)) {return true;}
+
+    let flat: number = 0;
+    const neighbors: BlockPos[] = [
+        { x: pos.x, y: pos.y + 1 },
+        { x: pos.x, y: pos.y - 1 },
+        { x: pos.x + 1, y: pos.y },
+        { x: pos.x - 1, y: pos.y },
+    ];
+
+    for (const n of neighbors) {
+        if (isOutOfBounds(n.y, n.x) || world[n.y][n.x] >= 0) {
+            flat++;
+        }
+    }
+
+    return flat === 4;
+}
+
 function isOutOfBounds(row: number, col: number): boolean { // y, x
     if (row < 0 || row >= world_height) {return true;}
     const rowLen: number = world[row]?.length ?? 0;
@@ -93,5 +113,6 @@ export {
     sealevel,
     place_meeting,
     isOutOfBounds,
+    isBlockFold,
     pushChunkToWorld
 };
