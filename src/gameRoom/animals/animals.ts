@@ -12,19 +12,18 @@ import { WorldArchive } from '../../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from '../gameState.js';
 import { idOfItem } from '../dropped/itemIds.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
+import { idOfAnimal } from './animalIds.js';
+import { setAnimalList, flockDirection } from './boids.js';
 
-const look_range: number = 32; // 渲染的范围的一半
+const look_range: number = 64; // 渲染的范围的一半
 let animalArray: Animal[] = []; // 用来存储动物实例的数组
 const entityType_number: number = 4; // 目前实体总量
-
-enum idOfAnimal {
-    pig = 0, cow, sheep, chicken,
-}
 
 // 定义动物类
 class Animal {
     type: number;
     x: number; y: number; hp: number;
+    movespeed: number;
     vsp: number; can_jump: boolean; can_move: boolean; dir: number;
     targetX: number; // 目标点的 x 坐标（像素）
     legrad: number;
@@ -60,6 +59,15 @@ class Animal {
         this.x = x; this.y = y;
         this.hp = hp;
 
+        switch (type) {
+            case idOfAnimal.chicken:
+                this.movespeed = 1.6;
+                break;
+            default:
+                this.movespeed = 1;
+                break;
+        }
+
         this.vsp = vsp; // 垂直速度
         this.can_jump = can_jump;
         this.can_move = can_move;
@@ -81,10 +89,15 @@ class Animal {
     }
 
     beginMove(): void { // 开始移动：先指定目标点，再朝目标点移动
-        const target: BlockPos | null = lookForPath(
-            Math.floor(this.x / 64),
-            Math.floor((this.y + this.height / 2) / 64)
-        );
+        const x: number = Math.floor(this.x / 64);
+        const y: number = Math.floor((this.y + this.height / 2) / 64);
+        // boids 指导移动方向：跟随同类平均方向、往群体中心靠拢、远离太近的同类；
+        // 没有同类邻居时返回 0，维持原有的随机方向
+        const dir: number = flockDirection(this);
+        let target: BlockPos | null = lookForPath(x, y, getRandomInt(3, 8), dir);
+        if (target === null && dir !== 0) { // boids 方向被拦路，退回随机方向，避免反复撞墙卡住
+            target = lookForPath(x, y);
+        }
         if (target === null) { // 周围被拦路，原地等待下次尝试
             this.can_move = false;
             return;
@@ -265,7 +278,7 @@ function animalActions(): void {
                 const frontX: number = animal.x + (animal.dir > 0 ? animal.width : 0);
                 if (!place_meeting(frontX, animal.y + animal.height - 16) &&
                     !place_meeting(frontX, animal.y + 16)) {
-                    animal.x += animal.dir;
+                    animal.x += animal.dir * animal.movespeed;
                 } else {
                     // 被墙挡住：前方是 1 格高的矮墙才跳（80 = 检测点 16 + 一格 64），
                     // 高墙则停止移动，等随机换向后自行离开，避免原地反复起跳；
@@ -323,6 +336,7 @@ apioxEvent.listenGlobal('click', (): void => {
 });
 
 function main(): void {
+    setAnimalList(animalArray); // 注入动物列表供 boids 使用（animalArray 引用不变，只需一次）
     if (coverWhenSave) {loadAnimals(readingWorld);}
     apioxTime.setInt(createAnimals, 2000);
 }
