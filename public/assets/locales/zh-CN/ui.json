@@ -23,8 +23,9 @@
   },
   "setting": {
     "header": "设置",
+    "mobile": "移动端设置",
     "touchKeys": "触屏按键",
-    "rotateScreen": "游戏时翻转屏幕",
+    "rotateScreen": "游戏时旋转屏幕",
     "language": "界面语言"
   },
   "editWorld": {

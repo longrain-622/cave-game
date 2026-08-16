@@ -71,6 +71,10 @@
     text-align: center;
 }
 
+#none h2 {
+    text-align: center;
+}
+
 /* 菜单项悬停放大效果 */
 #startText, #downloadText, #setText, #viewText {
     display: inline-block;

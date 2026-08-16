@@ -9,4 +9,5 @@ body {
     background: #000; /* 黑边背景 */
     display: flex;
     min-height: 100vh; /*至少撑满视口高度*/
+    user-select: none;
 }

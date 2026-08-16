@@ -19,6 +19,7 @@
     z-index: 9999;
     box-sizing: border-box;
     display: none;
+    font-family: 'Unifont', monospace;
 }
 
 /*提示文字*/

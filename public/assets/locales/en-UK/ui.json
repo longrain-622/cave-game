@@ -23,6 +23,7 @@
   },
   "setting": {
     "header": "Settings",
+    "mobile": "Mobile Settings",
     "touchKeys": "Touch Controls",
     "rotateScreen": "Rotate Screen While Playing",
     "language": "Language"
