@@ -1,8 +1,16 @@
 enum idOfAnimal {
     pig = 0, cow, sheep, chicken,
+    zombie
 }
 
-// 是否为群居动物
+interface AnimalAttr {
+    hp: number;
+    moveSpeed: number;
+}
+
+const natureAnimals: number[] = [idOfAnimal.pig, idOfAnimal.cow, idOfAnimal.sheep, idOfAnimal.chicken];
+
+// 是否群居
 function isSocial(id: number): boolean {
     switch (id) {
         case idOfAnimal.pig: case idOfAnimal.cow:
@@ -13,4 +21,12 @@ function isSocial(id: number): boolean {
     }
 }
 
-export { idOfAnimal, isSocial };
+// 是否敌对
+function isEnemy(id: number): boolean {
+    switch (id) {
+        case idOfAnimal.zombie: return true;
+        default: return false;
+    }
+}
+
+export { idOfAnimal, isSocial, isEnemy, AnimalAttr, natureAnimals };

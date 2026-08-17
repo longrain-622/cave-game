@@ -190,7 +190,7 @@ export function contentLoop(): void {
 }
 
 //彩蛋
-if (getRandomInt(0, 31) === 1) {
+if (getRandomInt(0, 256) === 1) {
     const contentIcon = new ApioxObject('contentIcon');
     contentIcon.domProperty('src', 'assets/images/others/AllayPixel.png');
 }

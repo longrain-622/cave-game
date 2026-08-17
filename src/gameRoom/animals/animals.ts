@@ -12,72 +12,91 @@ import { WorldArchive } from '../../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from '../gameState.js';
 import { idOfItem } from '../dropped/itemIds.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
-import { idOfAnimal } from './animalIds.js';
+import { idOfAnimal, natureAnimals } from './animalIds.js';
 import { setAnimalList, flockDirection } from './boids.js';
+
+import { chickenAttr } from './instance/chicken.js';
+import { pigAttr } from './instance/pig.js';
+import { cowAttr } from './instance/cow.js';
+import { sheepAttr } from './instance/sheep.js';
+import { zombieAttr } from './instance/zombie.js';
 
 const look_range: number = 64; // 渲染的范围的一半
 let animalArray: Animal[] = []; // 用来存储动物实例的数组
-const entityType_number: number = 4; // 目前实体总量
 
 // 定义动物类
 class Animal {
     type: number;
     x: number; y: number; hp: number;
-    movespeed: number;
     vsp: number; can_jump: boolean; can_move: boolean; dir: number;
     targetX: number; // 目标点的 x 坐标（像素）
     legrad: number;
     flashFrames: number; // 闪红剩余帧数
     dierad: number; dierad_speed: number; // 死亡时旋转的角度和速度
     isDying: boolean;  // 是否正在死亡倒地中
+    attackTimer: number; // 攻击玩家的计时器
 
     // 精灵的宽高
-    get width() {
+    get width(): number {
         switch (this.type) {
             case idOfAnimal.pig: return 128;
             case idOfAnimal.cow: return 128;
             case idOfAnimal.sheep: return 128;
             case idOfAnimal.chicken: return 64;
+            case idOfAnimal.zombie: return 64;
             default: return 0;
         }
     }
 
-    get height() {
+    get height(): number {
         switch (this.type) {
             case idOfAnimal.pig: return 56;
             case idOfAnimal.cow: return 76;
             case idOfAnimal.sheep: return 76;
             case idOfAnimal.chicken: return 76;
+            case idOfAnimal.zombie: return 128;
             default: return 0;
         }
     }
 
-    constructor(type: number, x: number, y: number, hp: number,
-        vsp: number = 0, can_jump: boolean = false, can_move: boolean = false, dir: number = 0,
-        legrad: number = 0) {
+    get movespeed(): number {
+        switch (this.type) {
+            case idOfAnimal.chicken:
+                return chickenAttr.moveSpeed;
+            default:
+                return 1;
+        }
+    }
+
+    constructor(type: number, x: number, y: number, hp: number = -1) {
         this.type = type;
         this.x = x; this.y = y;
-        this.hp = hp;
 
-        switch (type) {
-            case idOfAnimal.chicken:
-                this.movespeed = 1.6;
-                break;
-            default:
-                this.movespeed = 1;
-                break;
+        if (hp === -1) {
+            switch (type) {
+                case idOfAnimal.pig: this.hp = pigAttr.hp; break;
+                case idOfAnimal.cow: this.hp = cowAttr.hp; break;
+                case idOfAnimal.sheep: this.hp = sheepAttr.hp; break;
+                case idOfAnimal.chicken: this.hp = chickenAttr.hp; break;
+                case idOfAnimal.zombie: this.hp = zombieAttr.hp; break;
+                default: this.hp = 20; break;
+            }
+        } else {
+            this.hp = hp;
         }
 
-        this.vsp = vsp; // 垂直速度
-        this.can_jump = can_jump;
-        this.can_move = can_move;
-        this.dir = dir; // 方向：-1左 1右
+        this.vsp = 0; // 垂直速度
+        this.can_jump = false;
+        this.can_move = false;
+        this.dir = 0; // 方向：-1左 1右
         this.targetX = 0; // 目标点初始化为 0，待 beginMove 时指定
 
-        this.legrad = legrad; // 腿的旋转角度
+        this.legrad = 0; // 腿的旋转角度
         this.flashFrames = 0; // 初始化闪烁帧数为0
         this.dierad = 0; this.dierad_speed = 0;
         this.isDying = false;
+
+        this.attackTimer = 0;
     }
 
     setY(): void { // 初始化 y 坐标
@@ -139,27 +158,21 @@ function loadAnimals(readingWorld: WorldArchive) {
 function createAnimals(): void {
     let newAnimal: Animal;
 
-    if (getRandomInt(1, 5) === 3 && animalArray.length < 8) {
-        let type: number = getRandomInt(0, entityType_number - 1);
-        let hp: number = 0;
-        switch (type) {
-            case idOfAnimal.pig: hp = 10; break;
-            case idOfAnimal.cow: hp = 10; break;
-            case idOfAnimal.sheep: hp = 8; break;
-            case idOfAnimal.chicken: hp = 4; break;
-        }
-        //创建新的动物对象并初始化属性
-        newAnimal = new Animal(type, player.x - room.width / 2 - 256 + (getRandomInt(2,3)-2) * (room.width + 512), player.y, hp);
-        newAnimal.setY(); //初始化y坐标
-        animalArray.push(newAnimal);
-    }
-
     // 删除超出计算范围的实体
     for (let i = 0; i < animalArray.length; i++) {
         if (Math.abs(animalArray[i].x - player.x) >= look_range * 64 ||
             Math.abs(animalArray[i].y - player.y) >= look_range * 64) {
             animalArray.splice(i, 1);
         }
+    }
+
+    // 创建新的动物对象
+    if (getRandomInt(1, 5) === 3 && animalArray.length < 8) {
+        const type: number = natureAnimals[getRandomInt(0, natureAnimals.length - 1)];
+        const left: number = getRandomInt(0, 1) * (room.width + 512);
+        newAnimal = new Animal(type, Math.floor(player.x / 64 + room.width / 2 / 64 + 4) * 64 - left, player.y);
+        newAnimal.setY(); // 初始化y坐标
+        animalArray.push(newAnimal);
     }
 }
 
@@ -292,7 +305,7 @@ function animalActions(): void {
                 }
             }
 
-            //改变腿部旋转方向
+            // 改变腿部旋转方向
             animal.legrad += 0.1;
             if (animal.legrad >= 2 * Math.PI){animal.legrad = 0;}
         } else {

@@ -37,10 +37,17 @@ class Players {
     left: number; right: number;
     move_speed: number; acc: number;
     grav: number; jumpspeed: number; vsp: number; can_jump: boolean;
-    width: number; height: number;
     leg_rad: number; hand_rad: number; needRotateHand: boolean; isRotateRighthand: boolean;
     rightOnMouse: boolean;
     parts: PlayerParts;
+
+    get width(): number {
+        return 64;
+    }
+
+    get height(): number {
+        return 128;
+    }
 
     constructor() {
         this.hp = 20;
@@ -51,7 +58,6 @@ class Players {
         this.screen_y = room.height / 2 - 40;
         this.left = 0; this.right = 0; this.move_speed = 7; this.acc = 0;
         this.grav = 0.5; this.jumpspeed = -10; this.vsp = 0; this.can_jump = false;
-        this.width = 64; this.height = 128;
         this.leg_rad = 0; this.hand_rad = 0; this.needRotateHand = false; this.isRotateRighthand = false;
         this.rightOnMouse = false;
         this.parts = this.nullParts();
