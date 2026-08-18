@@ -1,7 +1,7 @@
 import { eventBus } from "../others/eventBus.js";
 import { chunk } from "../world.js"
 import { player } from "../player.js";
-import { animalArray } from "../animals/animals.js";
+import { animalArray } from "../animals/animalIds.js";
 import { dropArray } from "../dropped/droppedItem.js";
 import { particleArray } from "../particle.js";
 import { furnaceArray } from "../gui/gameGUI/blockGUI/furnace.js";

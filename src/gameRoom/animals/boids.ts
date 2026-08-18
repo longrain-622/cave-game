@@ -1,5 +1,4 @@
-import { isSocial } from './animalIds.js';
-import type { Animal } from './animals.js';
+import { isSocial, Animal } from './animalIds.js';
 import { chunk } from '../world.js';
 
 const boidRange: number = 2 * chunk.width * 64; // 邻居有效范围

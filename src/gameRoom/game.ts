@@ -3,7 +3,8 @@ import { room } from '../constants/generic.js';
 import { mouseAct } from './mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering.js';
 
-import { animalArray, animalsLoop } from './animals/animals.js';
+import { animalsLoop } from './animals/animals.js';
+import { animalArray } from './animals/animalIds.js';
 import { drawAnimals } from './animals/animalDraw.js';
 
 import { gameGuiLoop } from './gui/gameGUI/gameGuiState.js';

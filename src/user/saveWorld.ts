@@ -1,7 +1,7 @@
 import { getDate } from "../apiox/time.js";
 import { worldName, world, chunk } from "../gameRoom/world.js";
 import { player } from "../gameRoom/player.js";
-import { Animal, animalArray } from "../gameRoom/animals/animals.js";
+import { Animal, animalArray } from "../gameRoom/animals/animalIds.js";
 import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";
 import { Slots } from "../gameRoom/gui/gameGUI/inventoryConfig.js";
 import { Chest, chests } from "../gameRoom/gui/gameGUI/blockGUI/chest.js";

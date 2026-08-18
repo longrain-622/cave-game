@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-// 实体渲染部位（统一结构：容器 + 左右腿引用，供绘制层使用）
+// 实体渲染部位
 export interface AnimalParts {
     container: PIXI.Container;
     leg1: PIXI.Sprite | null;
@@ -22,13 +22,13 @@ export function subTexture(base: PIXI.BaseTexture, sx: number, sy: number, sw: n
     return new PIXI.Texture(base, new PIXI.Rectangle(sx, sy, sw, sh));
 }
 
-// 构造部位定义（枢轴为纹理本地坐标，随 width/height 缩放；原绘制偏移 (-4,0) 对应 pivot(1,0)）
+// 构造部位定义
 export function partDef(tex: PIXI.Texture, x: number, y: number, w: number, h: number,
     pivotX: number = 0, pivotY: number = 0, rotation: number = 0, leg: number = 0): AnimalPartDef {
     return { tex, x, y, w, h, pivotX, pivotY, rotation, leg };
 }
 
-// 按部位定义构建渲染容器（坐标为相对实体框左上角）
+// 按部位定义构建渲染容器
 export function buildParts(defs: AnimalPartDef[]): AnimalParts {
     const container: PIXI.Container = new PIXI.Container();
     let leg1: PIXI.Sprite | null = null;

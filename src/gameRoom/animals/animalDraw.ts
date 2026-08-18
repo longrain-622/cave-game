@@ -1,8 +1,7 @@
 import { player } from '../player.js';
 import { isOnScreen } from '../const.js';
-import { animalArray, Animal } from './animals.js';
+import { idOfAnimal, animalArray, Animal } from './animalIds.js';
 import { app } from '../rendering.js';
-import { idOfAnimal } from './animalIds.js';
 import { AnimalParts } from './instance/parts.js';
 import { pigTextureUrl, createPigParts } from './instance/pig.js';
 import { cowTextureUrl, createCowParts } from './instance/cow.js';
@@ -13,7 +12,7 @@ import * as PIXI from 'pixi.js';
 
 export let can_drawEntity: boolean = false;
 
-// 动物贴图加载（URL 由各 instance 模块提供）
+// 动物贴图加载
 const baseTextureList: PIXI.BaseTexture[] = [
     PIXI.BaseTexture.from(pigTextureUrl),
     PIXI.BaseTexture.from(cowTextureUrl),
@@ -40,7 +39,7 @@ const animalLayer: PIXI.Container = new PIXI.Container();
 app.stage.addChild(animalLayer);
 animalLayer.zIndex = 3.5;
 
-// 各动物部位构建函数（按动物类型分发）
+// 各动物部位构建
 const partBuilders: Record<number, () => AnimalParts> = {
     [idOfAnimal.pig]: createPigParts,
     [idOfAnimal.cow]: createCowParts,
@@ -59,16 +58,15 @@ function checkAllLoaded(): void {
 }
 baseTextureList.forEach((tex: PIXI.BaseTexture): void => { tex.on('loaded', checkAllLoaded); });
 
-// 每只动物对应的渲染容器（懒创建，动物移除时销毁）
+// 每只动物对应的渲染容器 懒创建 动物移除时销毁
 const animalPartsMap: Map<Animal, AnimalParts> = new Map();
 
 function createAnimalParts(animal: Animal): AnimalParts {
     const container: PIXI.Container = new PIXI.Container();
-    // pivot 取宽高中心：翻转（scale.x=-1）与死亡旋转（rotation）均绕中心，与原 Canvas2D 变换等价
     container.pivot.set(animal.width / 2, animal.height / 2);
     container.visible = false; // 先隐藏，避免出现在 (0,0)
 
-    // 各动物部位由 instance 模块构建，内部容器置于实体框左上角原点
+    // 各动物部位由 instance 模块构建
     const built: AnimalParts = partBuilders[animal.type]();
     container.addChild(built.container);
 
@@ -105,7 +103,7 @@ function drawAnimals(): void {
             animalPartsMap.set(animal, parts);
         }
 
-        // 位置与变换（死亡旋转在翻转时取负，等价原 Canvas2D "先旋转后翻转" 的变换顺序）
+        // 位置与变换
         parts.container.position.set(draw_x + animal.width / 2, draw_y + animal.height / 2);
         parts.container.scale.x = (animal.dir === 1) ? -1 : 1; // 水平翻转
         parts.container.rotation = (animal.hp <= 0) ? ((animal.dir === 1) ? -animal.dierad : animal.dierad) : 0;
