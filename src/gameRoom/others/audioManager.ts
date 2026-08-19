@@ -26,6 +26,7 @@ function playBlockSound(id: number, isBreaking: boolean): void {
         case idOfBlock.coal_ore: case idOfBlock.iron_ore:
         case idOfBlock.furnace:
         case idOfBlock.andesite: case idOfBlock.diorite: case idOfBlock.granite:
+        case idOfBlock.bedrock:
             soundManager.play('stone4');
             break;
 

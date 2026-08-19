@@ -1,56 +1,14 @@
 //rendering.ts
-import { isOutOfBounds, world } from "./world.js";
-import { room } from "../constants/generic.js";
-import { player } from "./player.js";
-import { initSkyBackground, initSkyContainer } from "./nature/sky.js";
-import { mouse } from "./mouse.js";
-import { idOfBlock } from "./nature/blockMecha/blocks.js";
-import { eventBus } from "./others/eventBus.js";
+import { isOutOfBounds, world } from './world.js';
+import { room } from '../constants/generic.js';
+import { player } from './player.js';
+import { initSkyBackground, initSkyContainer } from './nature/sky.js';
+import { mouse } from './mouse.js';
+import { idOfBlock } from './nature/blockMecha/blocks.js';
+import { eventBus } from './others/eventBus.js';
 
 import * as PIXI from 'pixi.js';
-import { apiMethod } from "../apiox/method.js";
-
-//@ts-ignore - defaultOptions
-PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
-const app = new PIXI.Application({
-    width: room.width,
-    height: room.height,
-    antialias: false,
-    backgroundAlpha: 0,
-});
-const viewStyle = (app.view as HTMLCanvasElement).style;
-viewStyle.position = 'absolute';
-viewStyle.left = '0';
-viewStyle.top = '0';
-viewStyle.width = room.width + 'px';
-viewStyle.height = room.height + 'px';
-app.stage.sortableChildren = true;
-
-//天空图层挂载到舞台最底层（zIndex=0），位于世界图层之下
-initSkyContainer(app.stage);
-
-//将 Pixi 画布插入到游戏容器中，放置于其他 Canvas 之上
-const gameRoom = apiMethod.select('.GameRoom');
-if (gameRoom) {
-    gameRoom.appendChild(app.view as HTMLCanvasElement);
-}
-
-export function genericTextStyle(fontSize: number=24): PIXI.TextStyle {
-    return new PIXI.TextStyle({
-        fontFamily: 'Unifont', //这里的名字必须与字体文件内部定义的名称一致
-        fontSize: fontSize,
-        fill: '#ffffff',
-        dropShadow: true, //启用阴影
-        dropShadowColor: 0x000000,
-        dropShadowAlpha: 0.8,
-        dropShadowBlur: 0, //模糊程度
-        dropShadowDistance: 2, //阴影偏移距离
-        dropShadowAngle: Math.PI / 4, //阴影角度（45度向下）
-        padding: 10,
-    });
-}
-
-export let isDrawing: boolean = false;
+import { apiMethod } from '../apiox/method.js';
 
 // 方块贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
 const blockAssets: Record<string, string> = {
@@ -82,7 +40,19 @@ const blockAssets: Record<string, string> = {
     andesite: '/assets/images/games/blocks/andesite.png',
     diorite: '/assets/images/games/blocks/diorite.png',
     granite: '/assets/images/games/blocks/granite.png',
+    bedrock: '/assets/images/games/blocks/bedrock.png',
 };
+
+export let isDrawing: boolean = false;
+export const blockTextures: Record<number | string, PIXI.Texture> = {};
+
+export let app: PIXI.Application;
+export let gameRoom: Element | null;
+let worldContainer: PIXI.Container;
+let tileSprites: PIXI.Sprite[] = [];
+let cursorSprite: PIXI.Graphics;
+let destroySprite: PIXI.Sprite;
+let destroyFrames: PIXI.Texture[] = [];
 
 // Assets.load 按 url 返回纹理，转成 alias 索引便于 initBlockTextures 使用
 function toAliasTextures(textures: Record<string, PIXI.Texture>): Record<string, PIXI.Texture> {
@@ -93,51 +63,53 @@ function toAliasTextures(textures: Record<string, PIXI.Texture>): Record<string,
     return byAlias;
 }
 
-function main(): void {
-    // 用 PixiJS Assets 加载方块贴图（替代 Image 对象），全部就绪后再初始化渲染
-    PIXI.Assets.load<Record<string, PIXI.Texture>>(Object.values(blockAssets)).then((textures: Record<string, PIXI.Texture>) => {
-        initBlockTextures(toAliasTextures(textures));
-        isDrawing = true;
-
-        initSkyBackground();
-        eventBus.emit('textures:ready'); // 通知依赖 blockTextures 的模块可以安全创建纹理了
-
-        //鼠标 UI 容器
-        const mouseUIContainer = new PIXI.Container();
-        app.stage.addChild(mouseUIContainer);
-        mouseUIContainer.zIndex = 2;
-
-        //鼠标光标
-        cursorSprite = new PIXI.Graphics();
-        cursorSprite.lineStyle(1, 0x000000, 0.7); //黑色边框，宽度1
-        cursorSprite.drawRect(0, 0, 64, 64); //64x64空心矩形
-        cursorSprite.visible = false;
-        mouseUIContainer.addChild(cursorSprite);
-
-        //破坏动画（预生成10帧）
-        const destroyBaseTex = (blockTextures['destory'] as PIXI.Texture).baseTexture;
-        destroyFrames = [];
-        for (let i = 0; i < 10; i++) {
-            const frame = new PIXI.Rectangle(i * 16, 0, 16, 16);
-            destroyFrames.push(new PIXI.Texture(destroyBaseTex, frame));
-        }
-        destroySprite = new PIXI.Sprite(destroyFrames[0]);
-        destroySprite.width = 64;
-        destroySprite.height = 64;
-        destroySprite.visible = false;
-        destroySprite.alpha = 0.6;
-        mouseUIContainer.addChild(destroySprite);
-    }).catch((error: unknown) => {
-        console.error('load block textures error', error);
+function initApp(): void {
+    //@ts-ignore - defaultOptions
+    PIXI.BaseTexture.defaultOptions.scaleMode = PIXI.SCALE_MODES.NEAREST;
+    app = new PIXI.Application({
+        width: room.width,
+        height: room.height,
+        antialias: false,
+        backgroundAlpha: 0,
     });
+    const viewStyle: CSSStyleDeclaration = (app.view as HTMLCanvasElement).style;
+    viewStyle.position = 'absolute';
+    viewStyle.left = '0';
+    viewStyle.top = '0';
+    viewStyle.width = room.width + 'px';
+    viewStyle.height = room.height + 'px';
+    app.stage.sortableChildren = true;
+
+    // 天空图层
+    initSkyContainer(app.stage);
+
+    gameRoom = apiMethod.select('.GameRoom');
+    if (gameRoom) {
+        gameRoom.appendChild(app.view as HTMLCanvasElement);
+    }
 }
-main();
 
-let cursorSprite: PIXI.Graphics;
-let destroySprite: PIXI.Sprite;
-let destroyFrames: PIXI.Texture[] = [];
+function initWorldLayer(): void {
+    worldContainer = new PIXI.Container();
+    app.stage.addChild(worldContainer);
+    worldContainer.zIndex = 1;
 
-export const blockTextures: Record<number | string, PIXI.Texture> = {};
+    // 预估最大可见方块数
+    const maxTilesX: number = Math.ceil(room.width / 64) + 2;
+    const maxTilesY: number = Math.ceil(room.height / 64) + 2;
+    const maxVisibleTiles: number = maxTilesX * maxTilesY;
+
+    // Sprite 池
+    for (let i: number = 0; i < maxVisibleTiles; i++) {
+        const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
+        sprite.width = 64;
+        sprite.height = 64;
+        sprite.visible = false;
+        worldContainer.addChild(sprite);
+        tileSprites.push(sprite);
+    }
+}
+
 function initBlockTextures(textures: Record<string, PIXI.Texture>): void {
     blockTextures[idOfBlock.grass] = textures['grass'];
     blockTextures[idOfBlock.dirt] = textures['dirt'];
@@ -166,30 +138,69 @@ function initBlockTextures(textures: Record<string, PIXI.Texture>): void {
     blockTextures[idOfBlock.andesite] = textures['andesite'];
     blockTextures[idOfBlock.diorite] = textures['diorite'];
     blockTextures[idOfBlock.granite] = textures['granite'];
+    blockTextures[idOfBlock.bedrock] = textures['bedrock'];
     blockTextures['destory'] = textures['destory'];
 }
 
-const worldContainer: PIXI.Container = new PIXI.Container();
-app.stage.addChild(worldContainer);
-worldContainer.zIndex = 1;
-
-// 预估最大可见方块数
-const maxTilesX: number = Math.ceil(room.width / 64) + 2;
-const maxTilesY: number = Math.ceil(room.height / 64) + 2;
-const maxVisibleTiles: number = maxTilesX * maxTilesY;
-
-// Sprite 池
-const tileSprites: PIXI.Sprite[] = [];
-for (let i: number = 0; i < maxVisibleTiles; i++) {
-    const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
-    sprite.width = 64;
-    sprite.height = 64;
-    sprite.visible = false;
-    worldContainer.addChild(sprite);
-    tileSprites.push(sprite);
+export function genericTextStyle(fontSize: number=24): PIXI.TextStyle {
+    return new PIXI.TextStyle({
+        fontFamily: 'Unifont', // 这里的名字必须与字体文件内部定义的名称一致
+        fontSize: fontSize,
+        fill: '#ffffff',
+        dropShadow: true, // 启用阴影
+        dropShadowColor: 0x000000,
+        dropShadowAlpha: 0.8,
+        dropShadowBlur: 0, // 模糊程度
+        dropShadowDistance: 2, // 阴影偏移距离
+        dropShadowAngle: Math.PI / 4, // 阴影角度（45度向下）
+        padding: 10,
+    });
 }
 
-function updateWorldPixi(): void {
+function main(): void {
+    initApp();
+    initWorldLayer();
+
+    // 加载方块贴图
+    PIXI.Assets.load<Record<string, PIXI.Texture>>(Object.values(blockAssets)).then((textures: Record<string, PIXI.Texture>) => {
+        initBlockTextures(toAliasTextures(textures));
+        isDrawing = true;
+
+        initSkyBackground();
+        eventBus.emit('textures:ready'); // 通知依赖 blockTextures 的模块可以安全创建纹理了
+
+        // 鼠标 UI 容器
+        const mouseUIContainer = new PIXI.Container();
+        app.stage.addChild(mouseUIContainer);
+        mouseUIContainer.zIndex = 2;
+
+        // 鼠标光标
+        cursorSprite = new PIXI.Graphics();
+        cursorSprite.lineStyle(1, 0x000000, 0.7); // 黑色边框，宽度1
+        cursorSprite.drawRect(0, 0, 64, 64); // 64x64空心矩形
+        cursorSprite.visible = false;
+        mouseUIContainer.addChild(cursorSprite);
+
+        // 破坏动画
+        const destroyBaseTex = (blockTextures['destory'] as PIXI.Texture).baseTexture;
+        destroyFrames = [];
+        for (let i = 0; i < 10; i++) {
+            const frame = new PIXI.Rectangle(i * 16, 0, 16, 16);
+            destroyFrames.push(new PIXI.Texture(destroyBaseTex, frame));
+        }
+        destroySprite = new PIXI.Sprite(destroyFrames[0]);
+        destroySprite.width = 64;
+        destroySprite.height = 64;
+        destroySprite.visible = false;
+        destroySprite.alpha = 0.6;
+        mouseUIContainer.addChild(destroySprite);
+    }).catch((error: unknown) => {
+        console.error('load block textures error', error);
+    });
+}
+main();
+
+export function updateWorldPixi(): void {
     if (!isDrawing) {return;}
 
     const startRow: number = Math.floor(player.y / 64) - Math.floor(room.height / 128);
@@ -236,7 +247,7 @@ function updateWorldPixi(): void {
     }
 }
 
-function updateMouseSprites(): void {
+export function updateMouseSprites(): void {
     if (!cursorSprite || !destroySprite) {return;}
 
     if (!mouse.can_use) {
@@ -245,7 +256,7 @@ function updateMouseSprites(): void {
         return;
     }
 
-    // 计算屏幕坐标（假设每格 64px）
+    // 计算屏幕坐标 每格64px
     const screenX: number = player.screen_x + mouse.world_x * 64 - player.x;
     const screenY: number = player.screen_y + mouse.world_y * 64 - player.y;
 
@@ -253,7 +264,7 @@ function updateMouseSprites(): void {
     cursorSprite.position.set(screenX, screenY);
     cursorSprite.visible = true;
 
-    // 破坏动画（mouse.destory 范围 1~9）
+    // 破坏动画
     if (mouse.destory > 0 && mouse.destory < 10) {
         destroySprite.texture = destroyFrames[mouse.destory];
         destroySprite.position.set(screenX, screenY);
@@ -262,5 +273,3 @@ function updateMouseSprites(): void {
         destroySprite.visible = false;
     }
 }
-
-export { updateWorldPixi, updateMouseSprites, app, gameRoom };

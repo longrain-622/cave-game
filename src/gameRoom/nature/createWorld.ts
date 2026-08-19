@@ -176,18 +176,18 @@ function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
 }
 
 function createChunk(startX: number, behind: boolean) { //startX:当前区块在世界中的起始 X 坐标
-    let worlding = [];
-    const sealevel = Math.round(world_height / 2);
+    let worlding: number[][] = [];
+    const sealevel: number = Math.round(world_height / 2);
 
     //基于全局X温度预生成
     let tempTypes: number[] = new Array(chunk.width);
     for (let x = 0; x < chunk.width; x++) {
-        const globalX = startX + x;
+        const globalX: number = startX + x;
         tempTypes[x] = getTemperatureFromNoise(globalX, temperatureNoise);
     }
 
-    let terrain_grass = [];
-    let terrain_stone = [];
+    let terrain_grass: number[] = [];
+    let terrain_stone: number[] = [];
 
     const scale: number = 0.05;
     const amplitude: number = 20;
@@ -196,15 +196,15 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
 
     //地形高度
     for (let x = 0; x < chunk.width; x++) {
-        const globalX = startX + x;
+        const globalX: number = startX + x;
 
-        let noiseVal = terrainNoise.fbm(globalX * scale, 4, 0.5, 2.0);
-        let grassHeight = sealevel + Math.floor(noiseVal * amplitude);
+        let noiseVal: number = terrainNoise.fbm(globalX * scale, 4, 0.5, 2.0);
+        let grassHeight: number = sealevel + Math.floor(noiseVal * amplitude);
         grassHeight = Math.min(world_height - 3, Math.max(1, grassHeight));
         if (grassHeight > lowest_point) {lowest_point = grassHeight;} //设置最低点
 
-        let stoneNoiseVal = stoneNoise.fbm(globalX * scale * 1.5, 3);
-        let stoneHeight = grassHeight + stoneOffset + Math.floor(stoneNoiseVal * stoneVariation);
+        let stoneNoiseVal: number = stoneNoise.fbm(globalX * scale * 1.5, 3);
+        let stoneHeight: number = grassHeight + stoneOffset + Math.floor(stoneNoiseVal * stoneVariation);
         stoneHeight = Math.min(world_height - 1, Math.max(grassHeight + 1, stoneHeight));
 
         terrain_grass.push(grassHeight);
@@ -213,22 +213,31 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
 
     //填充方块
     for (let y = 0; y < world_height; y++) {
-        let worldLine = [];
+        let worldLine: number[] = [];
         for (let x = 0; x < chunk.width; x++) {
-            const globalX = startX + x;
-            let g = terrain_grass[x];
-            let s = terrain_stone[x];
-            let temp = getTemperatureFromNoise(globalX, temperatureNoise);
+            const globalX: number = startX + x;
+            let g: number = terrain_grass[x];
+            let s: number = terrain_stone[x];
+            let temp: number = getTemperatureFromNoise(globalX, temperatureNoise);
 
             //根据温度选择方块
             let surfaceBlock, dirtBlock, stoneBlock;
             switch (temp) {
                 case TEMP.HOT:
-                    surfaceBlock = 5; dirtBlock = 5; stoneBlock = 2; break;
+                    surfaceBlock = idOfBlock.sand;
+                    dirtBlock = idOfBlock.sand;
+                    stoneBlock = idOfBlock.stone;
+                    break;
                 case TEMP.COLD:
-                    surfaceBlock = 6; dirtBlock = 1; stoneBlock = 2; break;
+                    surfaceBlock = idOfBlock.snowGrass;
+                    dirtBlock = idOfBlock.dirt;
+                    stoneBlock = idOfBlock.stone;
+                    break;
                 default:
-                    surfaceBlock = 0; dirtBlock = 1; stoneBlock = 2; break;
+                    surfaceBlock = idOfBlock.grass;
+                    dirtBlock = idOfBlock.dirt;
+                    stoneBlock = idOfBlock.stone;
+                    break;
             }
 
             if (y === g) {worldLine.push(surfaceBlock);}
@@ -293,13 +302,17 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
                 cave: -0.12, iron: 0.36, coal: 0.32,
                 andesite: 0.34, diorite: 0.34, granite: 0.34,
             }
-            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = 11;}
-            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = 10;}
+            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = idOfBlock.coal_ore;}
+            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = idOfBlock.iron_ore;}
             if (Math.abs(rock_combined.andesite) > threshold.andesite) {worlding[y][x] = idOfBlock.andesite;}
             if (Math.abs(rock_combined.diorite) > threshold.diorite) {worlding[y][x] = idOfBlock.diorite;}
             if (Math.abs(rock_combined.granite) > threshold.granite) {worlding[y][x] = idOfBlock.granite;}
             if (combined < threshold.cave) {worlding[y][x] = idOfBlock.stone_dark;}
         }
+    }
+
+    for (let b = 0; b < worlding[0].length; b++) {
+        worlding[worlding.length - 1][b] = idOfBlock.bedrock;
     }
 
     //将当前区块追加到全局世界末尾
@@ -328,7 +341,7 @@ function generateTrees(worlding: number[][]): void {
             worlding[y][x] = 1; // 将草换成泥
             for (let k = 0; k < oak_height; k++) {
                 y--;
-                if (y >= 0) {worlding[y][x] = -2;} // 橡木
+                if (y >= 0) {worlding[y][x] = idOfBlock.oak;} // 橡木
             }
 
             // 树叶
@@ -336,7 +349,7 @@ function generateTrees(worlding: number[][]): void {
             for (let i = 0; i < 3; i++) {
                 for (let n = 0; n < leaves_height; n++) {
                     if (y >= 0 && x >= 0 && x < chunk.width && worlding[y][x] === -1) {
-                        worlding[y][x] = 3; // 树叶
+                        worlding[y][x] = idOfBlock.leaves; // 树叶
                     }
                     y++;
                 }
@@ -358,8 +371,8 @@ function generateWeeds(worlding: number[][]): void {
         let y: number = 0;
         while (y < world_height && worlding[y][x] === -1) {y++;}
         switch (worlding[y][x]) {
-            case 0: worlding[y - 1][x] = -3; break;
-            case 5: worlding[y - 1][x] = -5; break;
+            case 0: worlding[y - 1][x] = idOfBlock.invicon_grass; break;
+            case 5: worlding[y - 1][x] = idOfBlock.deadBush; break;
         }
     }
 }
@@ -378,7 +391,7 @@ function generateCacti(worlding: number[][]): void {
 
         let cactus_height: number = getRandomInt(1, 3);
         while (cactus_height > 0) {
-            worlding[y - cactus_height][x] = -4;
+            worlding[y - cactus_height][x] = idOfBlock.cactus;
             cactus_height--;
         }
     }

@@ -16,6 +16,7 @@ enum idOfBlock {
     furnace = 14,
     glass = 15,
     andesite = 16, diorite = 17, granite = 18,
+    bedrock = 19,
 }
 
 // 用于存储方块属性
@@ -32,11 +33,13 @@ function newBlock(id: number, hardness: number): Blocks {
 const hardness: {
     dirt: number; stone: number;
     oak: number; planks: number;
+    no: number;
 } = {
     dirt: 5,
     stone: 64,
     oak: 18,
     planks: 22,
+    no: -1,
 };
 
 const block = {
@@ -60,13 +63,14 @@ const block = {
     oak_door_top: newBlock(idOfBlock.oak_door_top, hardness.planks),
     oak_door_bottom_open: newBlock(idOfBlock.oak_door_bottom_open, hardness.planks),
     oak_door_top_open: newBlock(idOfBlock.oak_door_top_open, hardness.planks),
-    stone_dark: newBlock(idOfBlock.stone_dark, -1),
+    stone_dark: newBlock(idOfBlock.stone_dark, hardness.no),
     chest: newBlock(idOfBlock.chest, hardness.planks),
     furnace: newBlock(idOfBlock.furnace, hardness.stone),
     glass: newBlock(idOfBlock.glass, 2),
     andesite: newBlock(idOfBlock.andesite, hardness.stone),
     diorite: newBlock(idOfBlock.diorite, hardness.stone),
     granite: newBlock(idOfBlock.granite, hardness.stone),
+    bedrock: newBlock(idOfBlock.bedrock, hardness.no),
 };
 
 const blocksArray: Blocks[] = [
@@ -76,7 +80,8 @@ const blocksArray: Blocks[] = [
     block.oak_door_bottom, block.oak_door_top, block.oak_door_bottom_open, block.oak_door_top_open,
     block.stone_dark, block.chest, block.furnace,
     block.glass,
-    block.andesite, block.diorite, block.granite
+    block.andesite, block.diorite, block.granite,
+    block.bedrock
 ];
 
 function main(): void {

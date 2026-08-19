@@ -16,6 +16,7 @@ export async function loadScripts() {
       await import('./gameRoom/nature/blockMecha/blockMechanism.js'),
       await import('./gameRoom/animals/animals.js'),
       //await import('./debug/spawnZombies.js'),
+      //await import('./debug/underCave.js'),
       await import('./gameRoom/gui/gameGUI/blockGUI/crafting_table.js'),
       await import('./gameRoom/nature/offsetElements.js'),
       await import('./gameRoom/others/loadingCheck.js'),
