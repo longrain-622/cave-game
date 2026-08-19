@@ -1,7 +1,4 @@
-import { chickenAttr } from './instance/chicken.js';
-import { pigAttr } from './instance/pig.js';
-import { cowAttr } from './instance/cow.js';
-import { sheepAttr } from './instance/sheep.js';
+import { chickenAttr, pigAttr, cowAttr, sheepAttr } from "./instance/normalAnimal.js";
 import { zombieAttr } from './instance/zombie.js';
 
 export enum idOfAnimal {

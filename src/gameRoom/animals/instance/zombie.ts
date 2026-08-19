@@ -5,7 +5,7 @@ import { place_meeting } from '../../world.js';
 import * as PIXI from 'pixi.js';
 
 export const zombieTextureUrl: string = 'assets/images/games/entity/zombie.png';
-export const zombieAttr: AnimalAttr = { hp: 20, moveSpeed: 1.3, damage: 1 };
+export const zombieAttr: AnimalAttr = { hp: 20, moveSpeed: 1.3, damage: 2 };
 const visualRange: number = 8; // 视野
 const visualRangePx: number = visualRange * 64;
 const SEPARATION_RANGE: number = 64; // 分离生效范围
@@ -85,7 +85,7 @@ export function findPlayer(instance: Animal): void {
 
 // 同类僵尸的水平分离力
 function getSeparation(entity: Animal): number {
-    if (animalArray.length < 2) {return 0;} // 没有可分离的对象直接返回
+    if (animalArray.length < 2) {return 0;}
     let steerX: number = 0;
 
     for (const other of animalArray) {
@@ -97,7 +97,7 @@ function getSeparation(entity: Animal): number {
         if (distSq === 0 || distSq > SEPARATION_RANGE_SQ) {continue;}
 
         const dist: number = Math.sqrt(distSq);
-        const push: number = 1 - dist / SEPARATION_RANGE;   // 越近推力越大
+        const push: number = 1 - dist / SEPARATION_RANGE;
         steerX += ((entity.x - other.x) / dist) * push;
     }
 
@@ -107,7 +107,7 @@ function getSeparation(entity: Animal): number {
 export function chasePlayer(animal: Animal): void {
     attackPlayer(animal, zombieAttr.damage ?? 1);
 
-    // 朝向玩家的方向
+    // 朝向玩家
     const dxToPlayer: number = player.x - animal.x;
     let dirX: number = 0;
     if (Math.abs(dxToPlayer) > 2) {dirX = dxToPlayer > 0 ? 1 : -1;}
@@ -117,7 +117,7 @@ export function chasePlayer(animal: Animal): void {
     let dirSep: number = 0;
     if (Math.abs(sepX) > 0.1) {dirSep = sepX > 0 ? 1 : -1;}
 
-    // 叠加，权重：朝向玩家为主，分离为辅
+    // 叠加
     const finalDir: number = dirX + SEPARATION_WEIGHT * dirSep;
     let moveDir: number = 0;
     if (finalDir > 0.3) moveDir = 1;
@@ -129,7 +129,7 @@ export function chasePlayer(animal: Animal): void {
         return;
     }
 
-    animal.dir = moveDir; // 面朝移动方向
+    animal.dir = moveDir;
 
     // 水平移动
     const newX: number = animal.x + moveDir * animal.movespeed;
@@ -140,7 +140,6 @@ export function chasePlayer(animal: Animal): void {
     if (!place_meeting(frontX, footY) && !place_meeting(frontX, midY)) {
         animal.x = newX;
     } else {
-        // 前方有墙尝试跳跃
         if (animal.can_jump && !place_meeting(frontX, footY - 80)) {
             animal.vsp = -10;
             animal.can_jump = false;
@@ -150,6 +149,15 @@ export function chasePlayer(animal: Animal): void {
     }
     animal.can_move = false;
 
-    // 腿动画
-    if (moveDir !== 0) animal.legrad += 0.1;
+    if (moveDir !== 0) {
+        animal.legrad += 0.1;
+        if (animal.legrad >= 2 * Math.PI) {animal.legrad = 0;}
+    } else {
+        if (animal.legrad > 0) {
+            animal.legrad -= 0.1;
+            if (animal.legrad < 0) {animal.legrad = 0;}
+        } else {
+            animal.legrad = 0;
+        }
+    }
 }
