@@ -2,6 +2,7 @@ import { playerLoop } from './player.js';
 import { room } from '../constants/generic.js';
 import { mouseAct } from './mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
+import { blockFrameLoop } from './rendering/blockFrames.js';
 
 import { animalsLoop } from './animals/animals.js';
 import { animalArray } from './animals/animalIds.js';
@@ -31,6 +32,7 @@ export function gameLoop(): void {
     playerLoop();
     updateWorldPixi();
     updateMouseSprites();
+    blockFrameLoop();
     mouseAct();
 
     if (animalArray.length > 0) {animalsLoop(); drawAnimals();}

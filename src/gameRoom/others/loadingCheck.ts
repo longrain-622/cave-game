@@ -7,6 +7,7 @@ import { sky_isDrawing } from "../nature/sky.js";
 import { item_isDrawing } from "../dropped/items.js";
 import { apioxTime } from "../../apiox/time.js";
 import { finishLoading } from "./loadingPage.js";
+import { blockFrameLoaded } from "../rendering/blockFrames.js";
 
 let delayTriggered: boolean = false;
 let loadTime: number = 0;
@@ -21,7 +22,8 @@ const checkCondition = () => {
     can_drawEntity &&
     gui_isDrawing &&
     sky_isDrawing &&
-    item_isDrawing
+    item_isDrawing &&
+    blockFrameLoaded
   ) {
     delayTriggered = true;
     finishLoading();

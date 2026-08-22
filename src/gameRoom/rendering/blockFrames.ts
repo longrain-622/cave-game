@@ -15,7 +15,10 @@ export function initBlockFrames(): void {
     });
 }
 
-let fireTick: number = 31; // 0 ~ 31
+let timer: number = 0;
+
+const fireMaxTick: number = 31;
+let fireTick: number = 0; // 0 ~ 31
 let fireFrames: PIXI.Texture[] = [];
 
 // 火焰动画帧
@@ -23,15 +26,23 @@ function initFireTexture(): void {
     if (!blockFrameLoaded) {return;}
     PIXI.Assets.load<PIXI.Texture>(blockFrameUrl.fire).then((fireTexture: PIXI.Texture) => {
         fireFrames = [];
-        for (let i: number = 0; i <= fireTick; i++) {
+        for (let i = 0; i <= fireMaxTick; i++) {
             const frame: PIXI.Rectangle = new PIXI.Rectangle(0, i * 16, 16, 16);
             fireFrames.push(new PIXI.Texture(fireTexture.baseTexture, frame));
         }
     });
 }
 
-function main() {
+function main(): void {
     initBlockFrames();
     initFireTexture();
 }
 main();
+
+export function blockFrameLoop(): void {
+    timer++;
+    if (timer >= 2) {
+        timer = 0;
+        fireTick = (fireTick + 1) % (fireMaxTick + 1);
+    }
+}
