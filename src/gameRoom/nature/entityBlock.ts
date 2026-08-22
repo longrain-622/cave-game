@@ -1,4 +1,4 @@
-import { app, blockTextures } from "../rendering.js";
+import { app, blockTextures } from "../rendering/rendering.js";
 import { player } from "../player.js";
 import { place_meeting, setWorldState } from "../world.js";
 import { coverWhenSave, readingWorld } from "../gameState.js";

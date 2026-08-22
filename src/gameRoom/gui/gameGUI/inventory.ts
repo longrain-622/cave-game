@@ -5,7 +5,7 @@ import { craftingResultSlot, craftingSlots } from "./blockGUI/crafting.js";
 import { craftingTableContainer } from "./blockGUI/crafting_table.js";
 import { guiApp } from "../application.js";
 import { uistate } from "../uiState.js";
-import { genericTextStyle, blockTextures } from "../../rendering.js";
+import { genericTextStyle, blockTextures } from "../../rendering/rendering.js";
 import { itemTextures } from "../../dropped/items.js";
 import { readingWorld, coverWhenSave } from "../../gameState.js";
 import { selecting, locateHighWhite, locateHighWhiteForCrafting, resetSlotSelection, widgetContainer, floatContainer } from './gameGuiState.js';

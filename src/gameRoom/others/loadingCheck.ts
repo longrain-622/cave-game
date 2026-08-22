@@ -1,5 +1,5 @@
 // loadingCheck.ts
-import { isDrawing } from "../rendering.js";
+import { isDrawing } from "../rendering/rendering.js";
 import { can_drawPlayer } from "../player.js";
 import { can_drawEntity } from "../animals/animalDraw.js";
 import { gui_isDrawing } from "../gui/gameGUI/inventory.js";

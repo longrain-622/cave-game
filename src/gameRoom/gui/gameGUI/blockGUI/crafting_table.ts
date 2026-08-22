@@ -6,7 +6,7 @@ import { recipes } from "./craftingRecipe.js";
 import { mouse } from "../../../mouse.js";
 import { world } from "../../../world.js";
 import { room } from "../../../../constants/generic.js";
-import { blockTextures, genericTextStyle } from "../../../rendering.js";
+import { blockTextures, genericTextStyle } from "../../../rendering/rendering.js";
 import { itemTextures } from "../../../dropped/items.js";
 import { uistate } from "../../uiState.js";
 import { idOfBlock } from "../../../nature/blockMecha/blocks.js";

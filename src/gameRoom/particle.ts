@@ -1,7 +1,7 @@
 import { place_meeting } from "./world.js";
 import { getRandomInt, isOnScreen } from "./const.js";
 import { player } from "./player.js";
-import { blockTextures, app } from "./rendering.js";
+import { blockTextures, app } from "./rendering/rendering.js";
 import { eventBus } from "./others/eventBus.js";
 import { idOfBlock } from "./nature/blockMecha/blocks.js";
 import * as PIXI from 'pixi.js';

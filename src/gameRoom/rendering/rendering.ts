@@ -1,14 +1,14 @@
 //rendering.ts
-import { isOutOfBounds, world } from './world.js';
-import { room } from '../constants/generic.js';
-import { player } from './player.js';
-import { initSkyBackground, initSkyContainer } from './nature/sky.js';
-import { mouse } from './mouse.js';
-import { idOfBlock } from './nature/blockMecha/blocks.js';
-import { eventBus } from './others/eventBus.js';
+import { isOutOfBounds, world } from '../world.js';
+import { room } from '../../constants/generic.js';
+import { player } from '../player.js';
+import { initSkyBackground, initSkyContainer } from '../nature/sky.js';
+import { mouse } from '../mouse.js';
+import { idOfBlock } from '../nature/blockMecha/blocks.js';
+import { eventBus } from '../others/eventBus.js';
 
 import * as PIXI from 'pixi.js';
-import { apiMethod } from '../apiox/method.js';
+import { apiMethod } from '../../apiox/method.js';
 
 // 方块贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
 const blockAssets: Record<string, string> = {

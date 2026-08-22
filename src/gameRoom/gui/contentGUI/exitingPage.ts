@@ -2,7 +2,7 @@
 import * as PIXI from 'pixi.js';
 import { guiApp } from '../application.js';
 import { textStyle1 } from '../../../constants/pixiStyles.js';
-import { blockTextures } from '../../rendering.js';
+import { blockTextures } from '../../rendering/rendering.js';
 import { idOfBlock } from '../../nature/blockMecha/blocks.js';
 import { room } from '../../../constants/generic.js';
 import { apioxHttp } from '../../../apiox/http.js';

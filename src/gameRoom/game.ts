@@ -1,7 +1,7 @@
 import { playerLoop } from './player.js';
 import { room } from '../constants/generic.js';
 import { mouseAct } from './mouse.js';
-import { updateWorldPixi, updateMouseSprites } from './rendering.js';
+import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
 
 import { animalsLoop } from './animals/animals.js';
 import { animalArray } from './animals/animalIds.js';

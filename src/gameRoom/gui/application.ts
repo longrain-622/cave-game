@@ -1,5 +1,5 @@
 import { room } from "../../constants/generic.js";
-import { gameRoom } from "../rendering.js";
+import { gameRoom } from "../rendering/rendering.js";
 import { initTouchButtons } from "./gameGUI/mobileTouch.js";
 import { ensureAssetsInit } from '../../constants/pixiAssets.js';
 import * as PIXI from 'pixi.js';

@@ -4,7 +4,7 @@ import { room } from '../constants/generic.js';
 import { uistate } from './gui/uiState.js';
 import { mouse } from './mouse.js';
 import { eventBus } from './others/eventBus.js';
-import { app, blockTextures } from './rendering.js';
+import { app, blockTextures } from './rendering/rendering.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
 import { WorldArchive } from '../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from './gameState.js';

@@ -1,7 +1,7 @@
 import { world_height, chunk } from "../world.js";
 import { getRandomInt } from "../const.js";
 import { room } from "../../constants/generic.js";
-import { app, blockTextures } from "../rendering.js";
+import { app, blockTextures } from "../rendering/rendering.js";
 import { player } from "../player.js";
 import { apioxTime } from "../../apiox/time.js";
 import { coverWhenSave, readingWorld } from "../gameState.js";

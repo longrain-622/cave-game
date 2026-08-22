@@ -1,7 +1,7 @@
 import { guiTextures, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from '../inventoryConfig.js';
 import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../gameGuiState.js';
 import { inventory, updateSelectingItem, guiContainer } from '../inventory.js';
-import { genericTextStyle, blockTextures } from '../../../rendering.js';
+import { genericTextStyle, blockTextures } from '../../../rendering/rendering.js';
 import { itemTextures } from '../../../dropped/items.js';
 import { world } from '../../../world.js';
 import { getRandomInt } from '../../../const.js';

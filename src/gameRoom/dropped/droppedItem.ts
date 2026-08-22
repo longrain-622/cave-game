@@ -1,6 +1,6 @@
 import { place_meeting } from '../world.js';
 import { getRandomInt, point_coll_rect, distance, isOnScreen } from '../const.js';
-import { app, blockTextures } from '../rendering.js';
+import { app, blockTextures } from '../rendering/rendering.js';
 import { player } from '../player.js';
 import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';

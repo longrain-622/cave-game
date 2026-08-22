@@ -1,7 +1,7 @@
 import { player } from '../player.js';
 import { isOnScreen } from '../const.js';
 import { idOfAnimal, animalArray, Animal } from './animalIds.js';
-import { app } from '../rendering.js';
+import { app } from '../rendering/rendering.js';
 import { AnimalParts } from './instance/parts.js';
 import { zombieTextureUrl, createZombieParts, updateZombieLegs } from './instance/zombie.js';
 import * as PIXI from 'pixi.js';

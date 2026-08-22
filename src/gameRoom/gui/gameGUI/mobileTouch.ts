@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import { genericTextStyle } from '../../rendering.js';
+import { genericTextStyle } from '../../rendering/rendering.js';
 import { getSetting } from '../../../constants/settingConfig.js';
 import { apioxEvent } from '../../../apiox/event.js';
 

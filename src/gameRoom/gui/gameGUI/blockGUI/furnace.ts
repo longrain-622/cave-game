@@ -2,7 +2,7 @@ import { Slots, guiTextures, furnaceConfig_fuel, furnaceConfig_input, furnaceCon
 import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../gameGuiState.js';
 import { guiContainer, inventory, updateSelectingItem } from '../inventory.js';
 import { room } from '../../../../constants/generic.js';
-import { genericTextStyle, blockTextures } from '../../../rendering.js';
+import { genericTextStyle, blockTextures } from '../../../rendering/rendering.js';
 import { itemTextures } from '../../../dropped/items.js';
 import { world } from '../../../world.js';
 import { getRandomInt, point_coll_rect } from '../../../const.js';

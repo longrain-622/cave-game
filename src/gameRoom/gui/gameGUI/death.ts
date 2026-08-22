@@ -1,7 +1,7 @@
 import { player } from "../../player.js";
 import { gui_isDrawing } from "./inventory.js";
 import { guiTextures } from "./inventoryConfig.js";
-import { genericTextStyle } from "../../rendering.js";
+import { genericTextStyle } from "../../rendering/rendering.js";
 import { room } from "../../../constants/generic.js";
 import { apiObjects } from "../../../apiox/dom.js";
 import { apioxEvent } from "../../../apiox/event.js";

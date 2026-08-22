@@ -1,4 +1,5 @@
 enum idOfBlock {
+    fire = -10,
     chest = -9,
     stone_dark = -8,
     oak_door_bottom_open = -7, oak_door_top_open = -6,
@@ -71,6 +72,7 @@ const block = {
     diorite: newBlock(idOfBlock.diorite, hardness.stone),
     granite: newBlock(idOfBlock.granite, hardness.stone),
     bedrock: newBlock(idOfBlock.bedrock, hardness.no),
+    fire: newBlock(idOfBlock.fire, hardness.no),
 };
 
 const blocksArray: Blocks[] = [
@@ -81,7 +83,7 @@ const blocksArray: Blocks[] = [
     block.stone_dark, block.chest, block.furnace,
     block.glass,
     block.andesite, block.diorite, block.granite,
-    block.bedrock
+    block.bedrock, block.fire,
 ];
 
 function main(): void {

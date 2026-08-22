@@ -9,7 +9,8 @@ export async function loadScripts() {
       await import('./gameRoom/nature/createWorld.js'),
       await import('./gameRoom/others/soundManager.js'),
       await import('./gameRoom/game.js'),
-      await import('./gameRoom/rendering.js'),
+      await import('./gameRoom/rendering/rendering.js'),
+      await import('./gameRoom/rendering/blockFrames.js'),
       await import('./gameRoom/gui/contentGUI/gameContent.js'),
       await import('./gameRoom/nature/sky.js'),
       await import('./gameRoom/player.js'),
@@ -22,7 +23,6 @@ export async function loadScripts() {
       await import('./gameRoom/others/loadingCheck.js'),
     ];
     console.log('all module is good', modules);
-    // 初始化函数这里调用
   } catch (error) {
     console.error('oh shit, fuck Huang Hengzhi', error);
   }
