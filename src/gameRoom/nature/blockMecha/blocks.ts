@@ -1,4 +1,4 @@
-enum idOfBlock {
+export enum idOfBlock {
     fire = -10,
     chest = -9,
     stone_dark = -8,
@@ -21,7 +21,7 @@ enum idOfBlock {
 }
 
 // 用于存储方块属性
-interface Blocks {
+export interface Blocks {
     id: number;
     hardness: number;
 }
@@ -75,7 +75,7 @@ const block = {
     fire: newBlock(idOfBlock.fire, hardness.no),
 };
 
-const blocksArray: Blocks[] = [
+export const blocksArray: Blocks[] = [
     block.grass, block.dirt, block.stone, block.oak, block.leaves, block.cobblestone,
     block.sand, block.snowGrass, block.sandstone, block.planks, block.crafting_table, block.iron_ore, block.coal_ore,
     block.invicon_grass, block.cactus, block.deadBush,
@@ -86,9 +86,18 @@ const blocksArray: Blocks[] = [
     block.bedrock, block.fire,
 ];
 
+export function isAlphaBlock(id: number): boolean {
+    switch (id) {
+        case idOfBlock.fire: case idOfBlock.chest: case idOfBlock.stone_dark:
+        case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
+        case idOfBlock.deadBush: case idOfBlock.cactus: case idOfBlock.invicon_grass:
+        case idOfBlock.air: case idOfBlock.leaves: case idOfBlock.glass:
+            return true;
+        default: return false;
+    }
+}
+
 function main(): void {
     blocksArray.sort((a, b) => a.id - b.id);
 }
 main();
-
-export { blocksArray, Blocks, idOfBlock };

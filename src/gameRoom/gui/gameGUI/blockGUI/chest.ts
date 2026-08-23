@@ -14,14 +14,14 @@ import { coverWhenSave, readingWorld } from '../../../gameState.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../../apiox/event.js';
 
-export interface Chest { //记录每个箱子的信息
+export interface Chest { // 记录每个箱子的信息
     world_x: number; world_y: number;
-    fold: Slots[]; //所装物品
+    fold: Slots[]; // 所装物品
 }
 export let chests: Chest[] = [];
 let currentChest: Chest | null = null;
 
-//初始化（读档）箱子数组
+// 初始化（读档）箱子数组
 function loadChest(): void {
     if (coverWhenSave && readingWorld !== null) {
         for (let i = 0; i < readingWorld.chests.length; i++) {
@@ -86,8 +86,8 @@ apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
 // 箱子 Gui 的 Pixi 元素
 let chestGui_inited: boolean = false;
 const chestGui: {
-    width: number; height: number; //屏幕上绘制的宽高
-    draw_x: number; draw_y: number; //绘制的坐标
+    width: number; height: number; // 屏幕上绘制的宽高
+    draw_x: number; draw_y: number; // 绘制的坐标
     chestContainer: PIXI.Container;
     blackBg: PIXI.Graphics;
     chestTex: PIXI.BaseTexture;
@@ -98,7 +98,7 @@ const chestGui: {
     selectedIndex: number;
     backpackSprites: PIXI.Sprite[];
     backpackTexts: PIXI.Text[];
-    backpackSelectedIndex: number; //记录背包高亮索引
+    backpackSelectedIndex: number; // 记录背包高亮索引
     initChestPixi: () => void;
 } = {
     width: 704, height: 664,

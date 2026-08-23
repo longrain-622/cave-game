@@ -33,8 +33,8 @@ interface BlockState {
     type: number;
 }
 
-// 待处理的方块坐标（由 blockMechanism.ts 的 lookBlocks 处理）
-let changePos: BlockPos[] = [];
+const changePos: BlockPos[] = []; // 待处理的方块坐标
+const lightPos: BlockPos[] = []; // 需要计算光照的
 
 // 所有修改 world 数组的操作必须使用该函数
 function setWorldState(pos: BlockPos, state: BlockState): void {
@@ -48,6 +48,12 @@ function setWorldState(pos: BlockPos, state: BlockState): void {
     changePos.push({ x: pos.x + 1, y: pos.y });
     changePos.push({ x: pos.x, y: pos.y - 1 });
     changePos.push({ x: pos.x, y: pos.y + 1 });
+
+    lightPos.push(pos);
+    lightPos.push({ x: pos.x - 1, y: pos.y });
+    lightPos.push({ x: pos.x + 1, y: pos.y });
+    lightPos.push({ x: pos.x, y: pos.y - 1 });
+    lightPos.push({ x: pos.x, y: pos.y + 1 });
 }
 
 // 检测点与对象的碰撞
@@ -110,6 +116,7 @@ export {
     setWorldState,
     BlockPos,
     changePos,
+    lightPos,
     sealevel,
     place_meeting,
     isOutOfBounds,
