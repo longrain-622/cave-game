@@ -50,6 +50,7 @@ interface EntityBlockArchive {
 
 //整个世界的信息
 interface WorldArchive {
+    version: string;
     name: string;
     lastTime: string;
     world: number[][];

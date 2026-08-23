@@ -1,3 +1,4 @@
+import { version } from "../constants/generic.js";
 import { getDate } from "../apiox/time.js";
 import { worldName, world, chunk } from "../gameRoom/world.js";
 import { player } from "../gameRoom/player.js";
@@ -37,6 +38,7 @@ function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
     else {resolvedName = checkSameName(worldName, existingNames);}
 
     const targetWorld: WorldArchive = {
+        version: version,
         name: resolvedName,
         lastTime: '',
         world: world,

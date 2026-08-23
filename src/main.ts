@@ -8,7 +8,7 @@ let gameLoopFn: (() => void) | null = null;
 let gameLoaded: boolean = false;
 let loading: boolean = false; //加载中
 
-async function ensureGameLoaded() {
+async function ensureGameLoaded(): Promise<void> {
     if (gameLoaded || loading) {return;}
     loading = true;
     await loadScripts(); //加载所有附加模块
@@ -20,7 +20,7 @@ async function ensureGameLoaded() {
 }
 
 // 主驱动循环
-function mainLoop() {
+function mainLoop(): void {
     switch (_room_) {
         case 0:
             contentLoop();
