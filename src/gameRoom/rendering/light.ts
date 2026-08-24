@@ -1,8 +1,5 @@
 import { isAlphaBlock } from '../nature/blockMecha/blocks.js';
-import { room } from '../../constants/generic.js';
 import { world, world_height, lightPos, isOutOfBounds, BlockPos, blockTypeAt } from '../world.js';
-import { player } from '../player.js';
-import { app } from './rendering.js';
 import * as PIXI from 'pixi.js';
 
 const maxLight: number = 15; // 满亮度
@@ -152,80 +149,47 @@ function getLight(lx: number, ly: number): number {
     return lightMap[ly][lx] ?? 0;
 }
 
-// 完全黑暗时的最大遮罩不透明度
-const maxDarkness: number = 0.8;
+// 光照值 0-15 → 灰度 tint 的查找表（惰性构建，避免每帧重复计算）
+let tintLUT: number[] | null = null;
 
-// 遮罩层
-let lightContainer: PIXI.Container | null = null;
-let lightGraphics: PIXI.Graphics[] = [];
-
-function initLightGraphics(): void {
-    if (!app || lightContainer) {return;}
-
-    lightContainer = new PIXI.Container();
-    app.stage.addChild(lightContainer);
-    lightContainer.zIndex = 3.7; // 玩家和动物之上、鼠标等 UI 之下
-
-    // 预估最大可见方块数
-    const maxTilesX: number = Math.ceil(room.width / 64) + 2;
-    const maxTilesY: number = Math.ceil(room.height / 64) + 2;
-    const maxVisibleTiles: number = maxTilesX * maxTilesY;
-
-    // Graphics 池
-    for (let i: number = 0; i < maxVisibleTiles; i++) {
-        const light = new PIXI.Graphics();
-        light.beginFill(0x000000, 1); // 黑色填充，明暗由每帧的 alpha 控制
-        light.drawRect(0, 0, 64, 64);
-        light.visible = false;
-        lightContainer.addChild(light);
-        lightGraphics.push(light);
-    }
-}
-
-// 惰性初始化（与 rendering.ts 互相导入，main 中直接访问 app 会因 TDZ 报错）
-// 由 updateLightPixi 首次调用时完成
-export function updateLightPixi(): void {
-    if (!lightContainer) {initLightGraphics();}
-
-    const startRow: number = Math.floor(player.y / 64) - Math.floor(room.height / 128);
-    const startCol: number = Math.floor(player.x / 64) - Math.floor(room.width / 128);
-    const rowsToDraw: number = Math.ceil(room.height / 64) + 2;
-    const colsToDraw: number = Math.ceil(room.width / 64) + 2;
-
-    let index: number = 0; // 池索引
-
-    for (let k = 0; k < rowsToDraw; k++) {
-        const worldRow: number = startRow + k;
-        const draw_y: number = worldRow * 64 - player.y + player.screen_y;
-
-        for (let i = 0; i < colsToDraw; i++) {
-            const worldCol: number = startCol + i;
-            const draw_x: number = worldCol * 64 - player.x + player.screen_x;
-            const light: PIXI.Graphics = lightGraphics[index];
-            if (!light) {break;}
-
-            if (isOutOfBounds(worldRow, worldCol) || isOutOfBounds(worldRow, 0)) {
-                light.visible = false;
-                index++;
-                continue;
-            }
-
-            const darkness: number = 1 - getLight(worldCol, worldRow) / maxLight;
-            if (darkness <= 0) {
-                light.visible = false;
-            } else {
-                light.position.set(draw_x, draw_y);
-                light.alpha = darkness * maxDarkness;
-                light.visible = true;
-            }
-
-            index++;
+// 光照值 0-15 → 灰度 tint（0xRRGGBB）
+export function lightToTint(light: number): number {
+    if (!tintLUT) {
+        tintLUT = new Array(maxLight + 1);
+        for (let i = 0; i <= maxLight; i++) {
+            const level: number = Math.round((0.2 + 0.8 * i / maxLight) * 255);
+            tintLUT[i] = level * 0x10000 + level * 0x100 + level;
         }
     }
+    const index: number = Math.max(0, Math.min(maxLight, Math.floor(light)));
+    return tintLUT[index];
+}
 
-    // 隐藏池中剩余的
-    for (let i: number = index; i < lightGraphics.length; i++) {
-        lightGraphics[i].visible = false;
+// 像素坐标 → 所在格的光照 tint
+export function lightTintAt(x: number, y: number): number {
+    return lightToTint(getLight(Math.floor(x / 64), Math.floor(y / 64)));
+}
+
+// 每个对象上一次应用的 tint（WeakMap 键对象本身，对象销毁后自动回收）
+const tintCache: WeakMap<object, number> = new WeakMap();
+
+// 给 Sprite 或容器内所有 Sprite 设置灰度 tint
+// 光照值未变化时跳过赋值与子树遍历（脏值缓存）；
+// 注意：容器缓存命中时会跳过子项，容器内的子 Sprite 不允许动态增删（本项目各容器子项固定）
+export function applyLightTint(target: PIXI.Sprite | PIXI.Container, x: number, y: number): void {
+    const tint: number = lightTintAt(x, y);
+    if (tintCache.get(target) === tint) {return;}
+    tintCache.set(target, tint);
+    if (target instanceof PIXI.Sprite) {
+        target.tint = tint;
+        return;
+    }
+    for (const child of target.children) {
+        if (child instanceof PIXI.Sprite) {
+            child.tint = tint;
+        } else if (child instanceof PIXI.Container) {
+            applyLightTint(child, x, y);
+        }
     }
 }
 

@@ -2,6 +2,7 @@ import { place_meeting } from "./world.js";
 import { getRandomInt, isOnScreen } from "./const.js";
 import { player } from "./player.js";
 import { blockTextures, app } from "./rendering/rendering.js";
+import { applyLightTint } from "./rendering/light.js";
 import { eventBus } from "./others/eventBus.js";
 import { idOfBlock } from "./nature/blockMecha/blocks.js";
 import * as PIXI from 'pixi.js';
@@ -165,6 +166,7 @@ function drawParticles(): void {
             sprite.height = obj.height;
         }
         sprite.position.set(screenX, screenY);
+        applyLightTint(sprite, obj.x + obj.width / 2, obj.y + obj.height / 2);
         sprite.visible = true;
     }
 }

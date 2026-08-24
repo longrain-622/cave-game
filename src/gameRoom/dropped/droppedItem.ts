@@ -2,6 +2,7 @@ import { place_meeting } from '../world.js';
 import { getRandomInt, point_coll_rect, distance, isOnScreen } from '../const.js';
 import { app, blockTextures } from '../rendering/rendering.js';
 import { player } from '../player.js';
+import { applyLightTint } from '../rendering/light.js';
 import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
 import { eventBus } from '../others/eventBus.js';
@@ -144,6 +145,7 @@ function drawDrops(): void {
             sprite.height = drop.height;
         }
         sprite.position.set(screenX, screenY);
+        applyLightTint(sprite, drop.x + drop.width / 2, drop.y + drop.height / 2);
         sprite.visible = true;
     }
 }

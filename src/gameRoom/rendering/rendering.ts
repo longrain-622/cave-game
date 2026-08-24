@@ -6,6 +6,7 @@ import { initSkyBackground, initSkyContainer } from '../nature/sky.js';
 import { mouse } from '../mouse.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
 import { eventBus } from '../others/eventBus.js';
+import { applyLightTint } from './light.js';
 
 import * as PIXI from 'pixi.js';
 import { apiMethod } from '../../apiox/method.js';
@@ -232,6 +233,7 @@ export function updateWorldPixi(): void {
             if (texture) {
                 sprite.texture = texture;
                 sprite.position.set(draw_x, draw_y);
+                applyLightTint(sprite, worldCol * 64, worldRow * 64);
                 sprite.visible = true;
             } else {
                 sprite.visible = false;

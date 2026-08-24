@@ -5,6 +5,7 @@ import { coverWhenSave, readingWorld } from "../gameState.js";
 import { idOfBlock } from "./blockMecha/blocks.js";
 import { eventBus } from "../others/eventBus.js";
 import { isOnScreen } from "../const.js";
+import { applyLightTint } from "../rendering/light.js";
 import * as PIXI from 'pixi.js';
 
 interface EntityBlock {
@@ -113,6 +114,7 @@ function drawEntityBlock(entityBlock: EntityBlock): void {
         sprite.height = 64;
     }
     sprite.position.set(draw_x, draw_y);
+    applyLightTint(sprite, entityBlock.x + 32, entityBlock.y + 32);
     sprite.visible = true;
 }
 

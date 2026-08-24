@@ -5,6 +5,7 @@ import { app } from '../rendering/rendering.js';
 import { AnimalParts } from './instance/parts.js';
 import { zombieTextureUrl, createZombieParts, updateZombieLegs } from './instance/zombie.js';
 import * as PIXI from 'pixi.js';
+import { applyLightTint } from '../rendering/light.js';
 import {
     pigTextureUrl, createPigParts, 
     cowTextureUrl, createCowParts,
@@ -110,6 +111,7 @@ function drawAnimals(): void {
         parts.container.scale.x = (animal.dir === 1) ? -1 : 1; // 水平翻转
         parts.container.rotation = (animal.hp <= 0) ? ((animal.dir === 1) ? -animal.dierad : animal.dierad) : 0;
         parts.container.visible = true;
+        applyLightTint(parts.container, animal.x + animal.width / 2, animal.y + animal.height / 2);
 
         // 腿部摆动：僵尸按玩家方式摆腿，其余动物保持原摆动
         if (animal.type === idOfAnimal.zombie) {

@@ -2,7 +2,6 @@ import { playerLoop } from './player.js';
 import { room } from '../constants/generic.js';
 import { mouseAct } from './mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
-import { updateLightPixi } from './rendering/light.js';
 import { blockFrameLoop } from './rendering/blockFrames.js';
 
 import { animalsLoop } from './animals/animals.js';
@@ -32,7 +31,6 @@ export function gameLoop(): void {
 
     playerLoop();
     updateWorldPixi();
-    updateLightPixi();
     updateMouseSprites();
     blockFrameLoop();
     mouseAct();

@@ -103,29 +103,19 @@ export function isOutOfBounds(row: number, col: number): boolean { // y, x
     return col < 0 || col >= rowLen;
 }
 
+// 区块数组须已是调色板索引（由生成方负责转换），本函数只做追加
 export function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
     const expectedLen: number = chunk.num * chunk.width;
-    // 区块数组暂存方块类型 id，入世界前统一转为调色板索引
-    const idToIndex: Map<number, number> = new Map();
-    const toIndex: (id: number) => number = (id: number) => {
-        let idx: number | undefined = idToIndex.get(id);
-        if (idx === undefined) {
-            idx = registerBlockState(newBlockState(id));
-            idToIndex.set(id, idx);
-        }
-        return idx;
-    };
     for (let i = 0; i < world_height; i++) {
         // 截断污染：如果该行长度超过预期，说明被越界写入过
         if (world[i].length > expectedLen) {
             world[i].length = expectedLen;
         }
 
-        const row: number[] = chunkArray[i].map(toIndex);
         if (behind) {
-            world[i].push(...row);
+            world[i].push(...chunkArray[i]);
         } else {
-            world[i].unshift(...row);
+            world[i].unshift(...chunkArray[i]);
         }
     }
 }

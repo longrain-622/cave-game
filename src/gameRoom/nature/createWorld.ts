@@ -1,4 +1,4 @@
-import { world_height, pushChunkToWorld, chunk, loadWorld, sealevel, loadPalette, resetPalette, migrateWorldToPalette } from "../world.js";
+import { world_height, pushChunkToWorld, chunk, loadWorld, sealevel, loadPalette, resetPalette, migrateWorldToPalette, getBlockState, registerBlockState, newBlockState } from "../world.js";
 import { getRandomInt } from "../const.js";
 import { player } from "../player.js";
 import { eventBus } from "../others/eventBus.js";
@@ -175,11 +175,27 @@ function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
     }
 }
 
-function createChunk(startX: number, behind: boolean) { //startX:当前区块在世界中的起始 X 坐标
+// 读取临时区块数组的方块类型 id
+function typeOf(worlding: number[][], x: number, y: number): number {
+    return getBlockState(worlding[y][x]).type;
+}
+
+function createChunk(startX: number, behind: boolean) { // startX:当前区块在世界中的起始 X 坐标
     let worlding: number[][] = [];
     const sealevel: number = Math.round(world_height / 2);
 
-    //基于全局X温度预生成
+    // 方块类型 id → 调色板索引；同一区块内缓存，避免重复注册
+    const indexOf: Map<number, number> = new Map();
+    const toIndex: (id: number) => number = (id: number) => {
+        let idx: number | undefined = indexOf.get(id);
+        if (idx === undefined) {
+            idx = registerBlockState(newBlockState(id));
+            indexOf.set(id, idx);
+        }
+        return idx;
+    };
+
+    // 基于全局X温度预生成
     let tempTypes: number[] = new Array(chunk.width);
     for (let x = 0; x < chunk.width; x++) {
         const globalX: number = startX + x;
@@ -194,7 +210,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
     const stoneOffset: number = 4;
     const stoneVariation: number = 3;
 
-    //地形高度
+    // 地形高度
     for (let x = 0; x < chunk.width; x++) {
         const globalX: number = startX + x;
 
@@ -211,7 +227,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
         terrain_stone.push(stoneHeight);
     }
 
-    //填充方块
+    // 填充方块
     for (let y = 0; y < world_height; y++) {
         let worldLine: number[] = [];
         for (let x = 0; x < chunk.width; x++) {
@@ -240,40 +256,39 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
                     break;
             }
 
-            if (y === g) {worldLine.push(surfaceBlock);}
+            if (y === g) {worldLine.push(toIndex(surfaceBlock));}
             else if (y > g && y <= s) {
-                if (temp === 1 && y >= g + getRandomInt(3, 4)) {worldLine.push(idOfBlock.sandstone);}
-                else {worldLine.push(dirtBlock);}
-            } else if (y > s) {worldLine.push(stoneBlock);}
-            else {worldLine.push(-1);}
+                if (temp === 1 && y >= g + getRandomInt(3, 4)) {worldLine.push(toIndex(idOfBlock.sandstone));}
+                else {worldLine.push(toIndex(dirtBlock));}
+            } else if (y > s) {worldLine.push(toIndex(stoneBlock));}
+            else {worldLine.push(toIndex(idOfBlock.air));}
         }
         worlding.push(worldLine);
     }
 
     // 生成树、杂草、仙人掌
-    generateTrees(worlding);
-    generateWeeds(worlding);
-    generateCacti(worlding);
+    generateTrees(worlding, toIndex);
+    generateWeeds(worlding, toIndex);
+    generateCacti(worlding, toIndex);
 
     // 洞穴生成（在填充方块之后执行）
     for (let y = 0; y < world_height; y++) {
         for (let x = 0; x < chunk.width; x++) {
             const globalX: number = startX + x;
-            const block: number = worlding[y][x];
-            if (block !== idOfBlock.stone) {continue;} //只在石头中挖洞
+            if (typeOf(worlding, x, y) !== idOfBlock.stone) {continue;} //只在石头中挖洞
 
             const stoneTop: number = terrain_stone[x];
             if (y < stoneTop + 4 || y > world_height - 10) {continue;} //垂直范围
 
-            //使用二维噪声，x 和 y 频率不同，使洞穴沿水平方向延伸更好
+            // 使用二维噪声，x 和 y 频率不同，使洞穴沿水平方向延伸更好
             let noiseVal = caveNoise2D.fbm2D(
-                globalX * 0.025, //横向频率（控制洞穴水平间隔）
-                y * 0.025, //纵向频率（控制洞穴垂直分层）
-                3, //八度
-                0.5, //持久性
-                2.0 //倍频
+                globalX * 0.025, // 横向频率（控制洞穴水平间隔）
+                y * 0.025, // 纵向频率（控制洞穴垂直分层）
+                3, // 八度
+                0.5, // 持久性
+                2.0 // 倍频
             );
-            let secondary = caveNoise2D.fbm2D( //增加一个次要噪声来添加不规则度
+            let secondary = caveNoise2D.fbm2D( // 增加一个次要噪声来添加不规则度
                 globalX * 0.08,
                 y * 0.06,
                 2,
@@ -297,25 +312,25 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
                 granite: getFbm2D(graniteNoise2D),
             };
 
-            //阈值 控制洞穴密度
+            // 阈值 控制洞穴密度
             const threshold = {
                 cave: -0.12, iron: 0.36, coal: 0.32,
                 andesite: 0.34, diorite: 0.34, granite: 0.34,
             }
-            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = idOfBlock.coal_ore;}
-            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = idOfBlock.iron_ore;}
-            if (Math.abs(rock_combined.andesite) > threshold.andesite) {worlding[y][x] = idOfBlock.andesite;}
-            if (Math.abs(rock_combined.diorite) > threshold.diorite) {worlding[y][x] = idOfBlock.diorite;}
-            if (Math.abs(rock_combined.granite) > threshold.granite) {worlding[y][x] = idOfBlock.granite;}
-            if (combined < threshold.cave) {worlding[y][x] = idOfBlock.stone_dark;}
+            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = toIndex(idOfBlock.coal_ore);}
+            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = toIndex(idOfBlock.iron_ore);}
+            if (Math.abs(rock_combined.andesite) > threshold.andesite) {worlding[y][x] = toIndex(idOfBlock.andesite);}
+            if (Math.abs(rock_combined.diorite) > threshold.diorite) {worlding[y][x] = toIndex(idOfBlock.diorite);}
+            if (Math.abs(rock_combined.granite) > threshold.granite) {worlding[y][x] = toIndex(idOfBlock.granite);}
+            if (combined < threshold.cave) {worlding[y][x] = toIndex(idOfBlock.stone_dark);}
         }
     }
 
     for (let b = 0; b < worlding[0].length; b++) {
-        worlding[worlding.length - 1][b] = idOfBlock.bedrock;
+        worlding[worlding.length - 1][b] = toIndex(idOfBlock.bedrock);
     }
 
-    //将当前区块追加到全局世界末尾
+    // 将当前区块追加到全局世界末尾
     pushChunkToWorld(worlding, behind);
     chunk.num++;
     if (!behind) {chunk.left_number++;}
@@ -324,7 +339,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
 }
 
 // 生成树
-function generateTrees(worlding: number[][]): void {
+function generateTrees(worlding: number[][], toIndex: (id: number) => number): void {
     const oak_x: number[] = [];
     for (let a = 0; a < chunk.width / 20; a++) {
         oak_x.push(getRandomInt(4, chunk.width - 4));
@@ -336,20 +351,20 @@ function generateTrees(worlding: number[][]): void {
         let x: number = oak_x[i];
         let y: number = 0;
         // 找到最上方非空气的方块
-        while (y < world_height && worlding[y][x] === -1) {y++;}
-        if (y < world_height && (worlding[y][x] === idOfBlock.grass || worlding[y][x] === idOfBlock.snowGrass)) { // 确保是草
-            worlding[y][x] = idOfBlock.dirt; // 将草换成泥
+        while (y < world_height && typeOf(worlding, x, y) === idOfBlock.air) {y++;}
+        if (y < world_height && (typeOf(worlding, x, y) === idOfBlock.grass || typeOf(worlding, x, y) === idOfBlock.snowGrass)) { // 确保是草
+            worlding[y][x] = toIndex(idOfBlock.dirt); // 将草换成泥
             for (let k = 0; k < oak_height; k++) {
                 y--;
-                if (y >= 0) {worlding[y][x] = idOfBlock.oak;} // 橡木
+                if (y >= 0) {worlding[y][x] = toIndex(idOfBlock.oak);} // 橡木
             }
 
             // 树叶
             x--; y--;
             for (let i = 0; i < 3; i++) {
                 for (let n = 0; n < leaves_height; n++) {
-                    if (y >= 0 && x >= 0 && x < chunk.width && worlding[y][x] === -1) {
-                        worlding[y][x] = idOfBlock.leaves; // 树叶
+                    if (y >= 0 && x >= 0 && x < chunk.width && typeOf(worlding, x, y) === idOfBlock.air) {
+                        worlding[y][x] = toIndex(idOfBlock.leaves); // 树叶
                     }
                     y++;
                 }
@@ -361,37 +376,37 @@ function generateTrees(worlding: number[][]): void {
 }
 
 // 生成杂草
-function generateWeeds(worlding: number[][]): void {
+function generateWeeds(worlding: number[][], toIndex: (id: number) => number): void {
     const inviconGrass_x: number[] = [];
     for (let c = 0; c < chunk.width / 3; c++) {
-        inviconGrass_x.push(getRandomInt(0, chunk.width));
+        inviconGrass_x.push(getRandomInt(0, chunk.width - 1));
     }
     for (let c = 0; c < inviconGrass_x.length; c++) {
         const x: number = inviconGrass_x[c];
         let y: number = 0;
-        while (y < world_height && worlding[y][x] === -1) {y++;}
-        switch (worlding[y][x]) {
-            case 0: worlding[y - 1][x] = idOfBlock.invicon_grass; break;
-            case 5: worlding[y - 1][x] = idOfBlock.deadBush; break;
+        while (y < world_height && typeOf(worlding, x, y) === idOfBlock.air) {y++;}
+        switch (typeOf(worlding, x, y)) {
+            case idOfBlock.grass: worlding[y - 1][x] = toIndex(idOfBlock.invicon_grass); break;
+            case idOfBlock.sand: worlding[y - 1][x] = toIndex(idOfBlock.deadBush); break;
         }
     }
 }
 
 // 生成仙人掌
-function generateCacti(worlding: number[][]): void {
+function generateCacti(worlding: number[][], toIndex: (id: number) => number): void {
     const cactus_x: number[] = [];
     for (let c = 0; c < chunk.width / 16; c++) {
-        cactus_x.push(getRandomInt(0, chunk.width));
+        cactus_x.push(getRandomInt(0, chunk.width - 1));
     }
     for (let c = 0; c < cactus_x.length; c++) {
         const x: number = cactus_x[c];
         let y: number = 0;
-        while (y < world_height && worlding[y][x] === -1) {y++;}
-        if (worlding[y][x] !== 5) {continue;}
+        while (y < world_height && typeOf(worlding, x, y) === idOfBlock.air) {y++;}
+        if (typeOf(worlding, x, y) !== idOfBlock.sand) {continue;}
 
         let cactus_height: number = getRandomInt(1, 3);
-        while (cactus_height > 0) {
-            worlding[y - cactus_height][x] = idOfBlock.cactus;
+        while (cactus_height > 0 && y - cactus_height >= 0) {
+            worlding[y - cactus_height][x] = toIndex(idOfBlock.cactus);
             cactus_height--;
         }
     }

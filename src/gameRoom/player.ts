@@ -5,6 +5,7 @@ import { uistate } from './gui/uiState.js';
 import { mouse } from './mouse.js';
 import { eventBus } from './others/eventBus.js';
 import { app, blockTextures } from './rendering/rendering.js';
+import { applyLightTint } from './rendering/light.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
 import { WorldArchive } from '../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from './gameState.js';
@@ -355,6 +356,7 @@ function updatePlayerRender(): void {
     updateTakingItem();
 
     player.parts.container.position.set(player.screen_x, player.screen_y);
+    applyLightTint(player.parts.container, player.x + 32, player.y + 64);
 
     // 更新手部旋转
     if (player.needRotateHand) {
