@@ -1,5 +1,5 @@
 import { player } from './player.js';
-import { world, setWorldState, isOutOfBounds, isBlockFold } from './world.js';
+import { world, setWorldState, isOutOfBounds, isBlockFold, newBlockState } from './world.js';
 import { distance, getRandomInt } from './const.js';
 import { room } from '../constants/generic.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
@@ -107,7 +107,7 @@ apioxEvent.onMouseUp(
             if ((taking.item < 512 || taking.item === idOfItem.oak_door) && mouse.can_put) { // 放置
                 switch (taking.item) {
                     case idOfItem.oak_door: putDoor(taking.item); break;
-                    default: setWorldState({ x: mouse.world_x, y: mouse.world_y }, { type: taking.item }); break;
+                    default: setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(taking.item)); break;
                 }
                 taking.num -= 1;
                 inventory.items[widgets.select] = taking;
@@ -208,7 +208,7 @@ export function mouseAct(): void {
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); // 生成掉落物
             specialMouseBreak(mine_mousex, mine_mousey);
             if (mine_mousey > lowest_point) {targetBlock = idOfBlock.stone_dark;} else {targetBlock = idOfBlock.air;}
-            setWorldState({ x: mine_mousex, y: mine_mousey }, { type: targetBlock });
+            setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(targetBlock));
         }
     }
 }

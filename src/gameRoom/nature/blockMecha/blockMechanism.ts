@@ -1,4 +1,4 @@
-import { world, isOutOfBounds, setWorldState, changePos, BlockPos } from '../../world.js';
+import { world, isOutOfBounds, setWorldState, changePos, BlockPos, newBlockState } from '../../world.js';
 import {
     sand_gravity,
     cactus_and_deadBush,
@@ -32,7 +32,7 @@ function lookBlocks(): void { // 检测方块并触发方块的机制
 
         // 只有方块发生变化才写入，否则会反复加入待处理列表导致死循环
         if (looking_block !== world[y][x]) {
-            setWorldState({ x, y }, { type: looking_block });
+            setWorldState({ x, y }, newBlockState(looking_block));
         }
     }
 }

@@ -3,7 +3,7 @@ import { idOfItem, itemTextures, item_isDrawing } from './itemIds.js';
 export { idOfItem, itemTextures, item_isDrawing };
 import { Slots } from "../gui/gameGUI/inventoryConfig.js";
 import { idOfBlock } from "../nature/blockMecha/blocks.js";
-import { isOutOfBounds, setWorldState, world } from "../world.js";
+import { isOutOfBounds, setWorldState, world, newBlockState } from "../world.js";
 import { mouse } from "../mouse.js";
 import { createDrop } from "./droppedItem.js";
 
@@ -27,8 +27,8 @@ function putDoor(doorId: number): void {
     }
 
     if (!isOutOfBounds(mouse.world_y - 1, mouse.world_x) && world[mouse.world_y - 1][mouse.world_x] === idOfBlock.air) {
-        setWorldState({ x: mouse.world_x, y: mouse.world_y }, { type: doorBlockId_b });
-        setWorldState({ x: mouse.world_x, y: mouse.world_y - 1 }, { type: doorBlockId_t });
+        setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(doorBlockId_b));
+        setWorldState({ x: mouse.world_x, y: mouse.world_y - 1 }, newBlockState(doorBlockId_t));
     } else {
         createDrop(doorId, mouse.world_x * 64, mouse.world_y * 64);
     }

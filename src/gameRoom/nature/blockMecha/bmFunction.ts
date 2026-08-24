@@ -1,5 +1,5 @@
 import { entityBlock_array, newEntityBlock } from "../entityBlock.js";
-import { world, isOutOfBounds, setWorldState, BlockPos } from "../../world.js";
+import { world, isOutOfBounds, setWorldState, BlockPos, newBlockState } from "../../world.js";
 import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
@@ -57,7 +57,7 @@ export function setGrassDirt(): void { // 每帧调用：草/泥土延迟倒计�
         grassDirtDelay.splice(i, 1);
         // 到期后重新验证条件（延迟期间条件可能已变化）
         if (!shouldChangeGrassDirt(pos.x, pos.y)) {continue;}
-        setWorldState({ x: pos.x, y: pos.y }, { type: world[pos.y][pos.x] === idOfBlock.grass ? idOfBlock.dirt : idOfBlock.grass });
+        setWorldState({ x: pos.x, y: pos.y }, newBlockState(world[pos.y][pos.x] === idOfBlock.grass ? idOfBlock.dirt : idOfBlock.grass));
     }
 }
 
@@ -148,20 +148,20 @@ export function door_openOrClose(): void { //run it when mouseup
 
     switch (world[mouse_y][mouse_x]) {
         case idOfBlock.oak_door_bottom:
-            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_bottom_open });
-            setWorldState({ x: mouse_x, y: mouse_y - 1 }, { type: idOfBlock.oak_door_top_open });
+            setWorldState({ x: mouse_x, y: mouse_y }, newBlockState(idOfBlock.oak_door_bottom_open));
+            setWorldState({ x: mouse_x, y: mouse_y - 1 }, newBlockState(idOfBlock.oak_door_top_open));
             break;
         case idOfBlock.oak_door_top:
-            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_top_open });
-            setWorldState({ x: mouse_x, y: mouse_y + 1 }, { type: idOfBlock.oak_door_bottom_open });
+            setWorldState({ x: mouse_x, y: mouse_y }, newBlockState(idOfBlock.oak_door_top_open));
+            setWorldState({ x: mouse_x, y: mouse_y + 1 }, newBlockState(idOfBlock.oak_door_bottom_open));
             break;
         case idOfBlock.oak_door_bottom_open:
-            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_bottom });
-            setWorldState({ x: mouse_x, y: mouse_y - 1 }, { type: idOfBlock.oak_door_top });
+            setWorldState({ x: mouse_x, y: mouse_y }, newBlockState(idOfBlock.oak_door_bottom));
+            setWorldState({ x: mouse_x, y: mouse_y - 1 }, newBlockState(idOfBlock.oak_door_top));
             break;
         case idOfBlock.oak_door_top_open:
-            setWorldState({ x: mouse_x, y: mouse_y }, { type: idOfBlock.oak_door_top });
-            setWorldState({ x: mouse_x, y: mouse_y + 1 }, { type: idOfBlock.oak_door_bottom });
+            setWorldState({ x: mouse_x, y: mouse_y }, newBlockState(idOfBlock.oak_door_top));
+            setWorldState({ x: mouse_x, y: mouse_y + 1 }, newBlockState(idOfBlock.oak_door_bottom));
             break;
     }
 }
