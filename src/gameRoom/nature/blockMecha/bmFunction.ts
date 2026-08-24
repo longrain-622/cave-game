@@ -3,7 +3,7 @@ import { world, isOutOfBounds, setWorldState, BlockPos, newBlockState } from "..
 import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
-import { idOfBlock } from "./blocks.js";
+import { idOfBlock, canOver } from "./blocks.js";
 import { mouse } from "../../mouse.js";
 import { lowest_point } from "../createWorld.js";
 
@@ -20,7 +20,7 @@ function shouldChangeGrassDirt(x: number, y: number): boolean {
 
     if (world[y][x] === idOfBlock.grass) { // 草方块的性质：被覆盖时变成泥土
         if (isOutOfBounds(y - 1, x)) {return false;}
-        return world[y - 1][x] >= 0;
+        return !canOver(world[y - 1][x]);
     }
 
     if (world[y][x] === idOfBlock.dirt) { // 泥土的性质：旁边是草会长草
@@ -78,10 +78,10 @@ export function grass_and_dirt(looking_block: number, look_x: number, look_y: nu
 }
 
 export function inviconGrass(looking_block: number, lookx: number, looky: number): number {
-    if (looking_block === -3) {
-        if (world[looky + 1][lookx] !== 0 && world[looky + 1][lookx] !== 1) {
+    if (looking_block === idOfBlock.invicon_grass) {
+        if (world[looky + 1][lookx] !== idOfBlock.glass && world[looky + 1][lookx] !== idOfBlock.dirt) {
             for (let c = 0; c < getRandomInt(16, 32); c++) {
-                createParticles(-3, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
+                createParticles(idOfBlock.invicon_grass, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
             }
             return -1;
         }
@@ -91,7 +91,7 @@ export function inviconGrass(looking_block: number, lookx: number, looky: number
 }
 
 export function sand_gravity(looking_block: number, look_x: number, look_y: number): number {
-    if (looking_block === 5 && world[look_y+1][look_x] <= -1) {
+    if (looking_block === idOfBlock.sand && canOver(world[look_y+1][look_x])) {
         entityBlock_array.push(newEntityBlock(idOfBlock.sand, look_x, look_y));
         if (look_y > lowest_point) {return idOfBlock.stone_dark;}
         else {return idOfBlock.air;}
@@ -100,8 +100,8 @@ export function sand_gravity(looking_block: number, look_x: number, look_y: numb
 }
 
 export function cactus_and_deadBush(looking_block: number, lookx: number, looky: number): number {
-    if (looking_block === -4) {
-        if (world[looky + 1][lookx] !== -4 && world[looky + 1][lookx] !== 5) {
+    if (looking_block === idOfBlock.cactus) {
+        if (world[looky + 1][lookx] !== idOfBlock.cactus && world[looky + 1][lookx] !== idOfBlock.sand) {
             const createX: number = lookx * 64;
             const createY: number = looky * 64;
             for (let c = 0; c < getRandomInt(16, 32); c++) {
@@ -110,12 +110,12 @@ export function cactus_and_deadBush(looking_block: number, lookx: number, looky:
             createDrop(-4, createX + getRandomInt(0, 64), createY + getRandomInt(0, 64));
             return -1;
         }
-    } else if (looking_block === -5) {
-        if (world[looky + 1][lookx] === -1) {
+    } else if (looking_block === idOfBlock.deadBush) {
+        if (world[looky + 1][lookx] === idOfBlock.air) {
             for (let c = 0; c < getRandomInt(16, 32); c++) {
-                createParticles(-5, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
+                createParticles(idOfBlock.deadBush, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
             }
-            return -1;
+            return idOfBlock.air;
         }
     }
     return looking_block;

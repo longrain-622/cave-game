@@ -1,9 +1,9 @@
-// 世界的属性等
-import { idOfBlock } from './nature/blockMecha/blocks.js';
+import { canOver } from "./nature/blockMecha/blocks.js";
 
+// 世界的属性等
 export const world_height: number = 256;
 export let worldName: string = "New World";
-export function setWorldName(val: string) { worldName = val; }
+export function setWorldName(val: string): void { worldName = val; }
 export const sealevel: number = world_height / 2;
 
 // 定义区块对象
@@ -67,8 +67,8 @@ export function setWorldState(pos: BlockPos, state: BlockState): void {
 
 // 检测点与对象的碰撞
 export function place_meeting(x: number, y: number): boolean {
-    if (world[Math.floor(y / 64)][Math.floor(x / 64)] >= 0) {return true;}
-    else {return false;}
+    if (canOver(world[Math.floor(y / 64)][Math.floor(x / 64)])) {return false;}
+    else {return true;}
 }
 
 export function isBlockFold(pos: BlockPos): boolean {
@@ -81,7 +81,7 @@ export function isBlockFold(pos: BlockPos): boolean {
         { x: pos.x - 1, y: pos.y },
     ];
     for (const n of neighbors) {
-        if (isOutOfBounds(n.y, n.x) || world[n.y][n.x] >= 0) {
+        if (isOutOfBounds(n.y, n.x) || !canOver(world[n.y][n.x])) {
             flat++;
         }
     }
@@ -110,59 +110,57 @@ export function pushChunkToWorld(chunkArray: number[][], behind: boolean): void 
     }
 }
 
-// 调色板：穷举 每种方块 × 所有状态组合，每种方块占用连续 stateCount 个槽位。
-// 状态维度在 stateDims 中声明（字段名 → 全部取值），组合数、索引编码、穷举
-// 遍历全部自动派生
-const palette: BlockState[] = [];
+// 调色板 每个存档独立一套 懒创建
+export const palette: BlockState[] = []; // 状态实例数组，数组下标即索引
+export const paletteMap = new Map<number, number>(); // 状态编码 - 索引
 
-// 状态维度声明
-const stateDims: { key: Exclude<keyof BlockState, 'type'>; values: (boolean | number)[] }[] = [
-    { key: 'behind', values: [false, true] },
-    { key: 'underCave', values: [false, true] },
+// 布尔状态维度的位定义按声明顺序从低位占用
+const flagBits: { key: Exclude<keyof BlockState, 'type'>; bit: number }[] = [
+    { key: 'behind', bit: 1 },
+    { key: 'underCave', bit: 2 },
 ];
 
-// 每种方块的状态组合数 = 各维度取值数之积
-const stateCount: number = stateDims.reduce((acc, dim) => acc * dim.values.length, 1);
-
-// 枚举取全部方块类型 id
-const blockTypeIds: number[] = Object.values(idOfBlock).filter((v): v is number => typeof v === 'number');
-const TYPE_OFFSET: number = -Math.min(...blockTypeIds);
-
-// 状态组合-类型槽位内的偏移
-function stateIndex(state: BlockState): number {
-    let index: number = 0;
-    let stride: number = 1;
-    for (const dim of stateDims) {
-        const pos: number = dim.values.indexOf(state[dim.key]);
-        index += (pos < 0 ? 0 : pos) * stride;
-        stride *= dim.values.length;
+function keyOf(state: BlockState): number {
+    let key: number = state.type << flagBits.length;
+    for (const flag of flagBits) {
+        if (state[flag.key]) { key |= flag.bit; }
     }
-    return index;
+    return key;
 }
 
-// 按状态码 s 组装完整 BlockState
-// 动态键赋值 TS 无法静态校验，先按 Record 组装再断言
-function buildState(type: number, s: number): BlockState {
-    const state: Record<string, boolean | number> = { type };
-    let code: number = s;
-    for (const dim of stateDims) {
-        state[dim.key] = dim.values[code % dim.values.length];
-        code = Math.floor(code / dim.values.length);
+/**
+ * 已存在则返回已有索引，否则追加到调色板末尾。
+ * 索引只增不回收，同一存档内世界格值与调色板始终对齐。
+ */
+export function registerBlockState(state: BlockState): number {
+    const key: number = keyOf(state);
+    const existing: number | undefined = paletteMap.get(key);
+    if (existing !== undefined) {
+        return existing;
     }
-    return state as unknown as BlockState;
+    const idx: number = palette.length;
+    palette.push(state);
+    paletteMap.set(key, idx);
+    return idx;
 }
 
-function initPalette(): void {
-    for (const type of blockTypeIds) {
-        for (let s = 0; s < stateCount; s++) {
-            const state: BlockState = buildState(type, s);
-            palette[(type + TYPE_OFFSET) * stateCount + stateIndex(state)] = state;
-        }
+// 通过索引获取方块状态（运行时读取使用）
+export function getBlockState(index: number): BlockState {
+    return palette[index];
+}
+
+// 载入存档自带的调色板（每份存档独立一套），索引与存档内的世界格值对齐。
+export function loadPalette(states: BlockState[]): void {
+    palette.length = 0;
+    paletteMap.clear();
+    for (let i = 0; i < states.length; i++) {
+        palette.push(states[i]);
+        paletteMap.set(keyOf(states[i]), i);
     }
 }
 
-function main(): void {
-    initPalette();
+// 新档开始时清空调色板
+export function resetPalette(): void {
+    palette.length = 0;
+    paletteMap.clear();
 }
-main();
-

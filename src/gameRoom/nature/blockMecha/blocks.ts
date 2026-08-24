@@ -97,6 +97,11 @@ export function isAlphaBlock(id: number): boolean {
     }
 }
 
+export function canOver(id: number): boolean {
+    if (id <= idOfBlock.air) {return true;}
+    else {return false;}
+}
+
 function main(): void {
     blocksArray.sort((a, b) => a.id - b.id);
 }

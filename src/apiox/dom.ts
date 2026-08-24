@@ -2,16 +2,20 @@ import { ApioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent, Apiox
 import { ApioxCanvasContext } from "./canvas.js";
 
 export class ApioxObject {
-    id: string; className: string;
+    id: string;
+    className: string;
 
     private element: HTMLElement;
     private _listeners: Map<string, Map<Function, EventListener>> = new Map();
     private rect: DOMRect;
 
     constructor(id: string | null = null, className: string | null = null) {
-        this.id = id; this.className = className;
-        if (id !== null) {this.element = document.getElementById(id);}
-        else if (className !== null) {
+        this.id = id;
+        this.className = className;
+
+        if (id !== null) {
+            this.element = document.getElementById(id);
+        } else if (className !== null) {
             const elements = document.getElementsByClassName(className);
             if (elements.length > 0) {
                 this.element = elements[0] as HTMLElement;
@@ -197,7 +201,7 @@ export class ApioxObject {
 }
 
 export const apiObjects = {
-    docum: document,
+    dcm: document,
     win: window,
 };
 

@@ -88,7 +88,7 @@ function initLanguage() {
     loadI18n();
 }
 
-if (apiObjects.docum.readyState === 'loading') {
+if (apiObjects.dcm.readyState === 'loading') {
     apioxEvent.listenGlobal('DOMContentLoaded', initLanguage);
 } else {
     initLanguage();

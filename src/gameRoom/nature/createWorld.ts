@@ -325,16 +325,16 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
 
 // 生成树
 function generateTrees(worlding: number[][]): void {
-    let oak_x: number[] = [];
+    const oak_x: number[] = [];
     for (let a = 0; a < chunk.width / 20; a++) {
         oak_x.push(getRandomInt(4, chunk.width - 4));
     }
     for (let i = 0; i < oak_x.length; i++) {
-        let oak_height = getRandomInt(5, 7);
-        let leaves_height = getRandomInt(3, 4);
+        const oak_height: number = getRandomInt(5, 7);
+        const leaves_height: number = getRandomInt(3, 4);
 
-        let x = oak_x[i];
-        let y = 0;
+        let x: number = oak_x[i];
+        let y: number = 0;
         // 找到最上方非空气的方块
         while (y < world_height && worlding[y][x] === -1) {y++;}
         if (y < world_height && (worlding[y][x] === 0 || worlding[y][x] === 6)) { // 确保是草
@@ -345,7 +345,7 @@ function generateTrees(worlding: number[][]): void {
             }
 
             // 树叶
-            x -= 1; y -= 1;
+            x--; y--;
             for (let i = 0; i < 3; i++) {
                 for (let n = 0; n < leaves_height; n++) {
                     if (y >= 0 && x >= 0 && x < chunk.width && worlding[y][x] === -1) {
@@ -362,7 +362,7 @@ function generateTrees(worlding: number[][]): void {
 
 // 生成杂草
 function generateWeeds(worlding: number[][]): void {
-    let inviconGrass_x: number[] = [];
+    const inviconGrass_x: number[] = [];
     for (let c = 0; c < chunk.width / 3; c++) {
         inviconGrass_x.push(getRandomInt(0, chunk.width));
     }
@@ -379,7 +379,7 @@ function generateWeeds(worlding: number[][]): void {
 
 // 生成仙人掌
 function generateCacti(worlding: number[][]): void {
-    let cactus_x: number[] = [];
+    const cactus_x: number[] = [];
     for (let c = 0; c < chunk.width / 16; c++) {
         cactus_x.push(getRandomInt(0, chunk.width));
     }

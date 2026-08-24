@@ -1,7 +1,7 @@
 import { player } from "../../player.js";
 import { BlockPos, world, place_meeting } from "../../world.js";
 import { point_coll_rect } from "../../const.js";
-import { idOfBlock } from "../../nature/blockMecha/blocks.js";
+import { idOfBlock, canOver } from "../../nature/blockMecha/blocks.js";
 import { getRandomInt } from "../../../constants/utils.js";
 import { isEnemy, idOfAnimal, Animal, animalArray } from "../animalIds.js";
 import { findPlayer, chasePlayer } from "./zombie.js";
@@ -52,7 +52,7 @@ function isWalkable(row: number, col: number): boolean {
     if (row <= idOfBlock.air || row >= world.length) {return false;}
     const rowData: number[] | undefined = world[row];
     if (col <= idOfBlock.air || col >= rowData.length) {return false;}
-    return rowData[col] < 0;
+    return canOver(rowData[col]);
 }
 
 // 寻找玩家
