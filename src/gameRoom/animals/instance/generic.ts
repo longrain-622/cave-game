@@ -1,5 +1,5 @@
 import { player } from "../../player.js";
-import { BlockPos, world, place_meeting } from "../../world.js";
+import { BlockPos, world, place_meeting, blockTypeAt } from "../../world.js";
 import { point_coll_rect } from "../../const.js";
 import { idOfBlock, canOver } from "../../nature/blockMecha/blocks.js";
 import { getRandomInt } from "../../../constants/utils.js";
@@ -14,7 +14,7 @@ import { apioxEvent } from "../../../apiox/event.js";
 
 export function initAnimalY(animal: Animal): void {
     let a: number = 0;
-    while (world[a][Math.floor(animal.x / 64)] === -1) {
+    while (blockTypeAt(Math.floor(animal.x / 64), a) === -1) {
         a++;
     }
     animal.y = a * 64 - 256;
@@ -52,7 +52,7 @@ function isWalkable(row: number, col: number): boolean {
     if (row <= idOfBlock.air || row >= world.length) {return false;}
     const rowData: number[] | undefined = world[row];
     if (col <= idOfBlock.air || col >= rowData.length) {return false;}
-    return canOver(rowData[col]);
+    return canOver(blockTypeAt(col, row));
 }
 
 // 寻找玩家

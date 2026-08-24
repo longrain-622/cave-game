@@ -1,4 +1,4 @@
-import { world_height, world, chunk, place_meeting } from './world.js';
+import { world_height, world, chunk, place_meeting, blockTypeAt } from './world.js';
 import { enableKeyDoubleClickDetection } from './const.js';
 import { room } from '../constants/generic.js';
 import { uistate } from './gui/uiState.js';
@@ -79,7 +79,7 @@ class Players {
         this.x = chunk.num * chunk.width * 64 / 2;
 
         let i: number = 0;
-        while (world[i][Math.floor(this.x / 64)] === -1) {i++;}
+        while (blockTypeAt(Math.floor(this.x / 64), i) === -1) {i++;}
         this.y = i*64 - 256;
     }
 

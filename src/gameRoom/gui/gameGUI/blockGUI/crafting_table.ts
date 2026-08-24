@@ -4,7 +4,7 @@ import { updateSelectingItem, inventory } from "../inventory.js";
 import { updateResultForGrid, consumeFromGrid } from './crafting.js';
 import { recipes } from "./craftingRecipe.js";
 import { mouse } from "../../../mouse.js";
-import { world } from "../../../world.js";
+import { blockTypeAt } from "../../../world.js";
 import { room } from "../../../../constants/generic.js";
 import { blockTextures, genericTextStyle } from "../../../rendering/rendering.js";
 import { itemTextures } from "../../../dropped/items.js";
@@ -35,7 +35,7 @@ for (let i = 0; i < WORKBENCH_COLS * WORKBENCH_ROWS; i++) {
 
 apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
     if (ev.button !== 2) {return;}
-    if (world[mouse.world_y][mouse.world_x] === idOfBlock.crafting_table) {
+    if (blockTypeAt(mouse.world_x, mouse.world_y) === idOfBlock.crafting_table) {
         if (uistate.anyui_isOpening_except(uistate.craftingTable_isOpening)) {return;}
         if (!uistate.craftingTable_isOpening) {
             uistate.craftingTable_isOpening = true;

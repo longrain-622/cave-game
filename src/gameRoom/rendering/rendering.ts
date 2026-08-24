@@ -1,5 +1,5 @@
 //rendering.ts
-import { isOutOfBounds, world } from '../world.js';
+import { isOutOfBounds, blockTypeAt } from '../world.js';
 import { room } from '../../constants/generic.js';
 import { player } from '../player.js';
 import { initSkyBackground, initSkyContainer } from '../nature/sky.js';
@@ -227,7 +227,7 @@ export function updateWorldPixi(): void {
                 continue;
             }
 
-            const blockType: number = world[worldRow][worldCol];
+            const blockType: number = blockTypeAt(worldCol, worldRow);
             const texture: PIXI.Texture = blockTextures[blockType];
             if (texture) {
                 sprite.texture = texture;

@@ -3,7 +3,7 @@ import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from
 import { inventory, updateSelectingItem, guiContainer } from '../inventory.js';
 import { genericTextStyle, blockTextures } from '../../../rendering/rendering.js';
 import { itemTextures } from '../../../dropped/items.js';
-import { world } from '../../../world.js';
+import { world, blockTypeAt } from '../../../world.js';
 import { getRandomInt } from '../../../const.js';
 import { room } from '../../../../constants/generic.js';
 import { mouse } from '../../../mouse.js';
@@ -49,7 +49,7 @@ function lookChest(look_x: number, look_y: number): Chest {
     // 清除无用的箱子对象
     for (let i = chests.length - 1; i >= 0; i--) {
         const cst: Chest = chests[i];
-        if (!world[cst.world_y] || world[cst.world_y][cst.world_x] !== idOfBlock.chest) {
+        if (!world[cst.world_y] || blockTypeAt(cst.world_x, cst.world_y) !== idOfBlock.chest) {
             chests.splice(i, 1);
         }
     }
@@ -74,7 +74,7 @@ function setCurrentChest(wx: number, wy: number): void {
 // 打开箱子
 apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
     if (ev.button !== 2) {return;}
-    if (world[mouse.world_y][mouse.world_x] === idOfBlock.chest) {
+    if (blockTypeAt(mouse.world_x, mouse.world_y) === idOfBlock.chest) {
         if (uistate.anyui_isOpening_except(uistate.chest_isOpening)) {return;}
         if (!uistate.chest_isOpening) {
             setCurrentChest(mouse.world_x, mouse.world_y);
@@ -469,7 +469,7 @@ export function handleChestBackpackContextMenu(): void {
 
 //箱子被破坏时的处理
 export function breakChest(chest_world_x: number, chest_world_y: number): void {
-    if (world[chest_world_y][chest_world_x] === idOfBlock.chest && chests.length > 0) {
+    if (blockTypeAt(chest_world_x, chest_world_y) === idOfBlock.chest && chests.length > 0) {
         //破坏箱子后关闭 GUI 状态
         if (uistate.chest_isOpening) {
             uistate.chest_isOpening = false;

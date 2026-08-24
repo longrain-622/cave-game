@@ -1,6 +1,6 @@
 import { version } from "../constants/generic.js";
 import { getDate } from "../apiox/time.js";
-import { worldName, world, chunk } from "../gameRoom/world.js";
+import { worldName, world, chunk, palette } from "../gameRoom/world.js";
 import { player } from "../gameRoom/player.js";
 import { Animal, animalArray } from "../gameRoom/animals/animalIds.js";
 import { inventory } from "../gameRoom/gui/gameGUI/inventory.js";
@@ -42,6 +42,7 @@ function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
         name: resolvedName,
         lastTime: '',
         world: world,
+        palette: palette,
         lowest_point: lowest_point,
         left_number: chunk.left_number,
         player: { hp: 20, x: 256, y: 256 },

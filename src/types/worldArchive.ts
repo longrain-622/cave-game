@@ -1,4 +1,6 @@
 //存储索引中用到的条目元信息
+import { BlockState } from "../gameRoom/world.js";
+
 interface SaveEntry {
     key: string;
     name: string;
@@ -54,6 +56,7 @@ interface WorldArchive {
     name: string;
     lastTime: string;
     world: number[][];
+    palette?: BlockState[]; // 调色板（世界格存的是其索引）；旧存档没有该字段，读档时按类型 id 迁移
     lowest_point: number;
     left_number: number; // 左侧已生成的区块数，读档时用于保持噪声坐标与数组坐标对齐
     player: PlayerArchive;

@@ -1,5 +1,5 @@
 import { player } from './player.js';
-import { world, setWorldState, isOutOfBounds, isBlockFold, newBlockState } from './world.js';
+import { setWorldState, isOutOfBounds, isBlockFold, newBlockState, blockTypeAt } from './world.js';
 import { distance, getRandomInt } from './const.js';
 import { room } from '../constants/generic.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
@@ -135,11 +135,11 @@ export function mouseAct(): void {
     // 不能在 mousemove 里计算
     if (!isOutOfBounds(mouse.world_y - 1, mouse.world_x - 1) && !isOutOfBounds(mouse.world_y + 1, mouse.world_x + 1)) {
         mouse.can_put = (mouse.can_use && (
-            world[mouse.world_y][mouse.world_x - 1] !== idOfBlock.air ||
-            world[mouse.world_y][mouse.world_x + 1] !== idOfBlock.air ||
-            world[mouse.world_y - 1][mouse.world_x] !== idOfBlock.air ||
-            world[mouse.world_y + 1][mouse.world_x] !== idOfBlock.air
-        ) && world[mouse.world_y][mouse.world_x] <= idOfBlock.air
+            blockTypeAt(mouse.world_x - 1, mouse.world_y) !== idOfBlock.air ||
+            blockTypeAt(mouse.world_x + 1, mouse.world_y) !== idOfBlock.air ||
+            blockTypeAt(mouse.world_x, mouse.world_y - 1) !== idOfBlock.air ||
+            blockTypeAt(mouse.world_x, mouse.world_y + 1) !== idOfBlock.air
+        ) && blockTypeAt(mouse.world_x, mouse.world_y) <= idOfBlock.air
         && !isBlockFold({ x: mouse.world_x, y: mouse.world_y }));
     } else {
         mouse.can_put = false;
@@ -148,23 +148,23 @@ export function mouseAct(): void {
     //鼠标挖方块计时器
     if (mouse.isDown &&
         mouse.downingButton === 0 &&
-        world[mouse.world_y][mouse.world_x] !== idOfBlock.air &&
+        blockTypeAt(mouse.world_x, mouse.world_y) !== idOfBlock.air &&
         !isBlockFold({ x: mouse.world_x, y: mouse.world_y })
     ) {
         // 检查目标方块是否改变
         if (mouse.last_world_x !== mouse.world_x || mouse.last_world_y !== mouse.world_y
             || mouse.last_tool !== inventory.items[widgets.select].item
-            || mouse.last_targetBlock !== world[mouse.world_y][mouse.world_x]
+            || mouse.last_targetBlock !== blockTypeAt(mouse.world_x, mouse.world_y)
         ) {
             mouse.timer = 0;
             mouse.destory = 0;
             mouse.last_world_x = mouse.world_x;
             mouse.last_world_y = mouse.world_y;
             mouse.last_tool = inventory.items[widgets.select].item;
-            mouse.last_targetBlock = world[mouse.world_y][mouse.world_x];
+            mouse.last_targetBlock = blockTypeAt(mouse.world_x, mouse.world_y);
 
             // 更新硬度
-            const blockId = world[mouse.world_y][mouse.world_x];
+            const blockId = blockTypeAt(mouse.world_x, mouse.world_y);
             mouse.blockhardness = calculateHardness(blockId);
         }
 
@@ -185,24 +185,24 @@ export function mouseAct(): void {
         && player.hp > 0
         && mouse.isDown
         && mouse.downingButton === 0
-        && world[mouse.world_y][mouse.world_x] !== -1
+        && blockTypeAt(mouse.world_x, mouse.world_y) !== -1
         && mouse.blockhardness !== -1
     ) { // 挖掘
         if (!player.needRotateHand) {player.needRotateHand = true;}
-        if (getRandomInt(0, 16) === 1) {createParticles(world[mouse.world_y][mouse.world_x], mouse.world_x * 64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y * 64 - 8 + getRandomInt(0, 1) * 72);}
+        if (getRandomInt(0, 16) === 1) {createParticles(blockTypeAt(mouse.world_x, mouse.world_y), mouse.world_x * 64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y * 64 - 8 + getRandomInt(0, 1) * 72);}
 
         if (mouse.destory > 9) {
             // 挖掘和掉落
             mouse.destory = 0;
             mouse.timer = 0;
             const mine_mousey: number = mouse.world_y, mine_mousex: number = mouse.world_x;
-            let targetBlock: number = world[mine_mousey][mine_mousex];
+            let targetBlock: number = blockTypeAt(mine_mousex, mine_mousey);
             let dropBlock: number = lookDrops(targetBlock); // 决定掉落物类型
             eventBus.emit('block:break', targetBlock);
 
             // 管理粒子生成
             for (let a = 0; a < getRandomInt(16, 32); a++) {
-                createParticles(world[mine_mousey][mine_mousex], mine_mousex * 64 + getRandomInt(0, 64), mine_mousey * 64 + getRandomInt(0, 64));
+                createParticles(blockTypeAt(mine_mousex, mine_mousey), mine_mousex * 64 + getRandomInt(0, 64), mine_mousey * 64 + getRandomInt(0, 64));
             }
 
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); // 生成掉落物

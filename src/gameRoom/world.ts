@@ -29,7 +29,7 @@ export interface BlockPos {
     x: number; y: number;
 }
 
-interface BlockState {
+export interface BlockState {
     type: number;
     behind: boolean;
     underCave: boolean;
@@ -48,8 +48,9 @@ export const lightPos: BlockPos[] = []; // 需要计算光照的
 // 所有修改 world 数组的操作必须使用该函数
 export function setWorldState(pos: BlockPos, state: BlockState): void {
     if (isOutOfBounds(pos.y, pos.x)) {return;}
-    if (world[pos.y][pos.x] === state.type) {return;}
-    world[pos.y][pos.x] = state.type;
+    const idx: number = registerBlockState(state);
+    if (world[pos.y][pos.x] === idx) {return;}
+    world[pos.y][pos.x] = idx;
 
     // 因为世界改变，所以加入待处理的方块
     changePos.push(pos);
@@ -67,8 +68,10 @@ export function setWorldState(pos: BlockPos, state: BlockState): void {
 
 // 检测点与对象的碰撞
 export function place_meeting(x: number, y: number): boolean {
-    if (canOver(world[Math.floor(y / 64)][Math.floor(x / 64)])) {return false;}
-    else {return true;}
+    const col: number = Math.floor(x / 64);
+    const row: number = Math.floor(y / 64);
+    if (isOutOfBounds(row, col)) {return true;} // 越界视为实体（与旧版 canOver(undefined) 一致）
+    return !canOver(blockTypeAt(col, row));
 }
 
 export function isBlockFold(pos: BlockPos): boolean {
@@ -81,11 +84,17 @@ export function isBlockFold(pos: BlockPos): boolean {
         { x: pos.x - 1, y: pos.y },
     ];
     for (const n of neighbors) {
-        if (isOutOfBounds(n.y, n.x) || !canOver(world[n.y][n.x])) {
+        if (isOutOfBounds(n.y, n.x) || !canOver(blockTypeAt(n.x, n.y))) {
             flat++;
         }
     }
     return flat === 4;
+}
+
+// 读取 (x, y) 处方块的类型 id（世界格存的是调色板索引，运行时经调色板解析）
+export function blockTypeAt(x: number, y: number): number {
+    if (isOutOfBounds(y, x)) {return -1;}
+    return getBlockState(world[y][x]).type;
 }
 
 export function isOutOfBounds(row: number, col: number): boolean { // y, x
@@ -96,16 +105,27 @@ export function isOutOfBounds(row: number, col: number): boolean { // y, x
 
 export function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
     const expectedLen: number = chunk.num * chunk.width;
+    // 区块数组暂存方块类型 id，入世界前统一转为调色板索引
+    const idToIndex: Map<number, number> = new Map();
+    const toIndex: (id: number) => number = (id: number) => {
+        let idx: number | undefined = idToIndex.get(id);
+        if (idx === undefined) {
+            idx = registerBlockState(newBlockState(id));
+            idToIndex.set(id, idx);
+        }
+        return idx;
+    };
     for (let i = 0; i < world_height; i++) {
         // 截断污染：如果该行长度超过预期，说明被越界写入过
         if (world[i].length > expectedLen) {
             world[i].length = expectedLen;
         }
 
+        const row: number[] = chunkArray[i].map(toIndex);
         if (behind) {
-            world[i].push(...chunkArray[i]);
+            world[i].push(...row);
         } else {
-            world[i].unshift(...chunkArray[i]);
+            world[i].unshift(...row);
         }
     }
 }
@@ -154,8 +174,10 @@ export function loadPalette(states: BlockState[]): void {
     palette.length = 0;
     paletteMap.clear();
     for (let i = 0; i < states.length; i++) {
-        palette.push(states[i]);
-        paletteMap.set(keyOf(states[i]), i);
+        // 旧档的状态对象可能缺少后来新增的属性，用当前默认值补齐后入表
+        const state: BlockState = Object.assign(newBlockState(states[i].type), states[i]);
+        palette.push(state);
+        paletteMap.set(keyOf(state), i);
     }
 }
 
@@ -163,4 +185,22 @@ export function loadPalette(states: BlockState[]): void {
 export function resetPalette(): void {
     palette.length = 0;
     paletteMap.clear();
+}
+
+// 旧存档迁移：世界数组里存的还是方块类型 id，逐格注册基础状态并改写为调色板索引
+export function migrateWorldToPalette(): void {
+    const idToIndex: Map<number, number> = new Map();
+    const toIndex: (id: number) => number = (id: number) => {
+        let idx: number | undefined = idToIndex.get(id);
+        if (idx === undefined) {
+            idx = registerBlockState(newBlockState(id));
+            idToIndex.set(id, idx);
+        }
+        return idx;
+    };
+    for (const row of world) {
+        for (let c = 0; c < row.length; c++) {
+            row[c] = toIndex(row[c]);
+        }
+    }
 }

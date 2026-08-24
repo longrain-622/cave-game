@@ -1,6 +1,6 @@
 import { isAlphaBlock } from '../nature/blockMecha/blocks.js';
 import { room } from '../../constants/generic.js';
-import { world, world_height, lightPos, isOutOfBounds, BlockPos } from '../world.js';
+import { world, world_height, lightPos, isOutOfBounds, BlockPos, blockTypeAt } from '../world.js';
 import { player } from '../player.js';
 import { app } from './rendering.js';
 import * as PIXI from 'pixi.js';
@@ -33,13 +33,13 @@ function ensureLightMap(): void {
 // 读空气光照：实心方块一律视为 0（完全遮挡，不参与空气传播）
 function readAirLight(lx: number, ly: number): number {
     if (isOutOfBounds(ly, lx)) {return 0;}
-    if (!isAlphaBlock(world[ly][lx])) {return 0;}
+    if (!isAlphaBlock(blockTypeAt(lx, ly))) {return 0;}
     return lightMap[ly][lx] ?? 0;
 }
 
 function computeColumnHeight(x: number): number {
     for (let i = 0; i < world_height; i++) {
-        if (!isAlphaBlock(world[i][x])) {return i;}
+        if (!isAlphaBlock(blockTypeAt(x, i))) {return i;}
     }
     return -1;
 }
@@ -93,7 +93,7 @@ function propagate(queue: BlockPos[]): void {
         const cur: BlockPos = queue[head++];
         if (isOutOfBounds(cur.y, cur.x)) {continue;}
 
-        const newLight: number = isAlphaBlock(world[cur.y][cur.x])
+        const newLight: number = isAlphaBlock(blockTypeAt(cur.x, cur.y))
             ? calcLight(cur.x, cur.y)
             : calcDisplayLight(cur.x, cur.y);
         if (newLight === lightMap[cur.y][cur.x]) {continue;}
@@ -124,7 +124,7 @@ function fullComputeLightMap(): void {
     const queue: BlockPos[] = [];
     for (let y = 0; y < world_height; y++) {
         for (let x = 0; x < width; x++) {
-            if (isAlphaBlock(world[y][x]) && hasSkyAccess(x, y)) {
+            if (isAlphaBlock(blockTypeAt(x, y)) && hasSkyAccess(x, y)) {
                 lightMap[y][x] = maxLight;
                 queue.push({ x: x, y: y + 1 });
                 queue.push({ x: x, y: y - 1 });

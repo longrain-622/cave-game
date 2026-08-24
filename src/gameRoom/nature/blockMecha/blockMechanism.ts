@@ -1,4 +1,4 @@
-import { world, isOutOfBounds, setWorldState, changePos, BlockPos, newBlockState } from '../../world.js';
+import { isOutOfBounds, setWorldState, changePos, BlockPos, newBlockState, blockTypeAt } from '../../world.js';
 import {
     sand_gravity,
     cactus_and_deadBush,
@@ -21,7 +21,7 @@ function lookBlocks(): void { // 检测方块并触发方块的机制
     for (const pos of positions) {
         if (isOutOfBounds(pos.y, pos.x)) {continue;}
         const { x, y } = pos;
-        let looking_block = world[y][x];
+        let looking_block = blockTypeAt(x, y);
 
         looking_block = grass_and_dirt(looking_block, x, y);
         looking_block = sand_gravity(looking_block, x, y);
@@ -31,7 +31,7 @@ function lookBlocks(): void { // 检测方块并触发方块的机制
         looking_block = snowGrass(looking_block, x, y);
 
         // 只有方块发生变化才写入，否则会反复加入待处理列表导致死循环
-        if (looking_block !== world[y][x]) {
+        if (looking_block !== blockTypeAt(x, y)) {
             setWorldState({ x, y }, newBlockState(looking_block));
         }
     }

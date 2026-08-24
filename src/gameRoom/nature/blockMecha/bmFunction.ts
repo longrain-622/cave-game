@@ -1,5 +1,5 @@
 import { entityBlock_array, newEntityBlock } from "../entityBlock.js";
-import { world, isOutOfBounds, setWorldState, BlockPos, newBlockState } from "../../world.js";
+import { isOutOfBounds, setWorldState, BlockPos, newBlockState, blockTypeAt } from "../../world.js";
 import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
@@ -18,21 +18,21 @@ const GRASS_DELAY_FRAMES: number = 256;
 function shouldChangeGrassDirt(x: number, y: number): boolean {
     if (isOutOfBounds(y, x)) {return false;}
 
-    if (world[y][x] === idOfBlock.grass) { // 草方块的性质：被覆盖时变成泥土
+    if (blockTypeAt(x, y) === idOfBlock.grass) { // 草方块的性质：被覆盖时变成泥土
         if (isOutOfBounds(y - 1, x)) {return false;}
-        return !canOver(world[y - 1][x]);
+        return !canOver(blockTypeAt(x, y - 1));
     }
 
-    if (world[y][x] === idOfBlock.dirt) { // 泥土的性质：旁边是草会长草
+    if (blockTypeAt(x, y) === idOfBlock.dirt) { // 泥土的性质：旁边是草会长草
         if (isOutOfBounds(y - 1, x) || isOutOfBounds(y, x - 1) || isOutOfBounds(y, x + 1) ||
             isOutOfBounds(y - 1, x - 1) || isOutOfBounds(y - 1, x + 1) ||
             isOutOfBounds(y + 1, x - 1) || isOutOfBounds(y + 1, x + 1)) {
             return false;
         }
-        return (world[y][x - 1] === idOfBlock.grass || world[y][x + 1] === idOfBlock.grass ||
-            world[y - 1][x - 1] === idOfBlock.grass || world[y - 1][x + 1] === idOfBlock.grass ||
-            world[y + 1][x - 1] === idOfBlock.grass || world[y + 1][x + 1] === idOfBlock.grass)
-            && world[y - 1][x] === idOfBlock.air;
+        return (blockTypeAt(x - 1, y) === idOfBlock.grass || blockTypeAt(x + 1, y) === idOfBlock.grass ||
+            blockTypeAt(x - 1, y - 1) === idOfBlock.grass || blockTypeAt(x + 1, y - 1) === idOfBlock.grass ||
+            blockTypeAt(x - 1, y + 1) === idOfBlock.grass || blockTypeAt(x + 1, y + 1) === idOfBlock.grass)
+            && blockTypeAt(x, y - 1) === idOfBlock.air;
     }
 
     return false;
@@ -44,7 +44,7 @@ export function setGrassDirt(): void { // 每帧调用：草/泥土延迟倒计�
 
         // 方块已不是草/泥土（被挖掉、被替换或世界推移导致坐标失效），取消延迟
         if (isOutOfBounds(pos.y, pos.x) ||
-            (world[pos.y][pos.x] !== idOfBlock.grass && world[pos.y][pos.x] !== idOfBlock.dirt)) {
+            (blockTypeAt(pos.x, pos.y) !== idOfBlock.grass && blockTypeAt(pos.x, pos.y) !== idOfBlock.dirt)) {
             grassDirtDelay.splice(i, 1);
             continue;
         }
@@ -57,7 +57,7 @@ export function setGrassDirt(): void { // 每帧调用：草/泥土延迟倒计�
         grassDirtDelay.splice(i, 1);
         // 到期后重新验证条件（延迟期间条件可能已变化）
         if (!shouldChangeGrassDirt(pos.x, pos.y)) {continue;}
-        setWorldState({ x: pos.x, y: pos.y }, newBlockState(world[pos.y][pos.x] === idOfBlock.grass ? idOfBlock.dirt : idOfBlock.grass));
+        setWorldState({ x: pos.x, y: pos.y }, newBlockState(blockTypeAt(pos.x, pos.y) === idOfBlock.grass ? idOfBlock.dirt : idOfBlock.grass));
     }
 }
 
@@ -79,7 +79,7 @@ export function grass_and_dirt(looking_block: number, look_x: number, look_y: nu
 
 export function inviconGrass(looking_block: number, lookx: number, looky: number): number {
     if (looking_block === idOfBlock.invicon_grass) {
-        if (world[looky + 1][lookx] !== idOfBlock.glass && world[looky + 1][lookx] !== idOfBlock.dirt) {
+        if (blockTypeAt(lookx, looky + 1) !== idOfBlock.glass && blockTypeAt(lookx, looky + 1) !== idOfBlock.dirt) {
             for (let c = 0; c < getRandomInt(16, 32); c++) {
                 createParticles(idOfBlock.invicon_grass, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
             }
@@ -91,7 +91,7 @@ export function inviconGrass(looking_block: number, lookx: number, looky: number
 }
 
 export function sand_gravity(looking_block: number, look_x: number, look_y: number): number {
-    if (looking_block === idOfBlock.sand && canOver(world[look_y+1][look_x])) {
+    if (looking_block === idOfBlock.sand && canOver(blockTypeAt(look_x, look_y + 1))) {
         entityBlock_array.push(newEntityBlock(idOfBlock.sand, look_x, look_y));
         if (look_y > lowest_point) {return idOfBlock.stone_dark;}
         else {return idOfBlock.air;}
@@ -101,7 +101,7 @@ export function sand_gravity(looking_block: number, look_x: number, look_y: numb
 
 export function cactus_and_deadBush(looking_block: number, lookx: number, looky: number): number {
     if (looking_block === idOfBlock.cactus) {
-        if (world[looky + 1][lookx] !== idOfBlock.cactus && world[looky + 1][lookx] !== idOfBlock.sand) {
+        if (blockTypeAt(lookx, looky + 1) !== idOfBlock.cactus && blockTypeAt(lookx, looky + 1) !== idOfBlock.sand) {
             const createX: number = lookx * 64;
             const createY: number = looky * 64;
             for (let c = 0; c < getRandomInt(16, 32); c++) {
@@ -111,7 +111,7 @@ export function cactus_and_deadBush(looking_block: number, lookx: number, looky:
             return -1;
         }
     } else if (looking_block === idOfBlock.deadBush) {
-        if (world[looky + 1][lookx] === idOfBlock.air) {
+        if (blockTypeAt(lookx, looky + 1) === idOfBlock.air) {
             for (let c = 0; c < getRandomInt(16, 32); c++) {
                 createParticles(idOfBlock.deadBush, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
             }
@@ -126,16 +126,16 @@ export function door(looking_block: number, lookx: number, looky: number): numbe
 
     switch (looking_block) {
         case idOfBlock.oak_door_bottom:
-            if (world[looky - 1][lookx] !== idOfBlock.oak_door_top) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky - 1) !== idOfBlock.oak_door_top) {return idOfBlock.air;}
             break;
         case idOfBlock.oak_door_top:
-            if (world[looky + 1][lookx] !== idOfBlock.oak_door_bottom) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky + 1) !== idOfBlock.oak_door_bottom) {return idOfBlock.air;}
             break;
         case idOfBlock.oak_door_bottom_open:
-            if (world[looky - 1][lookx] !== idOfBlock.oak_door_top_open) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky - 1) !== idOfBlock.oak_door_top_open) {return idOfBlock.air;}
             break;
         case idOfBlock.oak_door_top_open:
-            if (world[looky + 1][lookx] !== idOfBlock.oak_door_bottom_open) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky + 1) !== idOfBlock.oak_door_bottom_open) {return idOfBlock.air;}
             break;
     }
 
@@ -146,7 +146,7 @@ export function door_openOrClose(): void { //run it when mouseup
     const mouse_x: number = mouse.world_x;
     const mouse_y: number = mouse.world_y;
 
-    switch (world[mouse_y][mouse_x]) {
+    switch (blockTypeAt(mouse_x, mouse_y)) {
         case idOfBlock.oak_door_bottom:
             setWorldState({ x: mouse_x, y: mouse_y }, newBlockState(idOfBlock.oak_door_bottom_open));
             setWorldState({ x: mouse_x, y: mouse_y - 1 }, newBlockState(idOfBlock.oak_door_top_open));
@@ -168,7 +168,7 @@ export function door_openOrClose(): void { //run it when mouseup
 
 export function snowGrass(lookingBlock: number, lookx: number, looky: number): number {
     if (lookingBlock === idOfBlock.snowGrass) {
-        if (world[looky - 1][lookx] !== idOfBlock.air) {
+        if (blockTypeAt(lookx, looky - 1) !== idOfBlock.air) {
             return idOfBlock.dirt;
         } else {
             return lookingBlock;

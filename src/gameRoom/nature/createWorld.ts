@@ -1,4 +1,4 @@
-import { world_height, pushChunkToWorld, chunk, loadWorld, sealevel } from "../world.js";
+import { world_height, pushChunkToWorld, chunk, loadWorld, sealevel, loadPalette, resetPalette, migrateWorldToPalette } from "../world.js";
 import { getRandomInt } from "../const.js";
 import { player } from "../player.js";
 import { eventBus } from "../others/eventBus.js";
@@ -242,7 +242,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
 
             if (y === g) {worldLine.push(surfaceBlock);}
             else if (y > g && y <= s) {
-                if (temp === 1 && y >= g + getRandomInt(3, 4)) {worldLine.push(7);}
+                if (temp === 1 && y >= g + getRandomInt(3, 4)) {worldLine.push(idOfBlock.sandstone);}
                 else {worldLine.push(dirtBlock);}
             } else if (y > s) {worldLine.push(stoneBlock);}
             else {worldLine.push(-1);}
@@ -260,7 +260,7 @@ function createChunk(startX: number, behind: boolean) { //startX:当前区块在
         for (let x = 0; x < chunk.width; x++) {
             const globalX: number = startX + x;
             const block: number = worlding[y][x];
-            if (block !== 2) {continue;} //只在石头中挖洞
+            if (block !== idOfBlock.stone) {continue;} //只在石头中挖洞
 
             const stoneTop: number = terrain_stone[x];
             if (y < stoneTop + 4 || y > world_height - 10) {continue;} //垂直范围
@@ -337,8 +337,8 @@ function generateTrees(worlding: number[][]): void {
         let y: number = 0;
         // 找到最上方非空气的方块
         while (y < world_height && worlding[y][x] === -1) {y++;}
-        if (y < world_height && (worlding[y][x] === 0 || worlding[y][x] === 6)) { // 确保是草
-            worlding[y][x] = 1; // 将草换成泥
+        if (y < world_height && (worlding[y][x] === idOfBlock.grass || worlding[y][x] === idOfBlock.snowGrass)) { // 确保是草
+            worlding[y][x] = idOfBlock.dirt; // 将草换成泥
             for (let k = 0; k < oak_height; k++) {
                 y--;
                 if (y >= 0) {worlding[y][x] = idOfBlock.oak;} // 橡木
@@ -419,12 +419,19 @@ function createWorldMain(): void {
 
     // 读取存档的世界数组
     if (!coverWhenSave) {
+        resetPalette();
         for (let i = 0; i < 8; i++) {
             createChunk(chunk.start_x, true);
         }
         player.initXY();
     } else {
         loadWorld(readingWorld.world);
+        // 载入存档自带的调色板；旧存档没有该字段时按方块类型 id 迁移为索引
+        if (notNullUndefined(readingWorld.palette) && readingWorld.palette.length > 0) {
+            loadPalette(readingWorld.palette);
+        } else {
+            migrateWorldToPalette();
+        }
         // 更新区块状态以匹配加载的世界尺寸，防止 createChunkAnyTime 在错误位置生成新区块
         chunk.num = readingWorld.world[0].length / chunk.width;
         chunk.start_x = chunk.num * chunk.width;

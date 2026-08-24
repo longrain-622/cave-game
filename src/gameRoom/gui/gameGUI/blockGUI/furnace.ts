@@ -4,7 +4,7 @@ import { guiContainer, inventory, updateSelectingItem } from '../inventory.js';
 import { room } from '../../../../constants/generic.js';
 import { genericTextStyle, blockTextures } from '../../../rendering/rendering.js';
 import { itemTextures } from '../../../dropped/items.js';
-import { world } from '../../../world.js';
+import { world, blockTypeAt } from '../../../world.js';
 import { getRandomInt, point_coll_rect } from '../../../const.js';
 import { readingWorld, coverWhenSave } from '../../../gameState.js';
 import { WorldArchive, FurnaceArchive } from '../../../../types/worldArchive.js';
@@ -61,7 +61,7 @@ function lookFurnace(look_x: number, look_y: number): Furnace {
     // 清除无用的熔炉对象
     for (let i = furnaceArray.length - 1; i >= 0; i--) {
         const fur: Furnace = furnaceArray[i];
-        if (!world[fur.world_y] || world[fur.world_y][fur.world_x] !== idOfBlock.furnace) {
+        if (!world[fur.world_y] || blockTypeAt(fur.world_x, fur.world_y) !== idOfBlock.furnace) {
             furnaceArray.splice(i, 1);
         }
     }
@@ -90,7 +90,7 @@ function setCurrentFurnace(wx: number, wy: number): void {
 // 打开熔炉
 apioxEvent.onMouseDown((ev: ApioxMouseEvent) => {
     if (ev.button !== 2) {return;}
-    if (world[mouse.world_y][mouse.world_x] === idOfBlock.furnace) {
+    if (blockTypeAt(mouse.world_x, mouse.world_y) === idOfBlock.furnace) {
         if (uistate.anyui_isOpening_except(uistate.furnace_isOpening)) {return;}
         if (!uistate.furnace_isOpening) {
             setCurrentFurnace(mouse.world_x, mouse.world_y);
@@ -720,7 +720,7 @@ export function furnaceLoop(): void {
 
 // 熔炉被破坏时的处理
 export function breakFurnace(furnace_world_x: number, furnace_world_y: number): void {
-    if (world[furnace_world_y][furnace_world_x] === idOfBlock.furnace && furnaceArray.length > 0) {
+    if (blockTypeAt(furnace_world_x, furnace_world_y) === idOfBlock.furnace && furnaceArray.length > 0) {
         // 破坏熔炉后关闭 GUI 状态
         if (uistate.furnace_isOpening) {
             uistate.furnace_isOpening = false;
