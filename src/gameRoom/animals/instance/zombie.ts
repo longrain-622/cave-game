@@ -104,7 +104,7 @@ function getSeparation(entity: Animal): number {
     return steerX;
 }
 
-export function chasePlayer(animal: Animal): void {
+export function chasePlayer(animal: Animal, delta: number): void {
     attackPlayer(animal, zombieAttr.damage ?? 1);
 
     // 朝向玩家
@@ -132,7 +132,7 @@ export function chasePlayer(animal: Animal): void {
     animal.dir = moveDir;
 
     // 水平移动
-    const newX: number = animal.x + moveDir * animal.movespeed;
+    const newX: number = animal.x + moveDir * animal.movespeed * delta;
     // 检查移动方向是否撞墙
     const footY: number = animal.y + animal.height - 8;
     const midY: number = animal.y + 32;
@@ -150,11 +150,11 @@ export function chasePlayer(animal: Animal): void {
     animal.can_move = false;
 
     if (moveDir !== 0) {
-        animal.legrad += 0.1;
+        animal.legrad += 0.1 * delta;
         if (animal.legrad >= 2 * Math.PI) {animal.legrad = 0;}
     } else {
         if (animal.legrad > 0) {
-            animal.legrad -= 0.1;
+            animal.legrad -= 0.1 * delta;
             if (animal.legrad < 0) {animal.legrad = 0;}
         } else {
             animal.legrad = 0;

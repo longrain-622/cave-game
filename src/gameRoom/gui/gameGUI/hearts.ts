@@ -67,7 +67,7 @@ function initHearts(): void {
     heartInitialized = true;
 }
 
-function heartsAct(): void {
+function heartsAct(delta: number): void {
     // 检测血量是否变化
     if (player.hp !== heart.lasthp) {
         heart.drawWhite = true; // 变化时触发白色效果
@@ -76,7 +76,7 @@ function heartsAct(): void {
     }
 
     if (heart.drawWhite) {
-        heart.timer++;
+        heart.timer += delta;
         if (heart.timer >= 6) {
             heart.drawWhite_phaser++;
             heart.timer = 0;

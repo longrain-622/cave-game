@@ -640,13 +640,13 @@ export function handleFurnaceBackpackContextMenu(): void {
 
 // 烧制物品
 // 当有熔炉处于正在使用的状态时，每帧执行一次
-function firingItem(whichFurnace: Furnace): void {
+function firingItem(whichFurnace: Furnace, delta: number): void {
     // 检测输入物品对应的配方
     // 输入被拿走（空气）时同样找不到配方，走下面的分支：进度归零、火焰熄灭，不会冻结
     const recipe: FurnaceRecipe = getFurnaceRecipe(whichFurnace.input.item);
     if (!recipe) {
         whichFurnace.outputProgress = 0;
-        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
+        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
         return;
     }
 
@@ -654,13 +654,13 @@ function firingItem(whichFurnace: Furnace): void {
     if (whichFurnace.output.item !== idOfBlock.air) {
         if (whichFurnace.output.item !== recipe.output) {
             whichFurnace.outputProgress = 0;
-            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
+            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
             return;
         }
         // 输出槽已堆叠满，无法继续放入成品
         if (whichFurnace.output.num >= whichFurnace.output.max) {
             whichFurnace.outputProgress = 0;
-            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
+            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
             return;
         }
     }
@@ -668,13 +668,13 @@ function firingItem(whichFurnace: Furnace): void {
     // 燃料槽为空或物品不是燃料，不烧制
     if (!fuels.includes(whichFurnace.fuel.item)) {
         whichFurnace.outputProgress = 0;
-        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress--;}
+        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
         return;
     }
 
     // 递增进度
-    whichFurnace.outputProgress++;
-    whichFurnace.fuelProgress++;
+    whichFurnace.outputProgress += delta;
+    whichFurnace.fuelProgress += delta;
 
     // 进度达到配方所需时间，输出成品
     if (whichFurnace.outputProgress >= recipe.time) {
@@ -709,12 +709,12 @@ function firingItem(whichFurnace: Furnace): void {
 }
 
 // 每帧处理所有熔炉的烧制
-export function furnaceLoop(): void {
+export function furnaceLoop(delta: number): void {
     for (let i = 0; i < furnaceArray.length; i++) {
         if (!point_coll_rect(furnaceArray[i].world_x * 64, furnaceArray[i].world_y * 64, player.x - lookRange / 2, player.y - lookRange / 2, lookRange, lookRange)) {
             continue; // 超出玩家视野范围的熔炉跳过，继续处理其余熔炉
         }
-        firingItem(furnaceArray[i]);
+        firingItem(furnaceArray[i], delta);
     }
 }
 

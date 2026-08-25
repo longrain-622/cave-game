@@ -66,12 +66,12 @@ function main(): void {
 }
 main();
 
-function particleAct(): void { // 控制粒子的行为
+function particleAct(delta: number): void { // 控制粒子的行为
     for (let i = 0; i < particleArray.length; i++) {
         const particle: Particles = particleArray[i];
 
         // 删除到时间的
-        particle.timer++;
+        particle.timer += delta;
         if (particle.timer >= particle.life) {
             particleArray.splice(i, 1);
             i--;
@@ -88,7 +88,7 @@ function particleAct(): void { // 控制粒子的行为
         const GRAVITY = 0.5;
 
         // 应用重力
-        particle.vsp += GRAVITY;
+        particle.vsp += GRAVITY * delta;
 
         // 垂直移动（逐像素碰撞）
         if (particle.vsp !== 0) {

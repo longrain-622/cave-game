@@ -4,8 +4,10 @@ function check(condition: boolean, message: string): void {
     }
 }
 
+const openTest: boolean = false;
+
 function main(): void {
-    if (false) {return;}
+    if (openTest) {return;}
     console.log('Begin Test.');
     console.log('End Test.');
 }

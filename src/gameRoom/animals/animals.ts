@@ -59,16 +59,16 @@ function main(): void {
 }
 main();
 
-export function animalsLoop(): void {
-    animalActions();
+export function animalsLoop(delta: number): void {
+    animalActions(delta);
 
     // 更新所有动物的闪烁帧数和攻击冷却
     for (let i = 0; i < animalArray.length; i++) {
         if (animalArray[i].flashFrames > 0) {
-            animalArray[i].flashFrames--;
+            animalArray[i].flashFrames -= delta;
         }
         if (animalArray[i].attackTimer > 0) {
-            animalArray[i].attackTimer--;
+            animalArray[i].attackTimer -= delta;
         }
     }
 }

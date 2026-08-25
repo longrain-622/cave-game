@@ -39,8 +39,8 @@ function main(): void {
 }
 main();
 
-export function blockFrameLoop(): void {
-    timer++;
+export function blockFrameLoop(delta: number): void {
+    timer += delta;
     if (timer >= 2) {
         timer = 0;
         fireTick = (fireTick + 1) % (fireMaxTick + 1);

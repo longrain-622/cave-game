@@ -471,16 +471,16 @@ export function setSelectedIndex(newVal: number): void {
     selectedIndex = newVal;
 }
 
-export function gameGuiLoop(): void {
+export function gameGuiLoop(delta: number): void {
     if (player.hp > 0) {
-        heartsAct();
+        heartsAct(delta);
         drawHeart();
         floatContainer.visible = uistate.invenUI_isOpening();
         drawInventory();
         draw_craftingTable();
         draw_chest();
         draw_furnace();
-        furnaceLoop();
+        furnaceLoop(delta);
     }
 }
 

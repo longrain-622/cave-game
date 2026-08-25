@@ -26,22 +26,22 @@ gameRoom.domstyle('width', String(room.width) + 'px');
 gameRoom.domstyle('height', String(room.height) + 'px');
 
 //主循环
-export function gameLoop(): void {
+export function gameLoop(delta: number): void {
     createChunkAnyTime();
 
-    playerLoop();
+    playerLoop(delta);
     updateWorldPixi();
     updateMouseSprites();
-    blockFrameLoop();
-    mouseAct();
+    blockFrameLoop(delta);
+    mouseAct(delta);
 
-    if (animalArray.length > 0) {animalsLoop(); drawAnimals();}
-    if (dropArray.length > 0) {dropLoop();}
-    if (particleArray.length > 0) {particleAct(); drawParticles();}
-    if (entityBlock_array.length > 0) {look_entityBlock();}
+    if (animalArray.length > 0) {animalsLoop(delta); drawAnimals();}
+    if (dropArray.length > 0) {dropLoop(delta);}
+    if (particleArray.length > 0) {particleAct(delta); drawParticles();}
+    if (entityBlock_array.length > 0) {look_entityBlock(delta);}
     skyLoop();
 
     lookBlocks();
-    gameGuiLoop();
+    gameGuiLoop(delta);
     drawDeadPage();
 }

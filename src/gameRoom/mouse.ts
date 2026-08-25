@@ -128,7 +128,7 @@ function specialMouseBreak(mine_mousex: number, mine_mousey: number) {
     breakFurnace(mine_mousex, mine_mousey);
 }
 
-export function mouseAct(): void {
+export function mouseAct(delta: number): void {
     mouse.world_x = Math.round((player.x + mouse.x - player.screen_x) / 64);
     mouse.world_y = Math.round((player.y + mouse.y - player.screen_y) / 64);
 
@@ -169,7 +169,7 @@ export function mouseAct(): void {
         }
 
         if (mouse.blockhardness !== -1) {
-            mouse.timer++;
+            mouse.timer += delta;
             if (mouse.timer > mouse.blockhardness) {
                 mouse.timer = 0;
                 mouse.destory++;

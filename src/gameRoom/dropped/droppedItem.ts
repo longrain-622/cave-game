@@ -151,9 +151,9 @@ function drawDrops(): void {
 }
 
 // 普通物理运动（重力、水平阻力、碰撞）
-function applyNormalPhysics(drop: Droppeds) {
+function applyNormalPhysics(drop: Droppeds, delta: number) {
     const GRAVITY: number = 0.5;
-    drop.vsp += GRAVITY; //应用重力
+    drop.vsp += GRAVITY * delta; //应用重力
 
     // 垂直移动（逐像素碰撞）
     if (drop.vsp !== 0) {
@@ -187,18 +187,18 @@ function applyNormalPhysics(drop: Droppeds) {
     }
 }
 
-function dropsX() {
+function dropsX(delta: number) {
     const MAGNET_DIST: number = 200; // 触发吸引的距离（像素）
     const PICKUP_DELAY_FRAMES: number = 64; // 延迟帧数，期间不可吸引和拾取
     let MAGNET_SPEED: number = 4; // 吸引速度（每帧移动像素数）
 
     for (let i = 0; i < dropArray.length; i++) {
         const drop: Droppeds = dropArray[i];
-        drop.timer++;  // 每帧增加计时
+        drop.timer += delta;  // 每帧增加计时
 
         // 延迟未结束：只进行普通物理运动，不吸引也不拾取
         if (drop.timer < PICKUP_DELAY_FRAMES) {
-            applyNormalPhysics(drop);
+            applyNormalPhysics(drop, delta);
             continue;
         }
 
@@ -218,8 +218,8 @@ function dropsX() {
             // 计算移动方向（归一化后乘以磁吸速度）
             let len: number = Math.sqrt(distSq);
             if (len < 0.01) {len = 1;}
-            let moveX: number = (dx / len) * MAGNET_SPEED;
-            let moveY: number = (dy / len) * MAGNET_SPEED;
+            let moveX: number = (dx / len) * MAGNET_SPEED * delta;
+            let moveY: number = (dy / len) * MAGNET_SPEED * delta;
 
             // 水平移动
             let stepX: number = Math.abs(moveX);
@@ -265,7 +265,7 @@ function dropsX() {
             drop.hsp = 0;
             drop.vsp = 0;
         } else { // 未接近时：普通物理运动
-            applyNormalPhysics(drop);
+            applyNormalPhysics(drop, delta);
         }
     }
 }
@@ -281,9 +281,9 @@ apioxEvent.onKeyDown((e) => { // 丢弃物品
     }
 });
 
-function dropLoop() {
+function dropLoop(delta: number) {
     drawDrops();
-    dropsX();
+    dropsX(delta);
 }
 
 export { createDrop, dropLoop, dropArray, lookDrops };

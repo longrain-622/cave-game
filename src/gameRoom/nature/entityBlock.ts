@@ -62,8 +62,8 @@ function removeEntityBlockSprite(entityBlock: EntityBlock): void {
     }
 }
 
-function sand_fall(obj: EntityBlock, i: number): number {
-    obj.vsp++;
+function sand_fall(obj: EntityBlock, i: number, delta: number): number {
+    obj.vsp += delta;
     obj.y += obj.vsp;
 
     if (place_meeting(obj.x + 32, obj.y + 64)) {
@@ -74,7 +74,7 @@ function sand_fall(obj: EntityBlock, i: number): number {
         return i - 1;
     }
 
-    obj.timer++; //掉落的沙子到了时间就清除
+    obj.timer += delta; //掉落的沙子到了时间就清除
     if (obj.timer >= 1024) {
         removeEntityBlockSprite(obj);
         entityBlock_array.splice(i, 1);
@@ -118,7 +118,7 @@ function drawEntityBlock(entityBlock: EntityBlock): void {
     sprite.visible = true;
 }
 
-function look_entityBlock(): void {
+function look_entityBlock(delta: number): void {
     // 兜底清理已移除实体方块的渲染 Sprite（正常情况在移除处已同步销毁）
     const aliveEntityBlocks: Set<EntityBlock> = new Set(entityBlock_array);
     for (const [entityBlock, sprite] of entityBlockSpriteMap) {
@@ -135,7 +135,7 @@ function look_entityBlock(): void {
         if (can_drawEntityBlock) {drawEntityBlock(looking);}
 
         switch (looking.id) {
-            case idOfBlock.sand: i = sand_fall(looking, i); break;
+            case idOfBlock.sand: i = sand_fall(looking, i, delta); break;
         }
     }
 }

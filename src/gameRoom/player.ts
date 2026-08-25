@@ -204,23 +204,23 @@ apioxEvent.listenGlobal('mousedown', () => {
     }
 });
 
-function playerMove(): void { // 玩家移动
+function playerMove(delta: number): void { // 玩家移动
     let dir = player.right - player.left;
 
     if (dir != 0) {
         if (!place_meeting(player.x + player.right * 64, player.y + 120)
         && !place_meeting(player.x + player.right * 64, player.y + 20)) {
-            player.x += dir * (player.move_speed + player.acc);
+            player.x += dir * (player.move_speed + player.acc) * delta;
         }
     }
 
     // 改变玩家腿部旋转方向
     if (player.left === 1 || player.right === 1) {
-        player.leg_rad += 0.3 + player.acc / 48;
+        player.leg_rad += (0.3 + player.acc / 48) * delta;
         if (player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
     } else {
         if (player.leg_rad !== 0 && player.leg_rad < 2 * Math.PI) {
-            player.leg_rad += 0.3;
+            player.leg_rad += 0.3 * delta;
             if (player.leg_rad >= 2 * Math.PI) {player.leg_rad = 0;}
         }
     }
@@ -230,7 +230,7 @@ function playerMove(): void { // 玩家移动
         if (player.rightOnMouse) {player.isRotateRighthand = true;}
         else {player.isRotateRighthand = false;}
 
-        player.hand_rad += 0.3;
+        player.hand_rad += 0.3 * delta;
         if (player.hand_rad >= Math.PI) {
             player.needRotateHand = false;
             player.hand_rad = 0;
@@ -240,8 +240,8 @@ function playerMove(): void { // 玩家移动
     }
 }
 
-function playerJump(): void { // 玩家跳跃
-    player.vsp += player.grav;
+function playerJump(delta: number): void { // 玩家跳跃
+    player.vsp += player.grav * delta;
     if (player.vsp != 0) {
         for (let i = 0; i < Math.abs(player.vsp); i++) {
             if (player.vsp > 0) {
@@ -382,15 +382,15 @@ function main(): void {
 }
 main();
 
-function playerLoop(): void {
+function playerLoop(delta: number): void {
     player.rightOnMouse = mouse.x > player.screen_x + player.width / 2;
 
     // 打开背包无法移动
     if (!uistate.invenUI_isOpening() && player.hp > 0){ 
-        playerMove();
+        playerMove(delta);
     }
 
-    if (player.hp > 0) {playerJump();}
+    if (player.hp > 0) {playerJump(delta);}
 
     updatePlayerRender();
 }

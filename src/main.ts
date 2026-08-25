@@ -4,7 +4,7 @@ import { loadScripts } from './LoadScripts.js';
 import { Ticker } from 'pixi.js';
 
 // 游戏链按需懒加载(与 LoadScripts 一致):字面量动态导入供 Vite 静态分析并分割为异步 chunk,进房间才加载。
-let gameLoopFn: (() => void) | null = null;
+let gameLoopFn: ((delta: number) => void) | null = null;
 let gameLoaded: boolean = false;
 let loading: boolean = false; //加载中
 
@@ -19,19 +19,18 @@ async function ensureGameLoaded(): Promise<void> {
     console.log('Game ready');
 }
 
-// 主驱动循环
-function mainLoop(): void {
+// main loop
+Ticker.shared.add((delta: number): void => {
     switch (_room_) {
         case 0:
-            contentLoop();
+            contentLoop(delta);
             break;
         case 1:
             if (!gameLoaded) {
                 ensureGameLoaded();
             } else {
-                if (gameLoopFn) {gameLoopFn();}
+                if (gameLoopFn) {gameLoopFn(delta);}
             }
             break;
     }
-}
-Ticker.shared.add(mainLoop);
+});

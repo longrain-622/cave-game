@@ -109,7 +109,7 @@ downloadText.on('click', (): void => { if (start === 1){choose = 1;} });
 setText.on('click', (): void => { if (start === 1){choose = 2;} });
 viewText.on('click', (): void => { if (start === 1){choose = 3;} });
 
-function bgimageAnimation(): void { //背景图片的左右移动
+function bgimageAnimation(delta: number): void { //背景图片的左右移动
     //解析当前 left 值，若无效则默认为 0
     let currentLeft: number = parseFloat(bgimg.domstyle('left'));
     if (isNaN(currentLeft)) {currentLeft = 0;}
@@ -117,21 +117,21 @@ function bgimageAnimation(): void { //背景图片的左右移动
     //边界常量（可根据需要调整）
     const LEFT_BOUNDARY: number = -(Number(bgimg.domProperty('clientWidth')) - room.width) / room.width * 100 + 4;
     const RIGHT_BOUNDARY: number = -4;
-    const PAUSE_FRAMES: number = 300; //停留帧数
-    const SPEED: number = 0.0125;
+    const PAUSE_FRAMES: number = 300; //停留时长(60fps 帧)
+    const SPEED: number = 0.0125; //移动速度(每 60fps 帧)
 
     if (face === 0) { //向左移动
-        currentLeft -= SPEED;
+        currentLeft -= SPEED * delta;
         if (currentLeft <= LEFT_BOUNDARY) {
             face = -1; //切换为等待状态
         }
     } else if (face === 1) { //向右移动
-        currentLeft += SPEED;
+        currentLeft += SPEED * delta;
         if (currentLeft >= RIGHT_BOUNDARY) {
             face = -1; //切换为等待状态
         }
     } else if (face === -1) { //等待状态
-        timer += 1;
+        timer += delta;
         if (timer >= PAUSE_FRAMES) {
             timer = 0;
             //根据当前 left 值决定下一步方向
@@ -184,8 +184,8 @@ function ctrlShow(): void { //控制各种功能的显示和隐藏
 }
 
 //页面主循环
-export function contentLoop(): void {
-    bgimageAnimation();
+export function contentLoop(delta: number): void {
+    bgimageAnimation(delta);
     ctrlShow();
 }
 

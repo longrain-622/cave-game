@@ -144,14 +144,14 @@ function lookForPath(world_x: number, world_y: number, step: number = getRandomI
 }
 
 // 实体的行为
-export function animalActions(): void {
+export function animalActions(delta: number): void {
     for (let k = 0; k < animalArray.length; k++) {
         const animal: Animal = animalArray[k];
 
         // 死亡只更新旋转角度
         if (animal.isDying) {
             if (animal.dierad < Math.PI / 2 - 0.1) {
-                animal.dierad_speed = Math.max(0, 0.12 * (1 - animal.dierad / (Math.PI / 2)));
+                animal.dierad_speed = Math.max(0, 0.12 * (1 - animal.dierad / (Math.PI / 2))) * delta;
                 animal.dierad += animal.dierad_speed;
             } else {
                 animalArray.splice(k, 1); // 移除
@@ -172,7 +172,7 @@ export function animalActions(): void {
         }
 
         // 重力检测
-        animal.vsp += player.grav;
+        animal.vsp += player.grav * delta;
         if (animal.vsp !== 0) {
             for (let i = 0; i < Math.abs(animal.vsp); i++) {
                 if (animal.vsp > 0) {
@@ -208,7 +208,7 @@ export function animalActions(): void {
 
         // 移动
         if (animal.doing === 1) {
-            chasePlayer(animal);
+            chasePlayer(animal, delta);
         } else if ((!animal.can_move) && getRandomInt(0, 100) === 50) {
             animalBeginMove(animal);
         }
@@ -222,7 +222,7 @@ export function animalActions(): void {
                 const frontX: number = animal.x + (animal.dir > 0 ? animal.width : 0);
                 if (!place_meeting(frontX, animal.y + animal.height - 16) &&
                     !place_meeting(frontX, animal.y + 16)) {
-                    animal.x += animal.dir * animal.movespeed;
+                    animal.x += animal.dir * animal.movespeed * delta;
                 } else {
                     /*
                         被墙挡住：前方是 1 格高的矮墙才跳（80 = 检测点 16 + 一格 64），
@@ -239,11 +239,11 @@ export function animalActions(): void {
             }
 
             // 改变腿部旋转方向
-            animal.legrad += 0.1;
+            animal.legrad += 0.1 * delta;
             if (animal.legrad >= 2 * Math.PI){animal.legrad = 0;}
         } else {
             if (animal.legrad !== 0 && animal.legrad < 2 * Math.PI) {
-                animal.legrad += 0.1;
+                animal.legrad += 0.1 * delta;
                 if (animal.legrad >= 2 * Math.PI) {animal.legrad = 0;}
             }
         }
