@@ -14,7 +14,7 @@ const furnaceRecipes: FurnaceRecipe[] = [
 ];
 
 // 根据输入物品查找配方，找不到返回 undefined
-function getFurnaceRecipe(input: number): FurnaceRecipe {
+function getFurnaceRecipe(input: number): FurnaceRecipe | undefined {
     return furnaceRecipes.find(recipe => recipe.input === input);
 }
 

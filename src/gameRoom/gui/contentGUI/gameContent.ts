@@ -42,10 +42,10 @@ topBtn.eventMode = 'static';
 topBtn.cursor = 'pointer';
 topBtn.scale.set(btnScale, btnScale);
 topBtn.on('pointerover', () => { // 鼠标/指针进入
-    topBtn.texture = buttonTextures.hover;
+    if (buttonTextures.hover) {topBtn.texture = buttonTextures.hover;}
 });
 topBtn.on('pointerout', () => { // 鼠标/指针离开
-    topBtn.texture = buttonTextures.normal;
+    if (buttonTextures.normal) {topBtn.texture = buttonTextures.normal;}
 });
 
 const bottomBtn = new PIXI.Sprite(buttonTextures.normal!); // 第二个按钮
@@ -55,10 +55,10 @@ bottomBtn.eventMode = 'static';
 bottomBtn.cursor = 'pointer';
 bottomBtn.scale.set(btnScale, btnScale);
 bottomBtn.on('pointerover', () => { // 鼠标/指针进入
-    bottomBtn.texture = buttonTextures.hover;
+    if (buttonTextures.hover) {bottomBtn.texture = buttonTextures.hover;}
 });
 bottomBtn.on('pointerout', () => { // 鼠标/指针离开
-    bottomBtn.texture = buttonTextures.normal;
+    if (buttonTextures.normal) {bottomBtn.texture = buttonTextures.normal;}
 });
 
 gameContent.addChild(topBtn, bottomBtn);

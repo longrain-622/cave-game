@@ -54,7 +54,7 @@ main();
 
 // 移除实体方块时同步销毁其渲染 Sprite
 function removeEntityBlockSprite(entityBlock: EntityBlock): void {
-    const sprite: PIXI.Sprite = entityBlockSpriteMap.get(entityBlock);
+    const sprite: PIXI.Sprite | undefined = entityBlockSpriteMap.get(entityBlock);
     if (sprite) {
         entityBlockLayer.removeChild(sprite);
         sprite.destroy();
@@ -89,7 +89,7 @@ function drawEntityBlock(entityBlock: EntityBlock): void {
     const draw_x: number = player.screen_x + entityBlock.x - player.x;
     const draw_y: number = player.screen_y + entityBlock.y - player.y;
 
-    let sprite: PIXI.Sprite = entityBlockSpriteMap.get(entityBlock);
+    let sprite: PIXI.Sprite | undefined = entityBlockSpriteMap.get(entityBlock);
     if (!sprite) {
         sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
         entityBlockLayer.addChild(sprite);

@@ -45,7 +45,7 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
     };
 
     const handleSettingChange = (event: ApioxAnyEvent): void => {
-        const target: ApioxObject = event.target;
+        const target: ApioxObject | null = event.target;
         if (!target) {return;}
         const isEnabled: boolean = target.domProperty('checked') as boolean;
         if (settingLocked) {
@@ -87,11 +87,11 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
         log.info(`rotate screen is ${isEnabled ? 'opened' : 'closed'}`);
 
         if (isEnabled) {
-            toastText.domProperty('textContent', apiObjects.win.t('toast.text1')); //设置弹窗文本
+            if (apiObjects.win.t) {toastText.domProperty('textContent', apiObjects.win.t('toast.text1'));} //设置弹窗文本
             showToast(); //显示弹窗（入场动画）
 
             // 移除旧监听（避免重复绑定）
-            if (rotateSureHandler) {
+            if (rotateSureHandler && rotateCancelHandler) {
                 toastSure.off('click', rotateSureHandler);
                 toastCancel.off('click', rotateCancelHandler);
             }
@@ -137,7 +137,7 @@ apioxEvent.listenGlobal('DOMContentLoaded', () => {
     languageSelect.domProperty('value', getLang());
 
     languageSelect.on('change', async (event: ApioxAnyEvent) => {
-        const target: ApioxObject = event.target;
+        const target: ApioxObject | null = event.target;
         if (!target) {return;}
         if (settingLocked) {
             // 弹窗弹出期间禁止修改，恢复原语言

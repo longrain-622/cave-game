@@ -36,7 +36,7 @@ export function findMatchingRecipe(
             //检查配方内部
             for (let r = 0; r < shapeRows; r++) {
                 for (let c = 0; c < shapeCols; c++) {
-                    const target: Slots = matrix[offRow + r]?.[offCol + c];
+                    const target: Slots | null = matrix[offRow + r]?.[offCol + c];
                     const pattern = recipe.cells[r][c];
                     if (pattern === null) {
                         if (target !== null) {match = false; break;}
@@ -54,7 +54,7 @@ export function findMatchingRecipe(
             let hasExtra: boolean = false;
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
-                    const target: Slots = matrix[r][c];
+                    const target: Slots | null = matrix[r][c];
                     if (target === null) {continue;}
                     const inShape = (r >= offRow && r < offRow + shapeRows &&
                                      c >= offCol && c < offCol + shapeCols &&
@@ -91,7 +91,7 @@ function findMatchingRecipeWithOffset(
             //检查配方内部
             for (let r = 0; r < shapeRows; r++) {
                 for (let c = 0; c < shapeCols; c++) {
-                    const target: Slots = matrix[offRow + r]?.[offCol + c];
+                    const target: Slots | null = matrix[offRow + r]?.[offCol + c];
                     const pattern = recipe.cells[r][c];
                     if (pattern === null) {
                         if (target !== null) { match = false; break; }
@@ -109,7 +109,7 @@ function findMatchingRecipeWithOffset(
             let hasExtra: boolean = false;
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
-                    const target: Slots = matrix[r][c];
+                    const target: Slots | null = matrix[r][c];
                     if (target === null) {continue;}
                     const inShape = (r >= offRow && r < offRow + shapeRows &&
                                      c >= offCol && c < offCol + shapeCols &&
@@ -138,7 +138,7 @@ export function consumeMaterialsByRecipe(
     offsetCol: number
 ): boolean {
     const cols: number = 2, rows: number = 2;
-    const matrix: Slots[][] = slotsToMatrix(slots, cols, rows);
+    const matrix: (Slots | null)[][] = slotsToMatrix(slots, cols, rows);
     for (let r = 0; r < recipe.gridHeight; r++) {
         for (let c = 0; c < recipe.gridWidth; c++) {
             const pattern = recipe.cells[r][c];
@@ -176,7 +176,7 @@ export const craftingResultSlot = new Slots(-1, 0);
 
 // 更新合成结果
 export function updateCraftingResult() {
-    const matrix: Slots[][] = slotsToMatrix(craftingSlots, 2, 2);
+    const matrix: (Slots | null)[][] = slotsToMatrix(craftingSlots, 2, 2);
     for (const recipe of recipes) {
         const times: number = findMatchingRecipe(matrix, recipe);
         if (times > 0) {
@@ -191,7 +191,7 @@ export function updateCraftingResult() {
 
 // 消耗材料（供外部调用）
 export function consumeCraftingMaterials(times?: number): number {
-    const matrix: Slots[][] = slotsToMatrix(craftingSlots, 2, 2);
+    const matrix: (Slots | null)[][] = slotsToMatrix(craftingSlots, 2, 2);
     for (const recipe of recipes) {
         const match = findMatchingRecipeWithOffset(matrix, recipe);
         if (!match) {continue;}
@@ -229,7 +229,7 @@ export function findMatchingRecipeGeneric(
     rows: number,
     recipe: RecipeShape
 ): { offsetRow: number; offsetCol: number; times: number } | null {
-    const matrix: Slots[][] = slotsToMatrixGeneric(slots, cols, rows);
+    const matrix: (Slots | null)[][] = slotsToMatrixGeneric(slots, cols, rows);
     const gridRows: number = matrix.length;
     const gridCols: number = gridRows > 0 ? matrix[0].length : 0;
     const shapeRows: number = recipe.gridHeight;
@@ -243,7 +243,7 @@ export function findMatchingRecipeGeneric(
             //检查配方内部
             for (let r = 0; r < shapeRows; r++) {
                 for (let c = 0; c < shapeCols; c++) {
-                    const target: Slots = matrix[offRow + r]?.[offCol + c];
+                    const target: Slots | null = matrix[offRow + r]?.[offCol + c];
                     const pattern = recipe.cells[r][c];
                     if (pattern === null) {
                         if (target !== null) { match = false; break; }
@@ -261,7 +261,7 @@ export function findMatchingRecipeGeneric(
             let hasExtra: boolean = false;
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
-                    const target: Slots = matrix[r][c];
+                    const target: Slots | null = matrix[r][c];
                     if (target === null) {continue;}
                     // 判断该格子是否在配方形状内
                     const inShape = (r >= offRow && r < offRow + shapeRows &&
@@ -310,7 +310,7 @@ export function consumeMaterialsGeneric(
     for (let i = 0; i < slots.length; i++) {
         const row: number = Math.floor(i / cols);
         const col: number = i % cols;
-        const newSlot: Slots = matrix[row]?.[col];
+        const newSlot: Slots | null = matrix[row]?.[col];
         if (newSlot) {
             slots[i].item = newSlot.item;
             slots[i].num = newSlot.num;

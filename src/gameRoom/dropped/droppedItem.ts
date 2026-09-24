@@ -52,7 +52,7 @@ main();
 
 // 移除掉落物时同步销毁其渲染 Sprite
 function removeDropSprite(drop: Droppeds): void {
-    const sprite: PIXI.Sprite = dropSpriteMap.get(drop);
+    const sprite: PIXI.Sprite | undefined = dropSpriteMap.get(drop);
     if (sprite) {
         dropLayer.removeChild(sprite);
         sprite.destroy();
@@ -119,7 +119,7 @@ function drawDrops(): void {
         const screenX: number = player.screen_x + drop.x - player.x;
         const screenY: number = player.screen_y + drop.y - player.y;
 
-        let sprite: PIXI.Sprite = dropSpriteMap.get(drop);
+        let sprite: PIXI.Sprite | undefined = dropSpriteMap.get(drop);
         if (!sprite) {
             sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
             dropLayer.addChild(sprite);

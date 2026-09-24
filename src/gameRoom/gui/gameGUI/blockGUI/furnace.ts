@@ -31,7 +31,7 @@ let currentFurnace: Furnace | null = null;
 const lookRange: number = 32 * 64; // 最大渲染距离，超过此值的实例，循环自动跳过，单位：px
 
 // 加载存档中的所有熔炉
-function loadFurnace(readWorld: WorldArchive): void {
+function loadFurnace(readWorld: WorldArchive | null): void {
     if (!(coverWhenSave && notNullUndefined(readWorld))) {return;}
     if (!notNullUndefined(readWorld.furnaces)) {
         console.log('cannot load the furnaces of your world!');
@@ -129,7 +129,7 @@ const furnaceGui: FurnacePixi = {
 
     furnaceContainer: new PIXI.Container(),
     blackBg: new PIXI.Graphics(),
-    furnaceTex: null, // 在 initFurnacePixi 中赋值（此时 guiTextures 已可用）
+    furnaceTex: new PIXI.BaseTexture(), // 在 initFurnacePixi 中赋值（此时 guiTextures 已可用）
     furnacePage: new PIXI.Sprite(),
 
     inputSprite: new PIXI.Sprite(), inputCount: new PIXI.Text(),
@@ -470,7 +470,7 @@ function drawProgress(): void {
     // 输出箭头：烧制中按烧制进度显示对应长度的箭头帧，否则全部隐藏
     let outputFrame: number = -1;
     if (currentFurnace.outputProgress > 0) {
-        const recipe: FurnaceRecipe = getFurnaceRecipe(currentFurnace.input.item);
+        const recipe: FurnaceRecipe | undefined = getFurnaceRecipe(currentFurnace.input.item);
         if (recipe) {
             outputFrame = Math.floor(currentFurnace.outputProgress / recipe.time * furnaceGui.outputProgress.length);
             if (outputFrame >= furnaceGui.outputProgress.length) {outputFrame = furnaceGui.outputProgress.length - 1;}
@@ -643,7 +643,7 @@ export function handleFurnaceBackpackContextMenu(): void {
 function firingItem(whichFurnace: Furnace, delta: number): void {
     // 检测输入物品对应的配方
     // 输入被拿走（空气）时同样找不到配方，走下面的分支：进度归零、火焰熄灭，不会冻结
-    const recipe: FurnaceRecipe = getFurnaceRecipe(whichFurnace.input.item);
+    const recipe: FurnaceRecipe | undefined = getFurnaceRecipe(whichFurnace.input.item);
     if (!recipe) {
         whichFurnace.outputProgress = 0;
         if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
@@ -727,7 +727,7 @@ export function breakFurnace(furnace_world_x: number, furnace_world_y: number): 
             currentFurnace = null;
         }
 
-        const target: Furnace = furnaceArray.find(obj => (obj.world_x === furnace_world_x && obj.world_y === furnace_world_y));
+        const target: Furnace | undefined = furnaceArray.find(obj => (obj.world_x === furnace_world_x && obj.world_y === furnace_world_y));
         if (!target) {return;}
         furnaceArray.splice(furnaceArray.indexOf(target), 1);
 

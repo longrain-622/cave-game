@@ -14,8 +14,8 @@ import { initAnimalY } from './instance/generic.js';
 const look_range: number = 64; // 渲染的范围的一半
 
 // 加载存档中的动物
-function loadAnimals(readingWorld: WorldArchive) {
-    if (readingWorld !== null) {
+function loadAnimals(readingWorld: WorldArchive | null) {
+    if (readingWorld) {
         let animal: Animal;
 
         for (let i = 0; i < readingWorld.animals.length; i++) {

@@ -76,7 +76,7 @@ function particleAct(delta: number): void { // 控制粒子的行为
             particleArray.splice(i, 1);
             i--;
             // 同步销毁对应的渲染 Sprite
-            const sprite: PIXI.Sprite = particleSpriteMap.get(particle);
+            const sprite: PIXI.Sprite | undefined = particleSpriteMap.get(particle);
             if (sprite) {
                 particleLayer.removeChild(sprite);
                 sprite.destroy();
@@ -131,7 +131,7 @@ function drawParticles(): void {
         const screenX: number = player.screen_x + obj.x - player.x;
         const screenY: number = player.screen_y + obj.y - player.y;
 
-        let sprite: PIXI.Sprite = particleSpriteMap.get(obj);
+        let sprite: PIXI.Sprite | undefined = particleSpriteMap.get(obj);
         if (!sprite) {
             sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
             particleLayer.addChild(sprite);

@@ -23,7 +23,7 @@ import { ApioxObject } from '../apiox/dom.js';
 const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
 let bgmStarted: boolean = false;
 
-//鼠标数据
+// 鼠标数据
 interface Mouse {
     x: number; y: number;
     world_x: number; world_y: number; // 鼠标在数组中的坐标
@@ -123,7 +123,7 @@ apioxEvent.onMouseUp(
 );
 
 // 处理特殊情况的挖掘
-function specialMouseBreak(mine_mousex: number, mine_mousey: number) {
+function specialMouseBreak(mine_mousex: number, mine_mousey: number): void {
     breakChest(mine_mousex, mine_mousey);
     breakFurnace(mine_mousex, mine_mousey);
 }

@@ -90,7 +90,7 @@ const chestGui: {
     draw_x: number; draw_y: number; // 绘制的坐标
     chestContainer: PIXI.Container;
     blackBg: PIXI.Graphics;
-    chestTex: PIXI.BaseTexture;
+    chestTex: PIXI.BaseTexture | null;
     chestPage: PIXI.Sprite;
     slotSprites: PIXI.Sprite[];
     slotTexts: PIXI.Text[];

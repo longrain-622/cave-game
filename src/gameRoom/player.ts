@@ -68,7 +68,7 @@ class Players {
         return { container: null, head: null, body: null, leftArm: null, rightArm: null, leftLeg: null, rightLeg: null, taking: null };
     }
 
-    initPlayer(readingWorld: WorldArchive): void {
+    initPlayer(readingWorld: WorldArchive | null): void {
         if (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.player)) {
             this.hp = readingWorld.player.hp;
             this.x = readingWorld.player.x;

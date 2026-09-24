@@ -2,9 +2,10 @@ import { ApioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent, Apiox
 import { ApioxCanvasContext } from "./canvas.js";
 
 export class ApioxObject {
-    id: string;
-    className: string;
+    id: string | null;
+    className: string | null;
 
+    // 构造时就已确定元素，取不到直接抛错，所以后续方法无需再判空
     private element: HTMLElement;
     private _listeners: Map<string, Map<Function, EventListener>> = new Map();
     private rect: DOMRect;
@@ -13,26 +14,26 @@ export class ApioxObject {
         this.id = id;
         this.className = className;
 
+        let element: HTMLElement | null = null;
         if (id !== null) {
-            this.element = document.getElementById(id);
+            element = document.getElementById(id);
         } else if (className !== null) {
             const elements = document.getElementsByClassName(className);
-            if (elements.length > 0) {
-                this.element = elements[0] as HTMLElement;
-            } else {
+            if (elements.length === 0) {
                 throw new Error(`No element found with class "${className}"`);
             }
+            element = elements[0] as HTMLElement;
         } else {
             throw new Error('Either id or className must be provided');
         }
 
-        if (this.element) {
-            this.rect = this.element.getBoundingClientRect();
-        } else {
+        if (!element) {
             throw new Error(
                 `[ApioxObject] cannot get the element (id="${id}", class="${className}")。\n`
             );
         }
+        this.element = element;
+        this.rect = element.getBoundingClientRect();
     }
 
     domstyle(prop: string, value?: string | null): string;
@@ -79,7 +80,7 @@ export class ApioxObject {
             this._listeners.clear();
         }
 
-        if (this.element && this.element.parentNode) {
+        if (this.element.parentNode) {
             this.element.remove();
         }
     }

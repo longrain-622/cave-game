@@ -22,12 +22,13 @@ let lowest_point: number = 0; //地形最低点的纵坐标
 
 //佩林噪声
 class PerlinNoise {
-    seed: number; gradient: number;
-    random: () => number;
+    seed: number;
+    gradient: number | null; // 梯度表，实际一维噪声用随机值即可
+    random!: () => number; // 在 init() 中赋值，构造函数已调用
 
     constructor(seed = Math.random()) {
         this.seed = seed;
-        this.gradient = null; // 梯度表，实际一维噪声用随机值即可
+        this.gradient = null;
         this.init();
     }
 
@@ -439,7 +440,7 @@ function createWorldMain(): void {
             createChunk(chunk.start_x, true);
         }
         player.initXY();
-    } else {
+    } else if (notNullUndefined(readingWorld)) { // coverWhenSave 为真时存档必定就绪
         loadWorld(readingWorld.world);
         // 载入存档自带的调色板；旧存档没有该字段时按方块类型 id 迁移为索引
         if (notNullUndefined(readingWorld.palette) && readingWorld.palette.length > 0) {

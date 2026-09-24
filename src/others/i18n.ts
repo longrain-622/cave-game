@@ -36,7 +36,8 @@ function applyI18n() {
 
     // 处理 data-i18n（文本内容）
     apiMethod.selectAll('[data-i18n]').forEach(el => {
-        const path: string = el.getAttribute('data-i18n');
+        const path: string | null = el.getAttribute('data-i18n');
+        if (path === null) {return;}
         const value = getByPath(i18nData, path);
         if (value !== undefined && value !== null) {
             el.textContent = value;
@@ -45,7 +46,8 @@ function applyI18n() {
 
     // 处理 data-i18n-placeholder（占位符）
     apiMethod.selectAll('[data-i18n-placeholder]').forEach(el => {
-        const path: string = el.getAttribute('data-i18n-placeholder');
+        const path: string | null = el.getAttribute('data-i18n-placeholder');
+        if (path === null) {return;}
         const value = getByPath(i18nData, path);
         if (value !== undefined && value !== null) {
             (el as HTMLInputElement | HTMLTextAreaElement).placeholder = value;
@@ -66,12 +68,14 @@ export async function setLanguage(newLang: string) {
 apiObjects.win.applyI18nToElement = (element: Element) => {
     if (!i18nData) {return;}
     if (element.hasAttribute('data-i18n')) {
-        const path: string = element.getAttribute('data-i18n');
+        const path: string | null = element.getAttribute('data-i18n');
+        if (path === null) {return;}
         const value = getByPath(i18nData, path);
         if (value !== undefined) {element.textContent = value;}
     }
     if (element.hasAttribute('data-i18n-placeholder')) {
-        const path = element.getAttribute('data-i18n-placeholder');
+        const path: string | null = element.getAttribute('data-i18n-placeholder');
+        if (path === null) {return;}
         const value = getByPath(i18nData, path);
         if (value !== undefined) {(element as HTMLInputElement).placeholder = value;}
     }

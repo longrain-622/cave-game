@@ -95,12 +95,12 @@ function drawAnimals(): void {
         const draw_y: number = player.screen_y + animal.y - player.y;
 
         if (!isOnScreen(draw_x, draw_y, animal.width, animal.height)) {
-            const offscreenParts: AnimalParts = animalPartsMap.get(animal);
+            const offscreenParts: AnimalParts | undefined = animalPartsMap.get(animal);
             if (offscreenParts) {offscreenParts.container.visible = false;}
             continue;
         }
 
-        let parts: AnimalParts = animalPartsMap.get(animal);
+        let parts: AnimalParts | undefined = animalPartsMap.get(animal);
         if (!parts) {
             parts = createAnimalParts(animal);
             animalPartsMap.set(animal, parts);

@@ -24,6 +24,7 @@ function putDoor(doorId: number): void {
 
     switch (doorId) {
         case idOfItem.oak_door: doorBlockId_b = idOfBlock.oak_door_bottom; doorBlockId_t = idOfBlock.oak_door_top; break;
+        default: doorBlockId_b = idOfBlock.oak_door_bottom; doorBlockId_t = idOfBlock.oak_door_top; break;
     }
 
     if (!isOutOfBounds(mouse.world_y - 1, mouse.world_x) && blockTypeAt(mouse.world_x, mouse.world_y - 1) === idOfBlock.air) {
