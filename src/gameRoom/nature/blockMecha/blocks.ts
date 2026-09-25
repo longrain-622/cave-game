@@ -104,7 +104,6 @@ export function canOver(id: number): boolean {
 
 export function canBehind(id: number): boolean { // 可以位于背景层的方块
     switch (id) {
-        case idOfBlock.stone_dark:
         case idOfBlock.crafting_table: case idOfBlock.chest: case idOfBlock.furnace:
         case idOfBlock.invicon_grass: case idOfBlock.cactus: case idOfBlock.deadBush:
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top: case idOfBlock.oak_door_top_open:

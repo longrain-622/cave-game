@@ -149,20 +149,35 @@ function getLight(lx: number, ly: number): number {
     return lightMap[ly][lx] ?? 0;
 }
 
-// 光照值 0-15 → 灰度 tint 的查找表（惰性构建，避免每帧重复计算）
+// 光照值 0-15 → 灰度 tint 的查找表
 let tintLUT: number[] | null = null;
+
+// 背景层整体压暗系数
+const bgLightDim: number = 0.6;
+let bgTintLUT: number[] | null = null;
+
+// dim 为整体压暗系数（前景为 1，背景层为 bgLightDim）
+function buildTintLUT(dim: number): number[] {
+    const lut: number[] = new Array(maxLight + 1);
+    for (let i = 0; i <= maxLight; i++) {
+        const level: number = Math.round((0.2 + 0.8 * i / maxLight) * 255 * dim);
+        lut[i] = level * 0x10000 + level * 0x100 + level;
+    }
+    return lut;
+}
 
 // 光照值 0-15 → 灰度 tint（0xRRGGBB）
 export function lightToTint(light: number): number {
-    if (!tintLUT) {
-        tintLUT = new Array(maxLight + 1);
-        for (let i = 0; i <= maxLight; i++) {
-            const level: number = Math.round((0.2 + 0.8 * i / maxLight) * 255);
-            tintLUT[i] = level * 0x10000 + level * 0x100 + level;
-        }
-    }
+    if (!tintLUT) {tintLUT = buildTintLUT(1);}
     const index: number = Math.max(0, Math.min(maxLight, Math.floor(light)));
     return tintLUT[index];
+}
+
+// 光照值 0-15 → 背景层灰度 tint（在前景 tint 基础上整体压暗）
+export function lightToBgTint(light: number): number {
+    if (!bgTintLUT) {bgTintLUT = buildTintLUT(bgLightDim);}
+    const index: number = Math.max(0, Math.min(maxLight, Math.floor(light)));
+    return bgTintLUT[index];
 }
 
 // 像素坐标 → 所在格的光照 tint
@@ -170,14 +185,18 @@ export function lightTintAt(x: number, y: number): number {
     return lightToTint(getLight(Math.floor(x / 64), Math.floor(y / 64)));
 }
 
+// 像素坐标 → 所在格的背景层光照 tint
+export function backgroundTintAt(x: number, y: number): number {
+    return lightToBgTint(getLight(Math.floor(x / 64), Math.floor(y / 64)));
+}
+
 // 每个对象上一次应用的 tint（WeakMap 键对象本身，对象销毁后自动回收）
 const tintCache: WeakMap<object, number> = new WeakMap();
 
 // 给 Sprite 或容器内所有 Sprite 设置灰度 tint
-// 光照值未变化时跳过赋值与子树遍历（脏值缓存）；
+// 光照值未变化时跳过赋值与子树遍历
 // 注意：容器缓存命中时会跳过子项，容器内的子 Sprite 不允许动态增删（本项目各容器子项固定）
-export function applyLightTint(target: PIXI.Sprite | PIXI.Container, x: number, y: number): void {
-    const tint: number = lightTintAt(x, y);
+function writeTint(target: PIXI.Sprite | PIXI.Container, tint: number): void {
     if (tintCache.get(target) === tint) {return;}
     tintCache.set(target, tint);
     if (target instanceof PIXI.Sprite) {
@@ -188,9 +207,18 @@ export function applyLightTint(target: PIXI.Sprite | PIXI.Container, x: number, 
         if (child instanceof PIXI.Sprite) {
             child.tint = tint;
         } else if (child instanceof PIXI.Container) {
-            applyLightTint(child, x, y);
+            writeTint(child, tint);
         }
     }
+}
+
+export function applyLightTint(target: PIXI.Sprite | PIXI.Container, x: number, y: number): void {
+    writeTint(target, lightTintAt(x, y));
+}
+
+// 背景层方块使用，比前景同位置更暗
+export function applyBackgroundLightTint(target: PIXI.Sprite | PIXI.Container, x: number, y: number): void {
+    writeTint(target, backgroundTintAt(x, y));
 }
 
 export { getLight, maxLight };

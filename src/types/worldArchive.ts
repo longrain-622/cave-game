@@ -56,7 +56,9 @@ interface WorldArchive {
     name: string;
     lastTime: string;
     world: number[][];
-    palette?: BlockState[]; // 调色板（世界格存的是其索引）；旧存档没有该字段，读档时按类型 id 迁移；旧存档的 behind 为布尔值，读档时统一转成 air
+    // 调色板（世界格存的是其索引）。旧存档没有该字段，读档时按类型 id 迁移；
+    // 旧存档的 behind 为布尔值，读档时统一转成 air；旧存档遗留的 underCave 字段已废弃，读档时忽略
+    palette?: BlockState[];
     lowest_point: number;
     left_number: number; // 左侧已生成的区块数，读档时用于保持噪声坐标与数组坐标对齐
     player: PlayerArchive;

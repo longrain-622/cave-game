@@ -1,6 +1,6 @@
 import { app, blockTextures } from "../rendering/rendering.js";
 import { player } from "../player.js";
-import { place_meeting, setWorldState, newBlockState } from "../world.js";
+import { place_meeting, setWorldState, stateWithType } from "../world.js";
 import { coverWhenSave, readingWorld } from "../gameState.js";
 import { idOfBlock } from "./blockMecha/blocks.js";
 import { eventBus } from "../others/eventBus.js";
@@ -67,7 +67,9 @@ function sand_fall(obj: EntityBlock, i: number, delta: number): number {
     obj.y += obj.vsp;
 
     if (place_meeting(obj.x + 32, obj.y + 64)) {
-        setWorldState({ x: Math.floor(obj.x / 64), y: Math.floor(obj.y / 64) }, newBlockState(idOfBlock.sand));
+        const landX: number = Math.floor(obj.x / 64);
+        const landY: number = Math.floor(obj.y / 64);
+        setWorldState({ x: landX, y: landY }, stateWithType(landX, landY, idOfBlock.sand));
 
         removeEntityBlockSprite(obj);
         entityBlock_array.splice(i, 1);

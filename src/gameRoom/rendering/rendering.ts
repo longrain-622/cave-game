@@ -1,12 +1,12 @@
 //rendering.ts
-import { isOutOfBounds, blockTypeAt } from '../world.js';
+import { isOutOfBounds, getBlockState, world, BlockState } from '../world.js';
 import { room } from '../../constants/generic.js';
 import { player } from '../player.js';
 import { initSkyBackground, initSkyContainer } from '../nature/sky.js';
 import { mouse } from '../mouse.js';
-import { idOfBlock } from '../nature/blockMecha/blocks.js';
+import { idOfBlock, canBehind } from '../nature/blockMecha/blocks.js';
 import { eventBus } from '../others/eventBus.js';
-import { applyLightTint } from './light.js';
+import { applyLightTint, applyBackgroundLightTint } from './light.js';
 
 import * as PIXI from 'pixi.js';
 import { apiMethod } from '../../apiox/method.js';
@@ -54,6 +54,8 @@ let tileSprites: PIXI.Sprite[] = [];
 let cursorSprite: PIXI.Graphics;
 let destroySprite: PIXI.Sprite;
 let destroyFrames: PIXI.Texture[] = [];
+let bgContainer: PIXI.Container;
+let bgSprites: PIXI.Sprite[] = [];
 
 // Assets.load 按 url 返回纹理，转成 alias 索引便于 initBlockTextures 使用
 function toAliasTextures(textures: Record<string, PIXI.Texture>): Record<string, PIXI.Texture> {
@@ -92,8 +94,11 @@ function initApp(): void {
 
 function initWorldLayer(): void {
     worldContainer = new PIXI.Container();
+    bgContainer = new PIXI.Container();
     app.stage.addChild(worldContainer);
+    app.stage.addChild(bgContainer);
     worldContainer.zIndex = 1;
+    bgContainer.zIndex = 0;
 
     // 预估最大可见方块数
     const maxTilesX: number = Math.ceil(room.width / 64) + 2;
@@ -108,6 +113,15 @@ function initWorldLayer(): void {
         sprite.visible = false;
         worldContainer.addChild(sprite);
         tileSprites.push(sprite);
+    }
+
+    for (let k: number = 0; k < maxVisibleTiles; k++) {
+        const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
+        sprite.width = 64;
+        sprite.height = 64;
+        sprite.visible = false;
+        bgContainer.addChild(sprite);
+        bgSprites.push(sprite);
     }
 }
 
@@ -148,12 +162,12 @@ export function genericTextStyle(fontSize: number=24): PIXI.TextStyle {
         fontFamily: 'Unifont', // 这里的名字必须与字体文件内部定义的名称一致
         fontSize: fontSize,
         fill: '#ffffff',
-        dropShadow: true, // 启用阴影
+        dropShadow: true,
         dropShadowColor: 0x000000,
         dropShadowAlpha: 0.8,
-        dropShadowBlur: 0, // 模糊程度
-        dropShadowDistance: 2, // 阴影偏移距离
-        dropShadowAngle: Math.PI / 4, // 阴影角度（45度向下）
+        dropShadowBlur: 0,
+        dropShadowDistance: 2,
+        dropShadowAngle: Math.PI / 4,
         padding: 10,
     });
 }
@@ -213,23 +227,27 @@ export function updateWorldPixi(): void {
 
     for (let k = 0; k < rowsToDraw; k++) {
         const worldRow: number = startRow + k;
+        const row: number[] = world[worldRow]; // 行越界时为空值，由 isOutOfBounds 拦截
         const draw_y: number = worldRow * 64 - player.y + player.screen_y;
 
-        // 行越界时，仍需消耗池中的 sprite（设为不可见）
         for (let i = 0; i < colsToDraw; i++) {
             const worldCol: number = startCol + i;
-            const draw_x: number = worldCol * 64 - player.x + player.screen_x;
             const sprite: PIXI.Sprite = tileSprites[index];
             if (!sprite) {break;}
+            const bgSprite: PIXI.Sprite = bgSprites[index];
 
-            if (isOutOfBounds(worldRow, worldCol) || isOutOfBounds(worldRow, 0)) {
+            // 越界时，仍需消耗池中的 sprite（两层都设为不可见）
+            if (isOutOfBounds(worldRow, worldCol)) {
                 sprite.visible = false;
+                bgSprite.visible = false;
                 index++;
                 continue;
             }
 
-            const blockType: number = blockTypeAt(worldCol, worldRow);
-            const texture: PIXI.Texture = blockTextures[blockType];
+            const draw_x: number = worldCol * 64 - player.x + player.screen_x;
+            const state: BlockState = getBlockState(row[worldCol]);
+
+            const texture: PIXI.Texture = blockTextures[state.type];
             if (texture) {
                 sprite.texture = texture;
                 sprite.position.set(draw_x, draw_y);
@@ -239,6 +257,21 @@ export function updateWorldPixi(): void {
                 sprite.visible = false;
             }
 
+            // 背景层：深色石用石头贴图渲染
+            if (state.behind !== idOfBlock.air && canBehind(state.behind)) {
+                const bgTexture: PIXI.Texture = blockTextures[state.behind === idOfBlock.stone_dark ? idOfBlock.stone : state.behind];
+                if (bgTexture) {
+                    bgSprite.texture = bgTexture;
+                    bgSprite.position.set(draw_x, draw_y);
+                    applyBackgroundLightTint(bgSprite, worldCol * 64, worldRow * 64);
+                    bgSprite.visible = true;
+                } else {
+                    bgSprite.visible = false;
+                }
+            } else {
+                bgSprite.visible = false;
+            }
+
             index++;
         }
     }
@@ -246,6 +279,7 @@ export function updateWorldPixi(): void {
     // 隐藏池中剩余的 sprite（实际不会超出 maxVisibleTiles，但为了安全）
     for (let i: number = index; i < tileSprites.length; i++) {
         tileSprites[i].visible = false;
+        bgSprites[i].visible = false;
     }
 }
 

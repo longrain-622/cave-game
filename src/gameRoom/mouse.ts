@@ -1,5 +1,5 @@
 import { player } from './player.js';
-import { setWorldState, isOutOfBounds, isBlockFold, newBlockState, blockTypeAt } from './world.js';
+import { setWorldState, isOutOfBounds, isBlockFold, newBlockState, blockTypeAt, blockStateAt, BlockState } from './world.js';
 import { distance, getRandomInt } from './const.js';
 import { room } from '../constants/generic.js';
 import { inventory, widgets } from './gui/gameGUI/inventory.js';
@@ -13,7 +13,7 @@ import { soundManager } from './others/soundManager.js';
 import { idOfItem, putDoor, useItem } from './dropped/items.js';
 import { door_openOrClose } from './nature/blockMecha/bmFunction.js';
 import { lowest_point } from './nature/createWorld.js';
-import { idOfBlock } from './nature/blockMecha/blocks.js';
+import { idOfBlock, canBehind } from './nature/blockMecha/blocks.js';
 import { breakChest } from './gui/gameGUI/blockGUI/chest.js';
 import { breakFurnace } from './gui/gameGUI/blockGUI/furnace.js';
 import './others/audioManager.js';
@@ -104,11 +104,9 @@ apioxEvent.onMouseUp(
             && taking.num >= 1
             && player.hp > 0
         ) {
-            if ((taking.item < 512 || taking.item === idOfItem.oak_door) && mouse.can_put) { // 放置
-                switch (taking.item) {
-                    case idOfItem.oak_door: putDoor(taking.item); break;
-                    default: setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(taking.item)); break;
-                }
+            if ((taking.item < 512 || taking.item === idOfItem.oak_door)
+                && putBlock(taking.item, event.shiftKey)
+            ) { // 放置（Shift 放进背景层）
                 taking.num -= 1;
                 inventory.items[widgets.select] = taking;
                 if (inventory.items[widgets.select].num <= 0) {
@@ -121,6 +119,26 @@ apioxEvent.onMouseUp(
         }
     }
 );
+
+function putBlock(item: number, behind: boolean): boolean {
+    if (!mouse.can_use || isOutOfBounds(mouse.world_y, mouse.world_x)) {return false;}
+    const state: BlockState = blockStateAt(mouse.world_x, mouse.world_y);
+
+    if (behind) {
+        // 前景是深色石时拒绝背景放置：它本身就是背景岩
+        if (item >= 512 || state.type === idOfBlock.stone_dark || state.behind !== idOfBlock.air || !canBehind(item)) {return false;}
+        setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(state.type, item));
+        return true;
+    }
+
+    if (!mouse.can_put) {return false;}
+    if (item === idOfItem.oak_door) {putDoor(item); return true;}
+
+    // 原本是深色石时把它存进背景层
+    const keep: number = state.type === idOfBlock.stone_dark ? idOfBlock.stone_dark : state.behind;
+    setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(item, keep));
+    return true;
+}
 
 // 处理特殊情况的挖掘
 function specialMouseBreak(mine_mousex: number, mine_mousey: number): void {
@@ -145,27 +163,31 @@ export function mouseAct(delta: number): void {
         mouse.can_put = false;
     }
 
+    // 前景无方块而背景有方块时挖背景，否则挖前景
+    const state: BlockState = blockStateAt(mouse.world_x, mouse.world_y);
+    const mineBehind: boolean = state.type === idOfBlock.air && state.behind !== idOfBlock.air;
+    const mineType: number = mineBehind ? state.behind : state.type;
+
     //鼠标挖方块计时器
     if (mouse.isDown &&
         mouse.downingButton === 0 &&
-        blockTypeAt(mouse.world_x, mouse.world_y) !== idOfBlock.air &&
+        mineType !== idOfBlock.air &&
         !isBlockFold({ x: mouse.world_x, y: mouse.world_y })
     ) {
         // 检查目标方块是否改变
         if (mouse.last_world_x !== mouse.world_x || mouse.last_world_y !== mouse.world_y
             || mouse.last_tool !== inventory.items[widgets.select].item
-            || mouse.last_targetBlock !== blockTypeAt(mouse.world_x, mouse.world_y)
+            || mouse.last_targetBlock !== mineType
         ) {
             mouse.timer = 0;
             mouse.destory = 0;
             mouse.last_world_x = mouse.world_x;
             mouse.last_world_y = mouse.world_y;
             mouse.last_tool = inventory.items[widgets.select].item;
-            mouse.last_targetBlock = blockTypeAt(mouse.world_x, mouse.world_y);
+            mouse.last_targetBlock = mineType;
 
             // 更新硬度
-            const blockId = blockTypeAt(mouse.world_x, mouse.world_y);
-            mouse.blockhardness = calculateHardness(blockId);
+            mouse.blockhardness = calculateHardness(mineType);
         }
 
         if (mouse.blockhardness !== -1) {
@@ -185,30 +207,36 @@ export function mouseAct(delta: number): void {
         && player.hp > 0
         && mouse.isDown
         && mouse.downingButton === 0
-        && blockTypeAt(mouse.world_x, mouse.world_y) !== -1
+        && mineType !== idOfBlock.air
         && mouse.blockhardness !== -1
     ) { // 挖掘
         if (!player.needRotateHand) {player.needRotateHand = true;}
-        if (getRandomInt(0, 16) === 1) {createParticles(blockTypeAt(mouse.world_x, mouse.world_y), mouse.world_x * 64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y * 64 - 8 + getRandomInt(0, 1) * 72);}
+        if (getRandomInt(0, 16) === 1) {createParticles(mineType, mouse.world_x * 64 - 8 + getRandomInt(0, 1) * 72, mouse.world_y * 64 - 8 + getRandomInt(0, 1) * 72);}
 
         if (mouse.destory > 9) {
             // 挖掘和掉落
             mouse.destory = 0;
             mouse.timer = 0;
             const mine_mousey: number = mouse.world_y, mine_mousex: number = mouse.world_x;
-            let targetBlock: number = blockTypeAt(mine_mousex, mine_mousey);
-            let dropBlock: number = lookDrops(targetBlock); // 决定掉落物类型
-            eventBus.emit('block:break', targetBlock);
+            const dropBlock: number = lookDrops(mineType); // 决定掉落物类型
+            eventBus.emit('block:break', mineType);
 
             // 管理粒子生成
             for (let a = 0; a < getRandomInt(16, 32); a++) {
-                createParticles(blockTypeAt(mine_mousex, mine_mousey), mine_mousex * 64 + getRandomInt(0, 64), mine_mousey * 64 + getRandomInt(0, 64));
+                createParticles(mineType, mine_mousex * 64 + getRandomInt(0, 64), mine_mousey * 64 + getRandomInt(0, 64));
             }
 
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); // 生成掉落物
             specialMouseBreak(mine_mousex, mine_mousey);
-            if (mine_mousey > lowest_point) {targetBlock = idOfBlock.stone_dark;} else {targetBlock = idOfBlock.air;}
-            setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(targetBlock));
+
+            if (mineBehind) { // 挖的是背景：只清掉 behind，前景保持原样
+                setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(state.type));
+            } else if (state.behind === idOfBlock.stone_dark) { // 挖掉后露出深色石
+                setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(idOfBlock.stone_dark));
+            } else {
+                const leftBlock: number = mine_mousey > lowest_point ? idOfBlock.stone_dark : idOfBlock.air;
+                setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(leftBlock, state.behind));
+            }
         }
     }
 }

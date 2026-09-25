@@ -32,13 +32,11 @@ export interface BlockPos {
 export interface BlockState {
     type: number;
     behind: number; // 背后方块的类型 id，air 表示无背景
-    underCave: boolean;
 }
 export function newBlockState(type: number, behind: number = idOfBlock.air): BlockState {
     return {
         type: type,
         behind: behind,
-        underCave: false,
     };
 }
 
@@ -97,6 +95,20 @@ export function blockTypeAt(x: number, y: number): number {
     return getBlockState(world[y][x]).type;
 }
 
+// 越界处按空气处理（只读常量，调用方不得修改）
+const airState: BlockState = newBlockState(idOfBlock.air);
+
+// 读取 (x, y) 处的完整方块状态（越界返回空气状态）
+export function blockStateAt(x: number, y: number): BlockState {
+    if (isOutOfBounds(y, x)) {return airState;}
+    return getBlockState(world[y][x]);
+}
+
+// 只替换 type、保留原 behind 的新状态：改变方块类型时统一用它，避免背景被清掉
+export function stateWithType(x: number, y: number, type: number): BlockState {
+    return newBlockState(type, blockStateAt(x, y).behind);
+}
+
 export function isOutOfBounds(row: number, col: number): boolean { // y, x
     if (row < 0 || row >= world_height) {return true;}
     const rowLen: number = world[row]?.length ?? 0;
@@ -128,7 +140,6 @@ export const paletteMap = new Map<number, number>(); // 状态编码 - 索引
 // behind 存方块 id 会有负值，先加 offset 抬到非负区间，否则符号位会串进高位字段
 const stateFields: { key: Exclude<keyof BlockState, 'type'>; bits: number; offset: number }[] = [
     { key: 'behind', bits: 8, offset: 128 }, // 背景方块 id，8 位可表示 -128 ~ 127
-    { key: 'underCave', bits: 1, offset: 0 },
 ];
 
 function keyOf(state: BlockState): number {
