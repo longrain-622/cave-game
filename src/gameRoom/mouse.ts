@@ -125,7 +125,6 @@ function putBlock(item: number, behind: boolean): boolean {
     const state: BlockState = blockStateAt(mouse.world_x, mouse.world_y);
 
     if (behind) {
-        // 前景是深色石时拒绝背景放置：它本身就是背景岩
         if (item >= 512 || state.type === idOfBlock.stone_dark || state.behind !== idOfBlock.air || !canBehind(item)) {return false;}
         setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(state.type, item));
         return true;
@@ -134,7 +133,6 @@ function putBlock(item: number, behind: boolean): boolean {
     if (!mouse.can_put) {return false;}
     if (item === idOfItem.oak_door) {putDoor(item); return true;}
 
-    // 原本是深色石时把它存进背景层
     const keep: number = state.type === idOfBlock.stone_dark ? idOfBlock.stone_dark : state.behind;
     setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(item, keep));
     return true;
@@ -163,7 +161,6 @@ export function mouseAct(delta: number): void {
         mouse.can_put = false;
     }
 
-    // 前景无方块而背景有方块时挖背景，否则挖前景
     const state: BlockState = blockStateAt(mouse.world_x, mouse.world_y);
     const mineBehind: boolean = state.type === idOfBlock.air && state.behind !== idOfBlock.air;
     const mineType: number = mineBehind ? state.behind : state.type;
@@ -229,9 +226,9 @@ export function mouseAct(delta: number): void {
             createDrop(dropBlock, mine_mousex * 64, mine_mousey * 64); // 生成掉落物
             specialMouseBreak(mine_mousex, mine_mousey);
 
-            if (mineBehind) { // 挖的是背景：只清掉 behind，前景保持原样
+            if (mineBehind) { // 挖背景
                 setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(state.type));
-            } else if (state.behind === idOfBlock.stone_dark) { // 挖掉后露出深色石
+            } else if (state.behind === idOfBlock.stone_dark) {
                 setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(idOfBlock.stone_dark));
             } else {
                 const leftBlock: number = mine_mousey > lowest_point ? idOfBlock.stone_dark : idOfBlock.air;

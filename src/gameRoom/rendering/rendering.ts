@@ -257,7 +257,7 @@ export function updateWorldPixi(): void {
                 sprite.visible = false;
             }
 
-            // 背景层：深色石用石头贴图渲染
+            // 背景层深色石用石头贴图
             if (state.behind !== idOfBlock.air && canBehind(state.behind)) {
                 const bgTexture: PIXI.Texture = blockTextures[state.behind === idOfBlock.stone_dark ? idOfBlock.stone : state.behind];
                 if (bgTexture) {
