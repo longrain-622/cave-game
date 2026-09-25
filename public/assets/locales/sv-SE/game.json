@@ -1,0 +1,15 @@
+{
+  "dead": {
+    "title": "Du misslyckades!",
+    "restart": "Återuppstå",
+    "back": "Titelskärm"
+  },
+  "gameContent": {
+    "title": "Spelmeny",
+    "backToGame": "Tillbaka till spelet",
+    "exitToContent": "Spara och återvänd till titelskärmen"
+  },
+  "exitingPage": {
+    "savingText": "Sparar världen"
+  }
+}

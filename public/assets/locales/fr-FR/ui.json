@@ -1,0 +1,57 @@
+{
+  "app": {
+    "iconText": "CaveGame"
+  },
+  "menu": {
+    "start": "Commencer",
+    "download": "Télécharger",
+    "setting": "Paramètres",
+    "view": "Admirer"
+  },
+  "home": {
+    "title": "À lire avant de jouer",
+    "notice1": "« CaveGame » est une œuvre de fan en 2D de « Minecraft », réalisée par l'équipe de développement Sinuxu. Le jeu est open source et gratuit, sans but lucratif, et ne comporte aucun système de monnaie virtuelle. Il vise à offrir aux joueurs une expérience de création et d'exploration pure et libre.",
+    "notice2": "Nous sommes une équipe de passionnés réunie par amour du jeu, et le studio est actuellement à but non lucratif. Tous les membres y participent par passion pour le développement de jeux. Pour faire perdurer cette passion, nous invitons sincèrement les personnes partageant les mêmes idées à rejoindre Sinuxu — que vous soyez doué en programmation, en art, en conception, ou simplement curieux et motivé par le développement de jeux, tant que vous adhérez à l'idée de « créer par passion », n'hésitez pas à nous contacter pour grandir et prendre du plaisir ensemble dans la création.",
+    "notice3": "Pour des raisons de sécurité, les navigateurs imposent des restrictions strictes au chargement des modules ES6 via le protocole file://, ce qui peut empêcher le jeu de fonctionner.",
+    "clickToStart": "- Cliquez sur un espace vide pour commencer -"
+  },
+  "starting": {
+    "pressEnter": "- Appuyez sur [Entrée] pour créer un monde -"
+  },
+  "featureUnavailable": {
+    "title": "Cette fonctionnalité n'est pas disponible !"
+  },
+  "setting": {
+    "header": "Paramètres",
+    "mobile": "Paramètres mobiles",
+    "touchKeys": "Boutons tactiles",
+    "rotateScreen": "Rotation de l'écran en jeu",
+    "language": "Langue de l'interface"
+  },
+  "editWorld": {
+    "title": "Choisir un monde",
+    "btn_getin": "Entrer dans le monde sélectionné",
+    "btn_createone": "Créer un nouveau monde",
+    "btn_delete": "Supprimer",
+    "btn_quit": "Annuler"
+  },
+  "worldCreation": {
+    "title": "Créer un nouveau monde",
+    "worldNamePlaceholder": "Nouveau monde",
+    "gameDifficulty0": "Difficulté : Paisible",
+    "gameDifficulty1": "Difficulté : Facile",
+    "gameDifficulty2": "Difficulté : Normale",
+    "gameDifficulty3": "Difficulté : Difficile",
+    "createButton": "Créer un nouveau monde",
+    "cancelButton": "Annuler"
+  },
+  "loadPage": {
+    "text": "Chargement",
+    "ok": "Prêt"
+  },
+  "toast": {
+    "text1": "Confirmer la rotation de l'écran au lancement du jeu ?\n(Spécialement pour les utilisateurs mobiles)",
+    "cancel": "Annuler",
+    "sure": "Confirmer"
+  }
+}

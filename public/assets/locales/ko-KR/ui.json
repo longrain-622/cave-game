@@ -1,0 +1,57 @@
+{
+  "app": {
+    "iconText": "CaveGame"
+  },
+  "menu": {
+    "start": "시작",
+    "download": "다운로드",
+    "setting": "설정",
+    "view": "감상"
+  },
+  "home": {
+    "title": "플레이 전 필독",
+    "notice1": "《CaveGame》은 개발팀 Sinuxu가 제작한 2D 버전 《마인크래프트》 팬작품입니다. 게임은 오픈 소스, 무료 원칙을 따르며 어떠한 수익 활동도 하지 않고 가상 화폐 시스템도 없습니다. 플레이어에게 순수하고 자유로운 창작과 탐험 경험을 제공하는 데 힘쓰고 있습니다.",
+    "notice2": "우리는 열정으로 모인 관심 팀이며, 스튜디오는 현재 비영리 성격으로 운영되고 있습니다. 모든 구성원은 게임 개발에 대한 열정으로 참여하고 있습니다. 이 열정이 계속 이어질 수 있도록, 뜻이 맞는 분들의 Sinuxu 참여를 진심으로 환영합니다. 프로그램, 아트, 기획을 잘하거나 게임 개발에 호기심과 의욕이 넘치는 분이라면, ‘사랑으로 활동한다’는 이념에 공감하는 누구든 저희에게 연락해 주세요. 함께 창작 속에서 성장과 즐거움을 얻어요.",
+    "notice3": "브라우저는 보안상의 이유로 file:// 프로토콜에서의 ES6 모듈 로딩을 엄격히 제한하며, 이로 인해 게임이 실행되지 않을 수 있습니다.",
+    "clickToStart": "- 빈 곳을 클릭하면 시작할 수 있습니다 -"
+  },
+  "starting": {
+    "pressEnter": "- [Enter]를 눌러 세계를 생성하세요 -"
+  },
+  "featureUnavailable": {
+    "title": "이 기능은 아직 사용할 수 없습니다!"
+  },
+  "setting": {
+    "header": "설정",
+    "mobile": "모바일 설정",
+    "touchKeys": "터치 키",
+    "rotateScreen": "게임 중 화면 회전",
+    "language": "인터페이스 언어"
+  },
+  "editWorld": {
+    "title": "세계 선택",
+    "btn_getin": "선택한 세계에 들어가기",
+    "btn_createone": "새 세계 만들기",
+    "btn_delete": "삭제",
+    "btn_quit": "취소"
+  },
+  "worldCreation": {
+    "title": "새 세계 만들기",
+    "worldNamePlaceholder": "새로운 세계",
+    "gameDifficulty0": "게임 난이도: 평화로움",
+    "gameDifficulty1": "게임 난이도: 쉬움",
+    "gameDifficulty2": "게임 난이도: 보통",
+    "gameDifficulty3": "게임 난이도: 어려움",
+    "createButton": "새 세계 만들기",
+    "cancelButton": "취소"
+  },
+  "loadPage": {
+    "text": "로딩 중",
+    "ok": "준비 완료"
+  },
+  "toast": {
+    "text1": "게임 시작 시 화면을 회전하시겠습니까?\n(모바일 사용자를 위해 준비됨)",
+    "cancel": "취소",
+    "sure": "확인"
+  }
+}

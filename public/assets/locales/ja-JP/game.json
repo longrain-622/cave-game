@@ -1,0 +1,15 @@
+{
+  "dead": {
+    "title": "失敗しました！",
+    "restart": "リスポーン",
+    "back": "タイトル画面"
+  },
+  "gameContent": {
+    "title": "ゲームメニュー",
+    "backToGame": "ゲームに戻る",
+    "exitToContent": "保存してタイトル画面に戻る"
+  },
+  "exitingPage": {
+    "savingText": "ワールドを保存中"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "app": {
+    "iconText": "CaveGame"
+  },
+  "menu": {
+    "start": "Start",
+    "download": "Herunterladen",
+    "setting": "Einstellungen",
+    "view": "Ansehen"
+  },
+  "home": {
+    "title": "Vor dem Spielen unbedingt lesen",
+    "notice1": "„CaveGame“ ist ein 2D-Fanwerk zu „Minecraft“, entwickelt vom Team Sinuxu. Das Spiel ist Open Source und kostenlos, verfolgt keine kommerziellen Absichten und enthält kein virtuelles Währungssystem. Es möchte Spielern ein reines, freies Erlebnis zum Bauen und Erkunden bieten.",
+    "notice2": "Wir sind ein aus Leidenschaft entstandenes Hobby-Team. Das Studio ist derzeit gemeinnützig, und alle Mitglieder beteiligen sich aus Begeisterung für Spieleentwicklung. Um diese Leidenschaft am Leben zu halten, laden wir Gleichgesinnte herzlich ein, Sinuxu beizutreten – egal, ob du gut in Programmierung, Kunst, Design oder einfach neugierig auf Spieleentwicklung bist. Solange du die Idee „für die Liebe“ teilst, bist du willkommen, mit uns zu wachsen und Freude am Schaffen zu haben.",
+    "notice3": "Browser beschränken aus Sicherheitsgründen das Laden von ES6-Modulen unter dem file://-Protokoll stark, wodurch das Spiel möglicherweise nicht ausgeführt werden kann.",
+    "clickToStart": "- Klicke auf eine leere Stelle, um zu starten -"
+  },
+  "starting": {
+    "pressEnter": "- Drücke [Enter], um die Welt zu erstellen -"
+  },
+  "featureUnavailable": {
+    "title": "Diese Funktion ist nicht verfügbar!"
+  },
+  "setting": {
+    "header": "Einstellungen",
+    "mobile": "Mobile Einstellungen",
+    "touchKeys": "Touch-Tasten",
+    "rotateScreen": "Bildschirm während des Spiels drehen",
+    "language": "Sprache der Oberfläche"
+  },
+  "editWorld": {
+    "title": "Welt auswählen",
+    "btn_getin": "Ausgewählte Welt betreten",
+    "btn_createone": "Neue Welt erstellen",
+    "btn_delete": "Löschen",
+    "btn_quit": "Abbrechen"
+  },
+  "worldCreation": {
+    "title": "Neue Welt erstellen",
+    "worldNamePlaceholder": "Neue Welt",
+    "gameDifficulty0": "Schwierigkeitsgrad: Friedlich",
+    "gameDifficulty1": "Schwierigkeitsgrad: Einfach",
+    "gameDifficulty2": "Schwierigkeitsgrad: Normal",
+    "gameDifficulty3": "Schwierigkeitsgrad: Schwer",
+    "createButton": "Neue Welt erstellen",
+    "cancelButton": "Abbrechen"
+  },
+  "loadPage": {
+    "text": "Lädt",
+    "ok": "Bereit"
+  },
+  "toast": {
+    "text1": "Bildschirmrotation beim Starten des Spiels bestätigen?\n(für mobile Nutzer gedacht)",
+    "cancel": "Abbrechen",
+    "sure": "OK"
+  }
+}

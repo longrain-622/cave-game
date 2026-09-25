@@ -1,0 +1,57 @@
+{
+  "app": {
+    "iconText": "CaveGame"
+  },
+  "menu": {
+    "start": "開始",
+    "download": "下載",
+    "setting": "設定",
+    "view": "欣賞"
+  },
+  "home": {
+    "title": "遊玩前必看",
+    "notice1": "《CaveGame》是一款由開發團隊 Sinuxu 製作的2D版《Minecraft》同人作品，遊戲秉持開源、免費的原則，不涉及任何盈利行為，也未設置虛擬貨幣系統，致力於為玩家提供純粹、自由的創造與探索體驗。",
+    "notice2": "我們是一支因熱愛而聚集的興趣團隊，工作室目前為非盈利性質，所有成員均基於對遊戲開發的熱情參與其中。為了讓這份熱愛延續下去，我們誠摯邀請志同道合的小夥伴加入 Sinuxu ——無論你是擅長程式、美術、策劃，還是對遊戲開發充滿好奇與幹勁，只要認同「為愛發電」的理念，都歡迎與我們聯繫，一起在創作中收穫成長與樂趣。",
+    "notice3": "瀏覽器出於安全考量，對 file:// 協定下的 ES6 模組載入有嚴格限制，可能會導致遊戲無法執行。",
+    "clickToStart": "- 點擊空白處可以開始 -"
+  },
+  "starting": {
+    "pressEnter": "- 按 [Enter] 建立世界吧 -"
+  },
+  "featureUnavailable": {
+    "title": "此功能未開放！"
+  },
+  "setting": {
+    "header": "設定",
+    "mobile": "行動裝置設定",
+    "touchKeys": "觸控按鍵",
+    "rotateScreen": "遊戲時旋轉螢幕",
+    "language": "介面語言"
+  },
+  "editWorld": {
+    "title": "選擇世界",
+    "btn_getin": "進入選取的世界",
+    "btn_createone": "建立新的世界",
+    "btn_delete": "刪除",
+    "btn_quit": "取消"
+  },
+  "worldCreation": {
+    "title": "建立新的世界",
+    "worldNamePlaceholder": "新的世界",
+    "gameDifficulty0": "遊戲難度：和平",
+    "gameDifficulty1": "遊戲難度：簡單",
+    "gameDifficulty2": "遊戲難度：普通",
+    "gameDifficulty3": "遊戲難度：困難",
+    "createButton": "建立新的世界",
+    "cancelButton": "取消"
+  },
+  "loadPage": {
+    "text": "載入中",
+    "ok": "準備就緒"
+  },
+  "toast": {
+    "text1": "確認開啟遊戲時旋轉螢幕？\n(專門為行動裝置使用者準備)",
+    "cancel": "取消",
+    "sure": "確定"
+  }
+}

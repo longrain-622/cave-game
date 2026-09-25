@@ -1,0 +1,15 @@
+{
+  "dead": {
+    "title": "Ты проиграл!",
+    "restart": "Возродиться",
+    "back": "Главное меню"
+  },
+  "gameContent": {
+    "title": "Игровое меню",
+    "backToGame": "Вернуться в игру",
+    "exitToContent": "Сохранить и выйти в главное меню"
+  },
+  "exitingPage": {
+    "savingText": "Сохранение мира"
+  }
+}

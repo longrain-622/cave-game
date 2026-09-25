@@ -1,0 +1,15 @@
+{
+  "dead": {
+    "title": "Du bist gescheitert!",
+    "restart": "Wiederbeleben",
+    "back": "Titelbildschirm"
+  },
+  "gameContent": {
+    "title": "Spielmenü",
+    "backToGame": "Zurück zum Spiel",
+    "exitToContent": "Speichern und zum Titelbildschirm zurückkehren"
+  },
+  "exitingPage": {
+    "savingText": "Welt wird gespeichert"
+  }
+}

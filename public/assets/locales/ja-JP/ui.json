@@ -1,0 +1,57 @@
+{
+  "app": {
+    "iconText": "CaveGame"
+  },
+  "menu": {
+    "start": "開始",
+    "download": "ダウンロード",
+    "setting": "設定",
+    "view": "鑑賞"
+  },
+  "home": {
+    "title": "プレイ前に必ず読んでください",
+    "notice1": "『CaveGame』は開発チーム Sinuxu が制作した2D版『Minecraft』のファン作品です。ゲームはオープンソース・無料の原則を掲げ、いかなる営利行為も行わず、仮想通貨システムも設けていません。プレイヤーに純粋で自由な創造と探索の体験を提供することを目指しています。",
+    "notice2": "私たちは熱意によって集まった趣味のチームで、スタジオは現在非営利です。メンバー全員がゲーム開発への情熱で参加しています。この熱意を続けていくために、志を同じくする仲間を Sinuxu に心から招待します——プログラム、アート、企画が得意な人も、ゲーム開発に好奇心とやる気がある人も、「愛のためのボランティア」という理念に共感するなら、ぜひ連絡してください。創作の中で成長と楽しさを得ましょう。",
+    "notice3": "ブラウザはセキュリティ上の理由から、file:// プロトコルでの ES6 モジュール読み込みを厳しく制限しています。そのためゲームが動作しない可能性があります。",
+    "clickToStart": "- 空白をクリックして開始 -"
+  },
+  "starting": {
+    "pressEnter": "- [Enter] を押して世界を作成 -"
+  },
+  "featureUnavailable": {
+    "title": "この機能は未開放です！"
+  },
+  "setting": {
+    "header": "設定",
+    "mobile": "モバイル設定",
+    "touchKeys": "タッチキー",
+    "rotateScreen": "ゲーム中に画面を回転",
+    "language": "表示言語"
+  },
+  "editWorld": {
+    "title": "ワールドを選択",
+    "btn_getin": "選択したワールドに入る",
+    "btn_createone": "新しいワールドを作成",
+    "btn_delete": "削除",
+    "btn_quit": "キャンセル"
+  },
+  "worldCreation": {
+    "title": "新しいワールドを作成",
+    "worldNamePlaceholder": "新しいワールド",
+    "gameDifficulty0": "ゲーム難易度：ピースフル",
+    "gameDifficulty1": "ゲーム難易度：イージー",
+    "gameDifficulty2": "ゲーム難易度：ノーマル",
+    "gameDifficulty3": "ゲーム難易度：ハード",
+    "createButton": "新しいワールドを作成",
+    "cancelButton": "キャンセル"
+  },
+  "loadPage": {
+    "text": "読み込み中",
+    "ok": "準備完了"
+  },
+  "toast": {
+    "text1": "ゲーム開始時に画面を回転しますか？\n(モバイルユーザー向け)",
+    "cancel": "キャンセル",
+    "sure": "確定"
+  }
+}

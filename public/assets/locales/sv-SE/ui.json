@@ -1,0 +1,57 @@
+{
+  "app": {
+    "iconText": "CaveGame"
+  },
+  "menu": {
+    "start": "Starta",
+    "download": "Ladda ner",
+    "setting": "Inställningar",
+    "view": "Beundra"
+  },
+  "home": {
+    "title": "Måste läsas innan du spelar",
+    "notice1": "CaveGame är ett 2D-fanverk av Minecraft skapat av utvecklingsteamet Sinuxu. Spelet är öppen källkod och gratis, involverar ingen vinstverksamhet och har inget virtuellt valutasystem. Det strävar efter att ge spelare en ren och fri upplevelse av skapande och utforskning.",
+    "notice2": "Vi är ett hobbyteam som har samlats av kärlek till spel. Studion är för närvarande ideell och alla medlemmar deltar utifrån sin passion för spelutveckling. För att låta denna kärlek fortsätta bjuder vi varmt in likasinnade att gå med i Sinuxu – oavsett om du är bra på programmering, konst, design eller bara är nyfiken och ivrig att lära dig spelutveckling, är du välkommen att kontakta oss så länge du delar idén om att skapa för kärlekens skull. Tillsammans kan vi växa och ha roligt i skapandet.",
+    "notice3": "Webbläsare har av säkerhetsskäl strikta begränsningar för ES6-modulladdning under file://-protokollet, vilket kan göra att spelet inte kan köras.",
+    "clickToStart": "- Klicka på tom yta för att börja -"
+  },
+  "starting": {
+    "pressEnter": "- Tryck [Enter] för att skapa världen -"
+  },
+  "featureUnavailable": {
+    "title": "Den här funktionen är inte tillgänglig än!"
+  },
+  "setting": {
+    "header": "Inställningar",
+    "mobile": "Mobila inställningar",
+    "touchKeys": "Pekskärmsknappar",
+    "rotateScreen": "Rotera skärmen under spel",
+    "language": "Gränssnittsspråk"
+  },
+  "editWorld": {
+    "title": "Välj värld",
+    "btn_getin": "Gå in i vald värld",
+    "btn_createone": "Skapa ny värld",
+    "btn_delete": "Ta bort",
+    "btn_quit": "Avbryt"
+  },
+  "worldCreation": {
+    "title": "Skapa ny värld",
+    "worldNamePlaceholder": "Ny värld",
+    "gameDifficulty0": "Spelsvårighet: Fredlig",
+    "gameDifficulty1": "Spelsvårighet: Lätt",
+    "gameDifficulty2": "Spelsvårighet: Normal",
+    "gameDifficulty3": "Spelsvårighet: Svår",
+    "createButton": "Skapa ny värld",
+    "cancelButton": "Avbryt"
+  },
+  "loadPage": {
+    "text": "Laddar",
+    "ok": "Redo"
+  },
+  "toast": {
+    "text1": "Bekräfta att skärmen ska roteras när spelet startar?\n(särskilt för mobilanvändare)",
+    "cancel": "Avbryt",
+    "sure": "OK"
+  }
+}

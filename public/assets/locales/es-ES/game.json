@@ -1,0 +1,15 @@
+{
+  "dead": {
+    "title": "¡Has fallado!",
+    "restart": "Reaparecer",
+    "back": "Pantalla de título"
+  },
+  "gameContent": {
+    "title": "Menú del juego",
+    "backToGame": "Volver al juego",
+    "exitToContent": "Guardar y volver a la pantalla de título"
+  },
+  "exitingPage": {
+    "savingText": "Guardando mundo..."
+  }
+}
