@@ -10,14 +10,40 @@
     align-items: center;
 }
 
+/*
 #logoText {
     font-weight: 900;
     font-size: 6rem;
     letter-spacing: 0.05em;
-    margin: 0; /* 清除默认边距 */
+    margin: 0;
 }
-/* 颜色分组 */
 #logoText .red-part { color: #E85D5D; }
 #logoText .blue-part { color: #4A9AE6; }
 #logoText .green-part { color: #5CB87A; }
 #logoText .yellow-part { color: #E8C94A; }
+*/
+
+#logoImage {
+    /* 源图 sinuxu_logo.png 为 64×64，内含 4 个 31×9 的变体，依次位于 y = 0 / 9 / 18 / 27 */
+    --imageW: 64; /*源图宽度（源图像素）*/
+    --cropX: 0; /*裁切区左上角 x*/
+    --cropY: 9; /*裁切区左上角 y*/
+    --cropW: 31; /*裁切区宽度*/
+    --cropH: 9; /*裁切区高度*/
+
+    width: 40%; /*全屏宽度的 40%*/
+    aspect-ratio: var(--cropW) / var(--cropH);
+    overflow: hidden; /*超出裁切区的部分不显示*/
+    flex: none;
+}
+
+#logoImage img {
+    image-rendering: pixelated;
+    display: block;
+    /* 整张源图放大到「1 源图像素 = 容器宽度 / cropW」*/
+    width: calc(100% * var(--imageW) / var(--cropW));
+    height: auto;
+    /* 百分比外边距一律按容器宽度解析，因此横向偏移与纵向偏移保持像素正方 */
+    margin-left: calc(-1 * var(--cropX) * 100% / var(--cropW));
+    margin-top: calc(-1 * var(--cropY) * 100% / var(--cropW));
+}
