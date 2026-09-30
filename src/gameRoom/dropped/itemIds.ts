@@ -8,6 +8,7 @@ enum idOfItem {
     wooden_sword, stone_sword, iron_sword,
     wooden_axe, stone_axe, iron_axe,
     wooden_shovel, stone_shovel, iron_shovel,
+    torch,
 }
 
 // 物品贴图资源表
@@ -34,6 +35,7 @@ const itemAssets: Record<string, string> = {
     iron_sword: '/assets/images/games/items/iron_sword.png',
     iron_axe: '/assets/images/games/items/iron_axe.png',
     iron_shovel: '/assets/images/games/items/iron_shovel.png',
+    torch: '/assets/images/games/items/torch.png',
 };
 
 const itemTextures: Record<number | string, PIXI.Texture> = {};
@@ -82,6 +84,7 @@ function initItemTextures(textures: Record<string, PIXI.Texture>): void {
     itemTextures[idOfItem.iron_sword] = textures['iron_sword'];
     itemTextures[idOfItem.iron_axe] = textures['iron_axe'];
     itemTextures[idOfItem.iron_shovel] = textures['iron_shovel'];
+    itemTextures[idOfItem.torch] = textures['torch'];
 }
 
 function isTool(id: number): boolean {

@@ -32,11 +32,13 @@ export interface BlockPos {
 export interface BlockState {
     type: number;
     behind: number; // 背后方块的类型 id，air 表示无背景
+    direction: number; // 方向 0左或默认 1右
 }
-export function newBlockState(type: number, behind: number = idOfBlock.air): BlockState {
+export function newBlockState(type: number, behind: number = idOfBlock.air, direction: number = 0): BlockState {
     return {
         type: type,
         behind: behind,
+        direction: direction,
     };
 }
 
@@ -104,9 +106,11 @@ export function blockStateAt(x: number, y: number): BlockState {
     return getBlockState(world[y][x]);
 }
 
-// 只替换 type、保留原 behind 的新状态：改变方块类型时统一用它，避免背景被清掉
+// 只替换 type 的新状态 改变方块类型时统一用它
 export function stateWithType(x: number, y: number, type: number): BlockState {
-    return newBlockState(type, blockStateAt(x, y).behind);
+    const old: BlockState = blockStateAt(x, y);
+    const newState: BlockState = newBlockState(type, old.behind, old.direction);
+    return newState;
 }
 
 export function isOutOfBounds(row: number, col: number): boolean { // y, x
@@ -136,20 +140,25 @@ export function pushChunkToWorld(chunkArray: number[][], behind: boolean): void 
 export const palette: BlockState[] = []; // 状态实例数组，数组下标即索引
 export const paletteMap = new Map<number, number>(); // 状态编码 - 索引
 
-// 状态字段的位定义按声明顺序从低位占用
-// behind 存方块 id 会有负值，先加 offset 抬到非负区间，否则符号位会串进高位字段
-const stateFields: { key: Exclude<keyof BlockState, 'type'>; bits: number; offset: number }[] = [
-    { key: 'behind', bits: 8, offset: 128 }, // 背景方块 id，8 位可表示 -128 ~ 127
-];
+// type 之外的字段一律登记在此，位定义按声明顺序从低位占用
+// 用 Record 约束键集合：给 BlockState 加字段却忘了登记时，这一行会编译报错，不会静默丢掉字段
+type StateFieldKey = Exclude<keyof BlockState, 'type'>;
+const stateFields: Record<StateFieldKey, { bits: number; offset: number }> = {
+    // behind 存方块 id 会有负值，先加 offset 抬到非负区间，否则符号位会串进高位字段
+    behind: { bits: 8, offset: 128 }, // 背景方块 id，8 位可表示 -128 ~ 127
+    direction: { bits: 1, offset: 0 }, // 朝向 0 左 1 右
+};
 
 function keyOf(state: BlockState): number {
+    const names: StateFieldKey[] = Object.keys(stateFields) as StateFieldKey[];
     let fieldBits: number = 0;
-    for (const field of stateFields) { fieldBits += field.bits; }
+    for (const name of names) { fieldBits += stateFields[name].bits; }
     let key: number = state.type << fieldBits;
     let shift: number = 0;
-    for (const field of stateFields) {
+    for (const name of names) {
+        const field: { bits: number; offset: number } = stateFields[name];
         // 掩码让越界值只在自身字段内回绕，不会污染 type 与相邻字段
-        const value: number = (Number(state[field.key]) + field.offset) & ((1 << field.bits) - 1);
+        const value: number = (Number(state[name]) + field.offset) & ((1 << field.bits) - 1);
         key |= value << shift;
         shift += field.bits;
     }
@@ -177,7 +186,7 @@ export function getBlockState(index: number): BlockState {
     return palette[index];
 }
 
-// 旧档的 behind 是布尔值（false = 无背景），统一转成背景方块 id（air 即无背景）
+// 旧档的 behind 是布尔值，统一转成背景方块 id
 function normalizeBehind(val: number | boolean): number {
     return typeof val === 'boolean' ? idOfBlock.air : val;
 }

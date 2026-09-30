@@ -209,6 +209,16 @@ const recipes: RecipeShape[] = [
         gridWidth: 1,
         gridHeight: 3
     },
+    { // 火把
+        cells: [
+            [{ itemId: idOfItem.coal, amount: 1 }],
+            [{ itemId: idOfItem.stick, amount: 1 }],
+        ],
+        outputId: idOfItem.torch,
+        outputCount: 4,
+        gridWidth: 1,
+        gridHeight: 2
+    },
 ];
 
 export { RecipeShape, recipes };
