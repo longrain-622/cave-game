@@ -1,4 +1,5 @@
 export enum idOfBlock {
+    torch = -11,
     fire = -10,
     chest = -9,
     stone_dark = -8,
@@ -73,6 +74,7 @@ const block = {
     granite: newBlock(idOfBlock.granite, hardness.stone),
     bedrock: newBlock(idOfBlock.bedrock, hardness.no),
     fire: newBlock(idOfBlock.fire, hardness.no),
+    torch: newBlock(idOfBlock.torch, 0),
 };
 
 export const blocksArray: Blocks[] = [
@@ -83,7 +85,7 @@ export const blocksArray: Blocks[] = [
     block.stone_dark, block.chest, block.furnace,
     block.glass,
     block.andesite, block.diorite, block.granite,
-    block.bedrock, block.fire,
+    block.bedrock, block.fire, block.torch,
 ];
 
 export function isAlphaBlock(id: number): boolean {
@@ -92,6 +94,7 @@ export function isAlphaBlock(id: number): boolean {
         case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
         case idOfBlock.deadBush: case idOfBlock.cactus: case idOfBlock.invicon_grass:
         case idOfBlock.air: case idOfBlock.leaves: case idOfBlock.glass:
+        case idOfBlock.torch:
             return true;
         default: return false;
     }
@@ -107,8 +110,17 @@ export function canBehind(id: number): boolean { // 可以位于背景层的方�
         case idOfBlock.crafting_table: case idOfBlock.chest: case idOfBlock.furnace:
         case idOfBlock.invicon_grass: case idOfBlock.cactus: case idOfBlock.deadBush:
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top: case idOfBlock.oak_door_top_open:
+        case idOfBlock.torch:
             return false;
         default: return true;
+    }
+}
+
+export function isLightSource(id: number): boolean {
+    switch (id) {
+        case idOfBlock.torch:
+            return true;
+        default: return false;
     }
 }
 

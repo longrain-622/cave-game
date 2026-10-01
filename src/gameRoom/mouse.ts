@@ -10,7 +10,7 @@ import { calculateHardness } from './dropped/minetool.js';
 import { createParticles } from './particle.js';
 import { eventBus } from './others/eventBus.js';
 import { soundManager } from './others/soundManager.js';
-import { idOfItem, putDoor, useItem } from './dropped/items.js';
+import { idOfItem, putDoor, putTorch, useItem } from './dropped/items.js';
 import { door_openOrClose } from './nature/blockMecha/bmFunction.js';
 import { lowest_point } from './nature/createWorld.js';
 import { idOfBlock, canBehind } from './nature/blockMecha/blocks.js';
@@ -104,7 +104,7 @@ apioxEvent.onMouseUp(
             && taking.num >= 1
             && player.hp > 0
         ) {
-            if ((taking.item < 512 || taking.item === idOfItem.oak_door)
+            if ((taking.item < 512 || taking.item === idOfItem.oak_door || taking.item === idOfItem.torch)
                 && putBlock(taking.item, event.shiftKey)
             ) { // 放置（Shift 放进背景层）
                 taking.num -= 1;
@@ -129,6 +129,9 @@ function putBlock(item: number, behind: boolean): boolean {
         setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(state.type, item, state.direction));
         return true;
     }
+
+    // 火把贴背景层放置时四周可以没有实心方块，不走 can_put 的“四邻至少一个非空气”判定
+    if (item === idOfItem.torch) {return putTorch(mouse.world_x, mouse.world_y);}
 
     if (!mouse.can_put) {return false;}
     if (item === idOfItem.oak_door) {putDoor(item); return true;}

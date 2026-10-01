@@ -146,7 +146,7 @@ type StateFieldKey = Exclude<keyof BlockState, 'type'>;
 const stateFields: Record<StateFieldKey, { bits: number; offset: number }> = {
     // behind 存方块 id 会有负值，先加 offset 抬到非负区间，否则符号位会串进高位字段
     behind: { bits: 8, offset: 128 }, // 背景方块 id，8 位可表示 -128 ~ 127
-    direction: { bits: 1, offset: 0 }, // 朝向 0 左 1 右
+    direction: { bits: 2, offset: 0 },
 };
 
 function keyOf(state: BlockState): number {

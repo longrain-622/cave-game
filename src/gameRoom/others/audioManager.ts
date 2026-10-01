@@ -32,7 +32,7 @@ function playBlockSound(id: number, isBreaking: boolean): void {
 
         case idOfBlock.oak: case idOfBlock.planks: case idOfBlock.crafting_table:
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
-        case idOfBlock.chest:
+        case idOfBlock.chest: case idOfBlock.torch:
             switch (getRandomInt(0, 2)) {
                 case 0: soundManager.play('woodbreak1'); break;
                 case 1: soundManager.play('woodbreak2'); break;

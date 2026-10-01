@@ -14,7 +14,7 @@ interface Enable {
 const enable: Enable = {
     spawnZombie: false,
     goUnderCave: false,
-    getCoal: true,
+    getCoal: false,
 };
 
 function spawnZombies(count: number, spacing: number): void {

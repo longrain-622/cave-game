@@ -98,6 +98,7 @@ function lookDrops(targetBlock: number): number { //返回对应方块掉落物�
         case idOfBlock.coal_ore: if (!isTakingPickaxe) {dropObj = idOfBlock.air;} else {dropObj = idOfItem.coal;} break;
         case idOfBlock.deadBush: if (getRandomInt(0, 2) === 0) {dropObj = idOfItem.stick;} else {dropObj = idOfBlock.air;} break;
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open: dropObj = idOfItem.oak_door; break;
+        case idOfBlock.torch: dropObj = idOfItem.torch; break;
     }
     return dropObj;
 }

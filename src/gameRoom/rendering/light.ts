@@ -1,8 +1,9 @@
-import { isAlphaBlock } from '../nature/blockMecha/blocks.js';
+import { isAlphaBlock, isLightSource } from '../nature/blockMecha/blocks.js';
 import { world, world_height, lightPos, isOutOfBounds, BlockPos, blockTypeAt } from '../world.js';
 import * as PIXI from 'pixi.js';
 
 const maxLight: number = 15; // 满亮度
+const sourceLight: number = 14; // 光源方块（火把）自身的亮度
 let lightMap: number[][] = []; // 光照地图
 
 // 每列第一个实心方块的 y
@@ -22,8 +23,9 @@ function ensureLightMap(): void {
 
 /*
     光照机制（正式设计）：
-    1. 空气光照：只从天空或相邻空气获取（calcLight），实心方块完全遮挡，不参与传播。
+    1. 空气光照：只从天空、光源方块或相邻空气获取（calcLight），实心方块完全遮挡，不参与传播。
     2. 岩石显示亮度：只接收四周邻居的光（calcDisplayLight），用于渲染岩石的明暗渐变，但从不反馈给空气。
+    3. 光源方块（火把）：自身亮度为 sourceLight，与天空光同路沿空气逐格 -1 衰减。
     两套系统单向耦合：因此封闭洞穴内部恒为黑暗（无光源时），洞穴明暗由开口位置决定。
 */
 
@@ -57,13 +59,16 @@ function hasSkyAccess(lx: number, ly: number): boolean {
 }
 
 // 一个格子的空气亮度：看到天空则满亮度，否则 = 透明邻居最大亮度 - 1
+// 光源方块自身发光，取传播值与 sourceLight 的较大者
 function calcLight(lx: number, ly: number): number {
     if (hasSkyAccess(lx, ly)) {return maxLight;}
     let light: number = readAirLight(lx, ly - 1);
     light = Math.max(light, readAirLight(lx, ly + 1));
     light = Math.max(light, readAirLight(lx - 1, ly));
     light = Math.max(light, readAirLight(lx + 1, ly));
-    return Math.max(light - 1, 0);
+    light = Math.max(light - 1, 0);
+    if (isLightSource(blockTypeAt(lx, ly))) {light = Math.max(light, sourceLight);}
+    return light;
 }
 
 // 读任意格子的亮度（空气光或岩石显示值）：供岩石接收光使用
@@ -121,13 +126,18 @@ function fullComputeLightMap(): void {
     const queue: BlockPos[] = [];
     for (let y = 0; y < world_height; y++) {
         for (let x = 0; x < width; x++) {
-            if (isAlphaBlock(blockTypeAt(x, y)) && hasSkyAccess(x, y)) {
+            if (!isAlphaBlock(blockTypeAt(x, y))) {continue;}
+            if (hasSkyAccess(x, y)) {
                 lightMap[y][x] = maxLight;
-                queue.push({ x: x, y: y + 1 });
-                queue.push({ x: x, y: y - 1 });
-                queue.push({ x: x + 1, y: y });
-                queue.push({ x: x - 1, y: y });
+            } else if (isLightSource(blockTypeAt(x, y))) {
+                lightMap[y][x] = sourceLight; // 封闭洞穴没有天空光，光源必须自己当种子，否则队列扫不到
+            } else {
+                continue;
             }
+            queue.push({ x: x, y: y + 1 });
+            queue.push({ x: x, y: y - 1 });
+            queue.push({ x: x + 1, y: y });
+            queue.push({ x: x - 1, y: y });
         }
     }
     propagate(queue);

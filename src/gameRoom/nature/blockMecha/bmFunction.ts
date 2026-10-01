@@ -1,11 +1,12 @@
 import { entityBlock_array, newEntityBlock } from "../entityBlock.js";
-import { isOutOfBounds, setWorldState, BlockPos, stateWithType, blockTypeAt } from "../../world.js";
+import { isOutOfBounds, setWorldState, BlockPos, BlockState, stateWithType, blockTypeAt, blockStateAt } from "../../world.js";
 import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
 import { idOfBlock, canOver } from "./blocks.js";
 import { mouse } from "../../mouse.js";
 import { lowest_point } from "../createWorld.js";
+import { idOfItem } from "../../dropped/itemIds.js";
 
 // 草/泥土延迟变化的待处理方块：坐标 + 剩余帧数
 interface DelayPos extends BlockPos {
@@ -176,4 +177,32 @@ export function snowGrass(lookingBlock: number, lookx: number, looky: number): n
         }
     }
     return lookingBlock;
+}
+
+export function torchDrop(looking: number, lookx: number, looky: number): number {
+    if (looking === idOfBlock.torch) {
+        const tch: BlockState = blockStateAt(lookx, looky);
+        switch (tch.direction) {
+            case 0:
+                if (blockTypeAt(lookx + 1, looky) <= idOfBlock.air) {
+                    createDrop(idOfItem.torch, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
+                    return idOfBlock.air;
+                }
+                break;
+            case 1:
+                if (blockTypeAt(lookx - 1, looky) <= idOfBlock.air) {
+                    createDrop(idOfItem.torch, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
+                    return idOfBlock.air;
+                }
+                break;
+            case 2:
+                if (blockTypeAt(lookx, looky + 1) <= idOfBlock.air && tch.behind === idOfBlock.air) {
+                    createDrop(idOfItem.torch, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
+                    return idOfBlock.air;
+                }
+                break;
+        }
+    }
+
+    return looking;
 }

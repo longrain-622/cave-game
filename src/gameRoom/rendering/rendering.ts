@@ -42,6 +42,8 @@ const blockAssets: Record<string, string> = {
     diorite: '/assets/images/games/blocks/diorite.png',
     granite: '/assets/images/games/blocks/granite.png',
     bedrock: '/assets/images/games/blocks/bedrock.png',
+    torch_turn: '/assets/images/games/blocks/torch_turn.png',
+    torch: '/assets/images/games/items/torch.png',
 };
 
 export let isDrawing: boolean = false;
@@ -154,6 +156,8 @@ function initBlockTextures(textures: Record<string, PIXI.Texture>): void {
     blockTextures[idOfBlock.diorite] = textures['diorite'];
     blockTextures[idOfBlock.granite] = textures['granite'];
     blockTextures[idOfBlock.bedrock] = textures['bedrock'];
+    blockTextures[idOfBlock.torch] = textures['torch']; // direction = 2
+    blockTextures['torch_turn'] = textures['torch_turn']; // direction = 0 or 1
     blockTextures['destory'] = textures['destory'];
 }
 
@@ -215,6 +219,26 @@ function main(): void {
 }
 main();
 
+// Draw torch
+function drawTorchSprite(sprite: PIXI.Sprite, state: BlockState, draw_x: number, draw_y: number, worldCol: number, worldRow: number): boolean {
+    if (state.type !== idOfBlock.torch) {return false;}
+
+    const texture: PIXI.Texture = state.direction === 2 ? blockTextures[idOfBlock.torch] : blockTextures['torch_turn'];
+    if (!texture) {
+        sprite.visible = false;
+        return true;
+    }
+
+    // direction 0 与 1 左右对称：镜像用 x 轴负缩放实现，位置右移一格让贴图仍落在该格内
+    const flip: boolean = state.direction === 0;
+    sprite.texture = texture;
+    sprite.scale.x = flip ? -Math.abs(sprite.scale.x) : Math.abs(sprite.scale.x);
+    sprite.position.set(flip ? draw_x + 64 : draw_x, draw_y);
+    applyLightTint(sprite, worldCol * 64, worldRow * 64);
+    sprite.visible = true;
+    return true;
+}
+
 export function updateWorldPixi(): void {
     if (!isDrawing) {return;}
 
@@ -247,14 +271,17 @@ export function updateWorldPixi(): void {
             const draw_x: number = worldCol * 64 - player.x + player.screen_x;
             const state: BlockState = getBlockState(row[worldCol]);
 
-            const texture: PIXI.Texture = blockTextures[state.type];
-            if (texture) {
-                sprite.texture = texture;
-                sprite.position.set(draw_x, draw_y);
-                applyLightTint(sprite, worldCol * 64, worldRow * 64);
-                sprite.visible = true;
-            } else {
-                sprite.visible = false;
+            if (!drawTorchSprite(sprite, state, draw_x, draw_y, worldCol, worldRow)) {
+                const texture: PIXI.Texture = blockTextures[state.type];
+                if (texture) {
+                    sprite.texture = texture;
+                    sprite.scale.x = Math.abs(sprite.scale.x); // 清掉火把镜像留下的负缩放
+                    sprite.position.set(draw_x, draw_y);
+                    applyLightTint(sprite, worldCol * 64, worldRow * 64);
+                    sprite.visible = true;
+                } else {
+                    sprite.visible = false;
+                }
             }
 
             // 背景层深色石用石头贴图
