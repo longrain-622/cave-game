@@ -4,6 +4,7 @@ interface Uistate {
     gameContent_isOpening: boolean;
     chest_isOpening: boolean;
     furnace_isOpening: boolean;
+    deathUI_isOpening: boolean;
 
     invenUI_isOpening: () => boolean; // 与物品栏相关的ui的打开状态
     anyui_isOpening: () => boolean; // 是否有ui打开
@@ -16,6 +17,7 @@ export const uistate: Uistate = {
     gameContent_isOpening: false,
     chest_isOpening: false,
     furnace_isOpening: false,
+    deathUI_isOpening: false,
 
     invenUI_isOpening(): boolean {
         return (
@@ -32,7 +34,8 @@ export const uistate: Uistate = {
             this.craftingTable_isOpening ||
             this.gameContent_isOpening ||
             this.chest_isOpening ||
-            this.furnace_isOpening
+            this.furnace_isOpening ||
+            this.deathUI_isOpening
         );
     },
 

@@ -77,8 +77,12 @@ let selectingSprite: PIXI.Sprite; // 鼠标拖拽物品图标
 let selectingText: PIXI.Text; // 鼠标拖拽物品数量
 let bookSprite: PIXI.Sprite; // 配方书按钮
 
-export function initInventoryUI() {
-    //如果已经添加过，避免重复
+// 把 GUI 顶层容器挂载到舞台（幂等）。
+/*
+    读档进入游戏时玩家可能已经死亡，此时 gameGuiLoop 因 hp <= 0 不会调用 drawInventory，
+    死亡界面必须自己保证挂载（见 death.ts），所以挂载逻辑不能只留在 initInventoryUI 里。
+*/
+export function ensureGuiMounted(): void {
     if (!guiContainer.parent) {
         guiApp.stage.addChild(guiContainer);
         guiContainer.addChild(inventoryContainer, heartContainer, craftingTableContainer, deathContainer, floatContainer);
@@ -86,6 +90,11 @@ export function initInventoryUI() {
     if (!widgetContainer.parent) {
         guiApp.stage.addChild(widgetContainer);
     }
+}
+
+export function initInventoryUI() {
+    //如果已经添加过，避免重复
+    ensureGuiMounted();
 
     //清空容器避免重复初始化
     inventoryContainer.removeChildren();

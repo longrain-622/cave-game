@@ -126,10 +126,11 @@ function fullComputeLightMap(): void {
     const queue: BlockPos[] = [];
     for (let y = 0; y < world_height; y++) {
         for (let x = 0; x < width; x++) {
-            if (!isAlphaBlock(blockTypeAt(x, y))) {continue;}
+            const id: number = blockTypeAt(x, y); // 每格只解码一次调色板索引
+            if (!isAlphaBlock(id)) {continue;}
             if (hasSkyAccess(x, y)) {
                 lightMap[y][x] = maxLight;
-            } else if (isLightSource(blockTypeAt(x, y))) {
+            } else if (isLightSource(id)) {
                 lightMap[y][x] = sourceLight; // 封闭洞穴没有天空光，光源必须自己当种子，否则队列扫不到
             } else {
                 continue;

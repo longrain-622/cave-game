@@ -10,11 +10,13 @@ interface Enable {
     spawnZombie: boolean;
     goUnderCave: boolean;
     getCoal: boolean;
+    selfHarm: boolean;
 }
 const enable: Enable = {
     spawnZombie: false,
     goUnderCave: false,
     getCoal: false,
+    selfHarm: false,
 };
 
 function spawnZombies(count: number, spacing: number): void {
@@ -51,6 +53,13 @@ function main(): void {
 
     if (enable.getCoal) {
         getCoal();
+    }
+
+    if (enable.selfHarm) {
+        apioxEvent.onKeyDown((ev): void => {
+            if (ev.key !== 'h') {return;}
+            player.hurt(2);
+        });
     }
 }
 main();

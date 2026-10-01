@@ -124,7 +124,11 @@ topBtn.on('pointerdown', () => {
     gameContent.visible = false;
 });
 bottomBtn.on('pointerdown', async () => {
+    quitGame();
+});
+
+export async function quitGame(): Promise<void> {
     exitPagePixi.container.visible = true;
     await saveGameToLocal(coverWhenSave);
     reloadPage();
-});
+}
