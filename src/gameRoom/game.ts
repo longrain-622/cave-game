@@ -11,6 +11,7 @@ import { drawAnimals } from './animals/animalDraw.js';
 import { gameGuiLoop } from './gui/gameGUI/gameGuiState.js';
 import { dropArray, dropLoop } from './dropped/droppedItem.js';
 import { drawDeadPage } from './gui/gameGUI/death.js';
+import { updateDebugScreen } from './gui/contentGUI/debugScreen.js';
 
 import { particleArray, particleAct, drawParticles } from './particle.js';
 import { skyLoop } from './nature/sky.js';
@@ -44,4 +45,5 @@ export function gameLoop(delta: number): void {
     lookBlocks();
     gameGuiLoop(delta);
     drawDeadPage();
+    updateDebugScreen(delta);
 }

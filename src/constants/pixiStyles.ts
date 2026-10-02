@@ -14,7 +14,7 @@ export function textStyle2(fontSize: number=20): PIXI.TextStyle {
         fontFamily: 'Unifont',
         fontSize: fontSize,
         fill: '#ffffff',
-        dropShadow: true, //启用阴影
+        dropShadow: true, // 启用阴影
         dropShadowColor: 0x000000,
         dropShadowAlpha: 0.8,
         dropShadowBlur: 0,
