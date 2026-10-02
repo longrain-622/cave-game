@@ -69,6 +69,10 @@ export class ApioxObject {
         return (this.element as any)[prop];
     }
 
+    appendTo(parent: ApioxObject): void {
+        parent.element.appendChild(this.element);
+    }
+
     removeit(): void {
         //移除所有已注册的监听器
         if (this._listeners) {

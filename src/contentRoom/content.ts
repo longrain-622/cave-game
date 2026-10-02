@@ -16,6 +16,7 @@ export let _room_: number = 0; //当前房间
 let start: number = 0;
 let choose: number = 0; //左边菜单所选的选项
 let last_choose: number = choose - 1;
+let dotChoose: number = -1; //小黑点当前所在的菜单项，-1 表示没有显示
 let face: number = 0; //背景图片移动状态，0左1右-1静止
 let timer: number = 0;
 
@@ -33,9 +34,12 @@ const startText = new ApioxObject('startText');
 const downloadText = new ApioxObject('downloadText');
 const setText = new ApioxObject('setText');
 const viewText = new ApioxObject('viewText');
+const blockDot = new ApioxObject('blockDot');
 //const whiteBlock1 = new ApioxObject('whiteBlock1');
 const whiteBlock2 = new ApioxObject('whiteBlock2');
 const starting_steve = new ApioxObject('starting_steve');
+
+const menuTexts: ApioxObject[] = [startText, downloadText, setText, viewText]; //左边菜单的四个选项
 
 export const toast = new ApioxObject('toast');
 export const toastText = new ApioxObject('toast_text');
@@ -183,10 +187,25 @@ function ctrlShow(): void { //控制各种功能的显示和隐藏
     }
 }
 
+function dotUpdate(): void { //把小黑点挂到当前所选菜单项的左边
+    if (start !== 1) { //还没有选择任何选项
+        if (dotChoose !== -1) {blockDot.hide(); dotChoose = -1;}
+        return;
+    }
+
+    //切换语言会重写菜单项的文本，可能把小黑点一起清掉，脱离时重新挂上
+    if (dotChoose === choose && blockDot.getProperty('parentNode') !== null) {return;}
+    dotChoose = choose;
+
+    blockDot.appendTo(menuTexts[choose]);
+    blockDot.show();
+}
+
 //页面主循环
 export function contentLoop(delta: number): void {
     bgimageAnimation(delta);
     ctrlShow();
+    dotUpdate();
 }
 
 //彩蛋

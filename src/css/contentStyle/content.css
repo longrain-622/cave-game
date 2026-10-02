@@ -44,6 +44,7 @@
 }
 
 #whiteBlock1 {
+    --highlightColor: #777; /* 悬停/选中时文字与小黑块的颜色 */
     background-color: rgba(255, 255, 255, 0.5);
     border-radius: 10px;
     position: static;
@@ -75,21 +76,36 @@
     text-align: center;
 }
 
-/* 菜单项悬停放大效果 */
 #startText, #downloadText, #setText, #viewText {
     display: inline-block;
-    transition: transform 0.2s ease;
     cursor: pointer;
 }
-#startText:hover, #downloadText:hover, #setText:hover, #viewText:hover {
-    transform: scale(1.2);
+
+/* 悬停与选中时文字稍微变亮（选中项就是挂着小黑点的那一项） */
+#blocktext1 li:hover,
+#blocktext1 li:has(#blockDot) {
+    color: var(--highlightColor);
 }
 
 #blocktext1 li {
+    position: relative;
     margin-bottom: 0;
 }
 #blocktext1 li:not(:last-child) {
     margin-bottom: 0;
+}
+
+/* 当前所选菜单项左侧的小黑点 */
+#blockDot {
+    position: absolute;
+    top: 50%;
+    left: -1rem;
+    width: 4px;
+    height: 20px;
+    background-color: var(--highlightColor);
+    transform: translateY(-50%);
+    pointer-events: none;
+    display: none;
 }
 
 #whiteBlock2 {
