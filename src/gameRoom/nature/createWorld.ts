@@ -20,11 +20,11 @@ const TEMP = {
 
 let lowest_point: number = 0; //地形最低点的纵坐标
 
-//佩林噪声
+// 佩林噪声
 class PerlinNoise {
     seed: number;
-    gradient: number | null; // 梯度表，实际一维噪声用随机值即可
-    random!: () => number; // 在 init() 中赋值，构造函数已调用
+    gradient: number | null; // 梯度表
+    random!: () => number; // 在 init() 中赋值
 
     constructor(seed = Math.random()) {
         this.seed = seed;
@@ -33,56 +33,50 @@ class PerlinNoise {
     }
 
     // 初始化随机梯度
-    init() {
+    init(): void {
         // 使用种子生成一个随机数序列
-        let r = (this.seed * 43758.5453) % 1;
-        this.random = () => {
+        let r: number = (this.seed * 43758.5453) % 1;
+        this.random = (): number => {
             r = (r * 43758.5453) % 1;
             return r;
         };
     }
 
     // 线性插值
-    lerp(a: number, b: number, t: number) {
+    lerp(a: number, b: number, t: number): number {
         return a + t * (b - a);
     }
 
     // 平滑函数
-    fade(t: number) {
+    fade(t: number): number {
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
 
     // 一维佩林噪声，输入 x，输出范围约 [-1, 1]
-    noise(x: number) {
-        // 确定所在格子
-        let x0 = Math.floor(x);
-        let x1 = x0 + 1;
-        // 格子内相对位置
-        let tx = x - x0;
-        // 平滑曲线
-        let u = this.fade(tx);
+    noise(x: number): number {
+        const x0: number = Math.floor(x);
+        const x1: number = x0 + 1;
+        const tx: number = x - x0;
+        const u: number = this.fade(tx);
 
-        // 生成格子角点的随机梯度（这里用随机值代替梯度方向，简单实现）
-        let v0 = this.randomGradient(x0);
-        let v1 = this.randomGradient(x1);
+        const v0: number = this.randomGradient(x0);
+        const v1: number = this.randomGradient(x1);
 
-        // 插值
         return this.lerp(v0, v1, u);
     }
 
     // 根据整数坐标生成随机梯度（-1 到 1 之间的随机数）
-    randomGradient(i: number) {
-        // 使用正弦和乘法生成伪随机数，保证相同 i 得到相同值
-        let val = Math.sin(i * 12.9898 + this.seed * 43758.5453) * 43758.5453;
+    randomGradient(i: number): number {
+        const val: number = Math.sin(i * 12.9898 + this.seed * 43758.5453) * 43758.5453;
         return (val - Math.floor(val)) * 2 - 1; // 映射到 [-1, 1]
     }
 
     // 分形噪声（叠加多个频率）
-    fbm(x: number, octaves: number = 4, persistence: number = 0.5, lacunarity: number = 2.0) {
-        let value = 0;
-        let amplitude = 1;
-        let frequency = 1;
-        let maxAmp = 0;
+    fbm(x: number, octaves: number = 4, persistence: number = 0.5, lacunarity: number = 2.0): number {
+        let value: number = 0;
+        let amplitude: number = 1;
+        let frequency: number = 1;
+        let maxAmp: number = 0;
         for (let i = 0; i < octaves; i++) {
             value += this.noise(x * frequency) * amplitude;
             maxAmp += amplitude;
@@ -92,53 +86,47 @@ class PerlinNoise {
         return value / maxAmp; // 归一化到约 [-1, 1]
     }
 
-    // 二维噪声核心
+    // 二维噪声
     private dotGridGradient(ix: number, iy: number, x: number, y: number): number {
-        // 使用哈希函数生成伪随机梯度方向（取四个方向之一或连续角度）
-        let angle = Math.sin(ix * 12.9898 + iy * 78.233 + this.seed * 43758.5453) * 43758.5453;
-        angle = angle - Math.floor(angle); // [0,1)
-        angle = angle * 2 * Math.PI;        // 0 到 2PI
-        const gx = Math.cos(angle);
-        const gy = Math.sin(angle);
-        const dx = x - ix;
-        const dy = y - iy;
+        let angle: number = Math.sin(ix * 12.9898 + iy * 78.233 + this.seed * 43758.5453) * 43758.5453;
+        angle = angle - Math.floor(angle);
+        angle = angle * 2 * Math.PI;
+        const gx: number = Math.cos(angle);
+        const gy: number = Math.sin(angle);
+        const dx: number = x - ix;
+        const dy: number = y - iy;
         return dx * gx + dy * gy;
     }
 
     // 二维佩林噪声，输入 (x, y)，输出范围约 [-1, 1]
     noise2D(x: number, y: number): number {
-        // 整数格子坐标
-        let x0 = Math.floor(x);
-        let x1 = x0 + 1;
-        let y0 = Math.floor(y);
-        let y1 = y0 + 1;
+        const x0: number = Math.floor(x);
+        const x1: number = x0 + 1;
+        const y0: number = Math.floor(y);
+        const y1: number = y0 + 1;
 
-        // 局部偏移 (0..1)
-        let tx = x - x0;
-        let ty = y - y0;
+        const tx: number = x - x0;
+        const ty: number = y - y0;
 
-        // 平滑曲线
-        let u = this.fade(tx);
-        let v = this.fade(ty);
+        const u: number = this.fade(tx);
+        const v: number = this.fade(ty);
 
-        // 四个角点的梯度贡献
-        let n00 = this.dotGridGradient(x0, y0, x, y);
-        let n10 = this.dotGridGradient(x1, y0, x, y);
-        let n01 = this.dotGridGradient(x0, y1, x, y);
-        let n11 = this.dotGridGradient(x1, y1, x, y);
+        const n00: number = this.dotGridGradient(x0, y0, x, y);
+        const n10: number = this.dotGridGradient(x1, y0, x, y);
+        const n01: number = this.dotGridGradient(x0, y1, x, y);
+        const n11: number = this.dotGridGradient(x1, y1, x, y);
 
-        // 插值
-        let nx0 = this.lerp(n00, n10, u);
-        let nx1 = this.lerp(n01, n11, u);
+        const nx0: number = this.lerp(n00, n10, u);
+        const nx1: number = this.lerp(n01, n11, u);
         return this.lerp(nx0, nx1, v);
     }
 
     // 二维分形噪声（FBM）
     fbm2D(x: number, y: number, octaves: number = 4, persistence: number = 0.5, lacunarity: number = 2.0): number {
-        let value = 0;
-        let amplitude = 1;
-        let frequency = 1;
-        let maxAmp = 0;
+        let value: number = 0;
+        let amplitude: number = 1;
+        let frequency: number = 1;
+        let maxAmp: number = 0;
         for (let i = 0; i < octaves; i++) {
             value += this.noise2D(x * frequency, y * frequency) * amplitude;
             maxAmp += amplitude;
@@ -149,8 +137,8 @@ class PerlinNoise {
     }
 }
 
-// 创建噪声对象 — 读档时使用存档中的种子，保证新生成区块与已存档区块连续
-const seed = (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.seed) && !Number.isNaN(readingWorld.seed)) ? readingWorld.seed : Math.random();
+// 创建噪声对象
+const seed: number = (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.seed) && !Number.isNaN(readingWorld.seed)) ? readingWorld.seed : Math.random();
 const terrainNoise = new PerlinNoise(seed);
 const stoneNoise = new PerlinNoise(seed + 1); // 不同种子
 const temperatureNoise = new PerlinNoise(seed + 2); // 温度噪声，不同种子
@@ -162,11 +150,9 @@ const andesiteNoise2D = new PerlinNoise(seed + 6); // 安山岩
 const dioriteNoise2D = new PerlinNoise(seed + 7); // 闪长岩
 const graniteNoise2D = new PerlinNoise(seed + 8); // 花岗岩
 
-/** 根据 X 坐标和温度噪声实例获取温度类型 */
+// 根据 X 坐标和温度噪声实例获取温度类型
 function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
-    // 获取噪声值（范围 -1 到 1）
     let noiseVal: number = tempNoise.fbm(x * TEMP.NOISE_SCALE, TEMP.OCTAVES, TEMP.PERSISTENCE, TEMP.LACUNARITY);
-    // 映射到温度类型
     if (noiseVal > TEMP.HOT_THRESHOLD) {
         return TEMP.HOT;
     } else if (noiseVal < TEMP.COLD_THRESHOLD) {
@@ -181,11 +167,10 @@ function typeOf(worlding: number[][], x: number, y: number): number {
     return getBlockState(worlding[y][x]).type;
 }
 
-function createChunk(startX: number, behind: boolean) { // startX:当前区块在世界中的起始 X 坐标
+function createChunk(startX: number, behind: boolean): void { // startX:当前区块在世界中的起始 X 坐标
     let worlding: number[][] = [];
     const sealevel: number = Math.round(world_height / 2);
 
-    // 方块类型 id → 调色板索引；同一区块内缓存，避免重复注册
     const indexOf: Map<number, number> = new Map();
     const toIndex: (id: number) => number = (id: number) => {
         let idx: number | undefined = indexOf.get(id);
@@ -196,7 +181,7 @@ function createChunk(startX: number, behind: boolean) { // startX:当前区块�
         return idx;
     };
 
-    // 基于全局X温度预生成
+    // 温度预生成
     let tempTypes: number[] = new Array(chunk.width);
     for (let x = 0; x < chunk.width; x++) {
         const globalX: number = startX + x;
@@ -281,22 +266,21 @@ function createChunk(startX: number, behind: boolean) { // startX:当前区块�
             const stoneTop: number = terrain_stone[x];
             if (y < stoneTop + 4 || y > world_height - 10) {continue;} //垂直范围
 
-            // 使用二维噪声，x 和 y 频率不同，使洞穴沿水平方向延伸更好
-            let noiseVal = caveNoise2D.fbm2D(
+            const noiseVal: number = caveNoise2D.fbm2D(
                 globalX * 0.025, // 横向频率（控制洞穴水平间隔）
                 y * 0.025, // 纵向频率（控制洞穴垂直分层）
-                3, // 八度
-                0.5, // 持久性
-                2.0 // 倍频
+                3,
+                0.5,
+                2.0
             );
-            let secondary = caveNoise2D.fbm2D( // 增加一个次要噪声来添加不规则度
+            const secondary: number = caveNoise2D.fbm2D( // 增加一个次要噪声来添加不规则度
                 globalX * 0.08,
                 y * 0.06,
                 2,
                 0.5,
                 2.0
             );
-            let combined: number = noiseVal * 0.7 + secondary * 0.3;
+            const combined: number = noiseVal * 0.7 + secondary * 0.3;
 
             function getFbm2D(noiseObj: PerlinNoise): number {
                 return noiseObj.fbm2D(globalX * 0.07, y * 0.07, 2, 0.5, 2.0);
@@ -351,7 +335,7 @@ function generateTrees(worlding: number[][], toIndex: (id: number) => number): v
 
         let x: number = oak_x[i];
         let y: number = 0;
-        // 找到最上方非空气的方块
+
         while (y < world_height && typeOf(worlding, x, y) === idOfBlock.air) {y++;}
         if (y < world_height && (typeOf(worlding, x, y) === idOfBlock.grass || typeOf(worlding, x, y) === idOfBlock.snowGrass)) { // 确保是草
             worlding[y][x] = toIndex(idOfBlock.dirt); // 将草换成泥
@@ -413,7 +397,7 @@ function generateCacti(worlding: number[][], toIndex: (id: number) => number): v
     }
 }
 
-function createChunkAnyTime() {
+function createChunkAnyTime(): void {
     if (player.x - chunk.lookRange * 64 <= 0) {
         createChunk(-chunk.width * (chunk.left_number + 1), false);
     } else if (player.x + chunk.lookRange * 64 >= chunk.num * chunk.width * 64) {

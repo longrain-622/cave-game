@@ -8,7 +8,7 @@ import { isOnScreen } from "../const.js";
 import { applyLightTint } from "../rendering/light.js";
 import * as PIXI from 'pixi.js';
 
-interface EntityBlock {
+export interface EntityBlock {
     id: number;
     world_x: number; world_y: number;
     x: number; y: number; // px
@@ -16,7 +16,7 @@ interface EntityBlock {
     timer: number;
 }
 
-function newEntityBlock(id: number, world_x: number, world_y: number): EntityBlock {
+export function newEntityBlock(id: number, world_x: number, world_y: number): EntityBlock {
     return {
         id: id,
         world_x: world_x, world_y: world_y,
@@ -26,7 +26,7 @@ function newEntityBlock(id: number, world_x: number, world_y: number): EntityBlo
     };
 }
 
-let entityBlock_array: EntityBlock[] = [];
+export const entityBlock_array: EntityBlock[] = [];
 
 const entityBlockLayer: PIXI.Container = new PIXI.Container(); // 实体方块渲染层
 const entityBlockSpriteMap: Map<EntityBlock, PIXI.Sprite> = new Map(); // 每个实体方块对应的渲染 Sprite（移除时同步销毁）
@@ -120,7 +120,7 @@ function drawEntityBlock(entityBlock: EntityBlock): void {
     sprite.visible = true;
 }
 
-function look_entityBlock(delta: number): void {
+export function look_entityBlock(delta: number): void {
     // 兜底清理已移除实体方块的渲染 Sprite（正常情况在移除处已同步销毁）
     const aliveEntityBlocks: Set<EntityBlock> = new Set(entityBlock_array);
     for (const [entityBlock, sprite] of entityBlockSpriteMap) {
@@ -141,5 +141,3 @@ function look_entityBlock(delta: number): void {
         }
     }
 }
-
-export { entityBlock_array, EntityBlock, look_entityBlock, newEntityBlock };

@@ -7,7 +7,7 @@ export function setWorldName(val: string): void { worldName = val; }
 export const sealevel: number = world_height / 2;
 
 // 定义区块对象
-export interface Chunk {
+interface Chunk {
     width: number;
     start_x: number;
     num: number;

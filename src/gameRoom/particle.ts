@@ -32,15 +32,15 @@ function newParticles(type: number, x: number, y: number): Particles {
     };
 }
 
-let particleArray: Particles[] = []; // 存储粒子对象的数组
+export const particleArray: Particles[] = [];
 
-function createParticles(type: number, x: number, y: number): void {
+export function createParticles(type: number, x: number, y: number): void {
     particleArray.push(newParticles(type, x, y));
 }
 
-const particleLayer: PIXI.Container = new PIXI.Container(); // 粒子渲染层
-export let can_drawParticle: boolean = false; // 纹理未就绪时等待
-const subTextureCache: Record<string, PIXI.Texture> = {}; // 子纹理缓存：同类型同裁剪区域的粒子共用一张裁剪纹理
+const particleLayer: PIXI.Container = new PIXI.Container();
+export let can_drawParticle: boolean = false;
+const subTextureCache: Record<string, PIXI.Texture> = {}; // 子纹理缓存
 
 // 从方块贴图中裁剪子区域
 function getSubTexture(type: number, sx: number, sy: number, sw: number, sh: number): PIXI.Texture | undefined {
@@ -54,19 +54,16 @@ function getSubTexture(type: number, sx: number, sy: number, sw: number, sh: num
     return subTextureCache[key];
 }
 
-// 每个粒子对应的渲染 Sprite（粒子移除时销毁）
-const particleSpriteMap: Map<Particles, PIXI.Sprite> = new Map();
+const particleSpriteMap: Map<Particles, PIXI.Sprite> = new Map(); // 每个粒子对应的渲染 Sprite（粒子移除时销毁）
 
 function main(): void {
     app.stage.addChild(particleLayer);
     particleLayer.zIndex = 3.6;
-
-    // 纹理就绪前不绘制
-    eventBus.once('textures:ready', () => { can_drawParticle = true; });
+    eventBus.once('textures:ready', () => { can_drawParticle = true; }); // 纹理就绪前不绘制
 }
 main();
 
-function particleAct(delta: number): void { // 控制粒子的行为
+export function particleAct(delta: number): void { // 控制粒子的行为
     for (let i = 0; i < particleArray.length; i++) {
         const particle: Particles = particleArray[i];
 
@@ -75,43 +72,41 @@ function particleAct(delta: number): void { // 控制粒子的行为
         if (particle.timer >= particle.life) {
             particleArray.splice(i, 1);
             i--;
-            // 同步销毁对应的渲染 Sprite
+
             const sprite: PIXI.Sprite | undefined = particleSpriteMap.get(particle);
             if (sprite) {
                 particleLayer.removeChild(sprite);
                 sprite.destroy();
-                particleSpriteMap.delete(particle);
+                particleSpriteMap.delete(particle); // 同步销毁对应的渲染 Sprite
             }
-            continue; // 粒子已删除,跳过本帧的物理计算
+            continue;
         }
 
-        const GRAVITY = 0.5;
+        const GRAVITY: number = 0.5;
+        particle.vsp += GRAVITY * delta; // 应用重力
 
-        // 应用重力
-        particle.vsp += GRAVITY * delta;
-
-        // 垂直移动（逐像素碰撞）
+        // 垂直移动
         if (particle.vsp !== 0) {
-            const step = Math.abs(particle.vsp);
+            const step: number = Math.abs(particle.vsp);
             for (let a = 0; a < step; a++) {
-                const sign = particle.vsp > 0 ? 1 : -1;
-                const nextY = particle.y + sign;
+                const sign: number = particle.vsp > 0 ? 1 : -1;
+                const nextY: number = particle.y + sign;
                 if (!place_meeting(particle.x + particle.width, nextY + (sign > 0 ? particle.height : 0))) {
                     particle.y = nextY;
                 } else {
                     particle.vsp = 0;
-                    if (sign > 0) particle.hsp = 0;  // 落地时停止水平移动
+                    if (sign > 0) particle.hsp = 0; // 落地时停止水平移动
                     break;
                 }
             }
         }
 
-        // 水平移动（仅当尚未落地时，即仍有水平速度）
+        // 水平移动
         if (particle.hsp !== 0) {
-            const step = Math.abs(particle.hsp);
+            const step: number = Math.abs(particle.hsp);
             for (let a = 0; a < step; a++) {
-                const sign = particle.hsp > 0 ? 1 : -1;
-                const nextX = particle.x + sign;
+                const sign: number = particle.hsp > 0 ? 1 : -1;
+                const nextX: number = particle.x + sign;
                 if (!place_meeting(nextX + particle.width, particle.y + particle.height)) {
                     particle.x = nextX;
                 } else {
@@ -123,7 +118,7 @@ function particleAct(delta: number): void { // 控制粒子的行为
     }
 }
 
-function drawParticles(): void {
+export function drawParticles(): void {
     if (!can_drawParticle) {return;}
 
     for (let k = 0; k < particleArray.length; k++) {
@@ -155,7 +150,7 @@ function drawParticles(): void {
 
         const texture: PIXI.Texture | undefined = getSubTexture(obj.type, sx, sy, Math.round(obj.width / 4), Math.round(obj.height / 4));
         if (!texture) {
-            sprite.visible = false; // 无对应贴图（如空气），不绘制
+            sprite.visible = false;
             continue;
         }
 
@@ -170,5 +165,3 @@ function drawParticles(): void {
         sprite.visible = true;
     }
 }
-
-export { particleArray, drawParticles, particleAct, createParticles };
