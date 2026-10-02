@@ -6,13 +6,13 @@
     "start": "Start",
     "download": "Download",
     "setting": "Settings",
-    "view": "Gallery"
+    "view": "Admire"
   },
   "home": {
     "title": "Read Before Playing",
-    "notice1": "\"CaveGame\" is a 2D fan game of \"Minecraft\" developed by the Sinuxu team. The game is open-source, free, involves no commercial profit, and has no virtual currency system. It is dedicated to providing players with a pure and free creative and exploratory experience.",
-    "notice2": "We are an interest-driven team gathered by passion. The studio is currently non-profit, and all members participate based on their love for game development. To keep this passion alive, we sincerely invite like-minded friends to join Sinuxu — whether you are good at programming, art, design, or simply curious and motivated about game development. As long as you agree with the idea of \"working for love\", feel free to contact us and grow together through creation and fun.",
-    "notice3": "For security reasons, browsers impose strict restrictions on ES6 module loading under the file:// protocol, which may prevent the game from running.",
+    "notice1": "This is a 2D side-scrolling single-player sandbox game, mainly available on Windows, MacOS and Linux, with text in ten languages: Simplified Chinese, Traditional Chinese, English, Japanese, French, German, Spanish, Korean, Russian and Swedish. As rendering is based on WebGL, the hardware requirements are very low: ordinary office laptops, older computers and devices with integrated graphics can usually run it smoothly. Before downloading, you only need to confirm your platform, your preferred language and how you would like to control the game.",
+    "notice2": "In terms of gameplay, it is an open-world sandbox with a high degree of freedom and no win condition; the overall experience is similar to a 2D side-scrolling version of Minecraft. You can gather, build, explore and survive, or simply wander around, reshape the world or set your own goals. There is no need to rush your progress, and certainly no ending you have to reach. As a single-player game, the pace is entirely up to you. We suggest getting familiar with the basic controls first — moving, breaking, placing and crafting — and then developing at your own pace.",
+    "notice3": "This game is completely free and open source. Not only can you obtain it for free, there are also no microtransactions and no content locked behind payment; you may study, modify or join the community as long as you comply with the open-source licence. Because it is a single-player sandbox, saves and worlds are usually stored locally, so we recommend backing them up regularly and downloading and updating only from official or trusted channels. If you would like to report a problem, please send the details to 3685585221@qq.com.",
     "clickToStart": "- Click anywhere to start -"
   },
   "starting": {
