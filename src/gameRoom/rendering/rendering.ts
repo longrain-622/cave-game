@@ -10,6 +10,7 @@ import { applyLightTint, applyBackgroundLightTint } from './light.js';
 
 import * as PIXI from 'pixi.js';
 import { apiMethod } from '../../apiox/method.js';
+import { apioxTime } from '../../apiox/time.js';
 
 // 方块贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
 const blockAssets: Record<string, string> = {
@@ -47,6 +48,7 @@ const blockAssets: Record<string, string> = {
 };
 
 export let isDrawing: boolean = false;
+export let renderFPS: number = 0;
 export const blockTextures: Record<number | string, PIXI.Texture> = {};
 
 export let app: PIXI.Application;
@@ -77,6 +79,9 @@ function initApp(): void {
         antialias: false,
         backgroundAlpha: 0,
     });
+    app.ticker.maxFPS = 120;
+    fpsWindowStart = apioxTime.now();
+    app.ticker.add(updateRenderFPS);
     const viewStyle: CSSStyleDeclaration = (app.view as HTMLCanvasElement).style;
     viewStyle.position = 'absolute';
     viewStyle.left = '0';
@@ -91,6 +96,20 @@ function initApp(): void {
     gameRoom = apiMethod.select('.GameRoom');
     if (gameRoom) {
         gameRoom.appendChild(app.view as HTMLCanvasElement);
+    }
+}
+
+let fpsFrameCount: number = 0;
+let fpsWindowStart: number = 0;
+
+// 统计每秒真正画出的帧数
+function updateRenderFPS(): void {
+    fpsFrameCount++;
+    const elapsedMS: number = apioxTime.now() - fpsWindowStart;
+    if (elapsedMS >= 1000) {
+        renderFPS = Math.round(fpsFrameCount * 1000 / elapsedMS);
+        fpsFrameCount = 0;
+        fpsWindowStart = apioxTime.now();
     }
 }
 

@@ -5,18 +5,21 @@ import { player } from '../gameRoom/player.js';
 import { apioxEvent } from '../apiox/event.js';
 import { idOfAnimal, animalArray, Animal, newAnimal } from '../gameRoom/animals/animalIds.js';
 import { initAnimalY } from '../gameRoom/animals/instance/generic.js';
+import { clock } from '../gameRoom/nature/sky.js';
 
 interface Enable {
     spawnZombie: boolean;
     goUnderCave: boolean;
     getCoal: boolean;
     selfHarm: boolean;
+    controlTimeStream: boolean;
 }
 const enable: Enable = {
     spawnZombie: false,
     goUnderCave: false,
     getCoal: false,
     selfHarm: false,
+    controlTimeStream: false,
 };
 
 function spawnZombies(count: number, spacing: number): void {
@@ -35,6 +38,13 @@ function goToUnderCave(): void {
 
 function getCoal(): void {
     inventory.items[0] = new Slots(idOfItem.coal, 64);
+}
+
+function registerTimeStream(): void {
+    apioxEvent.onKeyDown((ev): void => {
+        if (ev.key !== 't') {return;}
+        clock.timer += 200;
+    });
 }
 
 function main(): void {
@@ -60,6 +70,10 @@ function main(): void {
             if (ev.key !== 'h') {return;}
             player.hurt(2);
         });
+    }
+
+    if (enable.controlTimeStream) {
+        registerTimeStream();
     }
 }
 main();

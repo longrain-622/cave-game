@@ -1,6 +1,7 @@
 import { version } from "../../../constants/generic.js";
 import { BlockPos, chunk, world_height } from "../../world.js";
 import { player } from "../../player.js";
+import { renderFPS } from "../../rendering/rendering.js";
 import { apioxEvent } from "../../../apiox/event.js";
 import { textStyle1 } from "../../../constants/pixiStyles.js";
 import { guiApp } from "../application.js";
@@ -15,7 +16,7 @@ interface DebugMessage {
 const debugMessage: DebugMessage = {
     title: 'CaveGame ' + version,
     author: 'Made by Sinuxu.',
-    fps: '0 fps',
+    fps: '0 fps VSync',
     playerPosition: 'XY: 0 / 0'
 };
 
@@ -121,11 +122,6 @@ apioxEvent.onKeyDown((ev): void => {
     debugScreen.container.visible = debugScreen_isOpening;
 });
 
-function fps(delta: number): number {
-    if (delta <= 0) {return 0;}
-    return Math.round(60 / delta);
-}
-
 function playerPosition(player_x: number, player_y: number): BlockPos {
     return {
         x: Math.floor((player_x / 64 - chunk.left_number * 16) * 10) / 10,
@@ -133,20 +129,20 @@ function playerPosition(player_x: number, player_y: number): BlockPos {
     };
 }
 
-function updateDebugMessage(delta: number): void {
-    debugMessage.fps = String(fps(delta)) + ' fps';
+function updateDebugMessage(): void {
+    debugMessage.fps = String(renderFPS) + ' fps VSync';
     const pos: BlockPos = playerPosition(player.x, player.y);
     debugMessage.playerPosition = 'XY: ' + String(pos.x) + ' / ' + String(pos.y);
 }
 
-export function updateDebugScreen(delta: number): void {
+export function updateDebugScreen(): void {
     if (!debugScreen_isOpening) {return;}
 
     if (!debugScreenPixi_inited) {
         debugScreen.init();
     }
 
-    updateDebugMessage(delta);
+    updateDebugMessage();
 
     debugScreen.title.text = debugMessage.title;
     debugScreen.author.text = debugMessage.author;

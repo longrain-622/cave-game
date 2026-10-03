@@ -45,5 +45,5 @@ export function gameLoop(delta: number): void {
     lookBlocks();
     gameGuiLoop(delta);
     drawDeadPage();
-    updateDebugScreen(delta);
+    updateDebugScreen();
 }

@@ -1,4 +1,8 @@
 export const apioxTime = {
+    now(): number {
+        return Date.now();
+    },
+
     /**
      * Timeout Function
      * @param func function that will run
