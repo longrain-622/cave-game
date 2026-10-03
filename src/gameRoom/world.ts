@@ -33,22 +33,38 @@ export interface BlockState {
     type: number;
     behind: number; // 背后方块的类型 id，air 表示无背景
     direction: number; // 方向 0左或默认 1右
+    // 通用的方块附加状态，含义由方块类型决定，默认 0
+    // 水：0 水源、1~7 水平水流（数字越大水量越大）、8 竖直水流；水源与竖直水流不使用 direction
+    condition: number;
 }
-export function newBlockState(type: number, behind: number = idOfBlock.air, direction: number = 0): BlockState {
+export function newBlockState(type: number, behind: number = idOfBlock.air, direction: number = 0, condition: number = 0): BlockState {
     return {
         type: type,
         behind: behind,
         direction: direction,
+        condition: condition,
     };
 }
 
 export const changePos: BlockPos[] = []; // 待处理的方块坐标
 export const lightPos: BlockPos[] = []; // 需要计算光照的
 
+// stone_dark 被别的方块占用时退到背景层，格子再变回空气时又从背景层回到前景
+function keepStoneDark(old: BlockState | undefined, next: BlockState): BlockState {
+    if (old && old.type === idOfBlock.stone_dark && next.type !== idOfBlock.stone_dark) {
+        return newBlockState(next.type, idOfBlock.stone_dark, next.direction, next.condition);
+    }
+    if (next.type === idOfBlock.air && next.behind === idOfBlock.stone_dark) {
+        return newBlockState(idOfBlock.stone_dark, next.behind, next.direction, next.condition);
+    }
+    return next;
+}
+
 // 所有修改 world 数组的操作必须使用该函数
 export function setWorldState(pos: BlockPos, state: BlockState): void {
     if (isOutOfBounds(pos.y, pos.x)) {return;}
-    const idx: number = registerBlockState(state);
+    const next: BlockState = keepStoneDark(getBlockState(world[pos.y][pos.x]), state);
+    const idx: number = registerBlockState(next);
     if (world[pos.y][pos.x] === idx) {return;}
     world[pos.y][pos.x] = idx;
 
@@ -109,8 +125,13 @@ export function blockStateAt(x: number, y: number): BlockState {
 // 只替换 type 的新状态 改变方块类型时统一用它
 export function stateWithType(x: number, y: number, type: number): BlockState {
     const old: BlockState = blockStateAt(x, y);
-    const newState: BlockState = newBlockState(type, old.behind, old.direction);
+    const newState: BlockState = newBlockState(type, old.behind, old.direction, old.condition);
     return newState;
+}
+
+// 该列生成时使用的全局 X 坐标
+export function worldXAt(col: number): number {
+    return col - chunk.left_number * chunk.width;
 }
 
 export function isOutOfBounds(row: number, col: number): boolean { // y, x
@@ -147,6 +168,7 @@ const stateFields: Record<StateFieldKey, { bits: number; offset: number }> = {
     // behind 存方块 id 会有负值，先加 offset 抬到非负区间，否则符号位会串进高位字段
     behind: { bits: 8, offset: 128 }, // 背景方块 id，8 位可表示 -128 ~ 127
     direction: { bits: 2, offset: 0 },
+    condition: { bits: 4, offset: 0 }, // 附加状态，4 位可表示 0 ~ 15
 };
 
 function keyOf(state: BlockState): number {

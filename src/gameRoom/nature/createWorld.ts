@@ -5,6 +5,7 @@ import { eventBus } from "../others/eventBus.js";
 import { idOfBlock } from "./blockMecha/blocks.js";
 import { readingWorld, coverWhenSave } from "../gameState.js";
 import { notNullUndefined } from "../../constants/utils.js";
+import { resumeWaterFlow } from "./blockMecha/bmFunction.js";
 
 // 温度类型常量
 const TEMP = {
@@ -162,6 +163,11 @@ function getTemperatureFromNoise(x: number, tempNoise: PerlinNoise): number {
     }
 }
 
+// 读取世界坐标 X 处的温度类型
+export function getTemperatureAt(worldX: number): number {
+    return getTemperatureFromNoise(worldX, temperatureNoise);
+}
+
 // 读取临时区块数组的方块类型 id
 function typeOf(worlding: number[][], x: number, y: number): number {
     return getBlockState(worlding[y][x]).type;
@@ -242,12 +248,32 @@ function createChunk(startX: number, behind: boolean): void { // startX:当前�
                     break;
             }
 
-            if (y === g) {worldLine.push(toIndex(surfaceBlock));}
-            else if (y > g && y <= s) {
-                if (temp === 1 && y >= g + getRandomInt(3, 4)) {worldLine.push(toIndex(idOfBlock.sandstone));}
-                else {worldLine.push(toIndex(dirtBlock));}
-            } else if (y > s) {worldLine.push(toIndex(stoneBlock));}
-            else {worldLine.push(toIndex(idOfBlock.air));}
+            const surfaceIndex: number = registerBlockState(newBlockState(surfaceBlock, surfaceBlock));
+            const dirtIndex: number = registerBlockState(newBlockState(dirtBlock, dirtBlock));
+            const stoneIndex: number = registerBlockState(newBlockState(stoneBlock, stoneBlock));
+
+            if (y === g) {
+                if (y > sealevel + 1) {
+                    worldLine.push(dirtIndex);
+                } else {
+                    worldLine.push(surfaceIndex);
+                }
+            } else if (y > g && y <= s) {
+                if (temp === 1 && y >= g + getRandomInt(3, 4)) {
+                    const sandstoneIndex: number = registerBlockState(newBlockState(idOfBlock.sandstone, idOfBlock.sandstone));
+                    worldLine.push(sandstoneIndex);
+                } else {
+                    worldLine.push(dirtIndex);
+                }
+            } else if (y > s) {
+                worldLine.push(stoneIndex);
+            } else {
+                if (y > sealevel) {
+                    worldLine.push(toIndex(idOfBlock.water));
+                } else {
+                    worldLine.push(toIndex(idOfBlock.air));
+                }
+            }
         }
         worlding.push(worldLine);
     }
@@ -442,8 +468,9 @@ function createWorldMain(): void {
         } else {
             chunk.left_number = 0;
         }
+        resumeWaterFlow();
     }
 }
 createWorldMain();
 
-export { createChunkAnyTime, lowest_point, seed };
+export { createChunkAnyTime, lowest_point, seed, TEMP };

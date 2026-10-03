@@ -1,4 +1,5 @@
 export enum idOfBlock {
+    water = -12,
     torch = -11,
     fire = -10,
     chest = -9,
@@ -75,6 +76,7 @@ const block = {
     bedrock: newBlock(idOfBlock.bedrock, hardness.no),
     fire: newBlock(idOfBlock.fire, hardness.no),
     torch: newBlock(idOfBlock.torch, 0),
+    water: newBlock(idOfBlock.water, hardness.no),
 };
 
 export const blocksArray: Blocks[] = [
@@ -85,7 +87,7 @@ export const blocksArray: Blocks[] = [
     block.stone_dark, block.chest, block.furnace,
     block.glass,
     block.andesite, block.diorite, block.granite,
-    block.bedrock, block.fire, block.torch,
+    block.bedrock, block.fire, block.torch, block.water
 ];
 
 export function isAlphaBlock(id: number): boolean {
@@ -94,7 +96,7 @@ export function isAlphaBlock(id: number): boolean {
         case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
         case idOfBlock.deadBush: case idOfBlock.cactus: case idOfBlock.invicon_grass:
         case idOfBlock.air: case idOfBlock.leaves: case idOfBlock.glass:
-        case idOfBlock.torch:
+        case idOfBlock.torch: case idOfBlock.water:
             return true;
         default: return false;
     }
@@ -110,7 +112,7 @@ export function canBehind(id: number): boolean { // 可以位于背景层的方�
         case idOfBlock.crafting_table: case idOfBlock.chest: case idOfBlock.furnace:
         case idOfBlock.invicon_grass: case idOfBlock.cactus: case idOfBlock.deadBush:
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top: case idOfBlock.oak_door_top_open:
-        case idOfBlock.torch:
+        case idOfBlock.torch: case idOfBlock.water:
             return false;
         default: return true;
     }
@@ -118,9 +120,38 @@ export function canBehind(id: number): boolean { // 可以位于背景层的方�
 
 export function isLightSource(id: number): boolean {
     switch (id) {
-        case idOfBlock.torch:
+        case idOfBlock.torch: case idOfBlock.fire:
             return true;
         default: return false;
+    }
+}
+
+// 水的 condition 取值：0 水源、1~7 水平水流（数字越大水量越大）、8 竖直水流
+export const WATER_SOURCE: number = 0;
+export const WATER_FLOW_MAX: number = 7;
+export const WATER_FALLING: number = 8;
+
+// 会被水冲毁的方块：火把、火、杂草、仙人掌、枯木
+export function washedByWater(id: number): boolean {
+    switch (id) {
+        case idOfBlock.torch: case idOfBlock.fire: case idOfBlock.deadBush:
+        case idOfBlock.cactus: case idOfBlock.invicon_grass:
+            return true;
+        default: return false;
+    }
+}
+
+// 水能进入的格子：空气、会被水冲毁的方块，以及 stone_dark（洞穴暗岩，水可以穿过）
+export function canWaterFlowInto(id: number): boolean {
+    return id === idOfBlock.air || id === idOfBlock.stone_dark || washedByWater(id);
+}
+
+// 水是否被该方块阻挡
+export function blocksWater(id: number): boolean {
+    switch (id) {
+        case idOfBlock.air: case idOfBlock.stone_dark:
+            return false;
+        default: return !washedByWater(id);
     }
 }
 

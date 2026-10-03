@@ -58,6 +58,7 @@ interface WorldArchive {
     world: number[][];
     // 调色板（世界格存的是其索引）。旧存档没有该字段，读档时按类型 id 迁移；
     // 旧存档的 behind 为布尔值，读档时统一转成 air；旧存档的状态没有 direction，读档时补 0；
+    // 旧存档的状态没有 condition（方块附加状态），读档时补 0（水即水源）；
     // 旧存档遗留的 underCave 字段已废弃，读档时忽略
     palette?: BlockState[];
     lowest_point: number;

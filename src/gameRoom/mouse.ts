@@ -126,7 +126,7 @@ function putBlock(item: number, behind: boolean): boolean {
 
     if (behind) {
         if (item >= 512 || state.type === idOfBlock.stone_dark || state.behind !== idOfBlock.air || !canBehind(item)) {return false;}
-        setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(state.type, item, state.direction));
+        setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(state.type, item, state.direction, state.condition));
         return true;
     }
 
@@ -230,7 +230,7 @@ export function mouseAct(delta: number): void {
             specialMouseBreak(mine_mousex, mine_mousey);
 
             if (mineBehind) { // 挖背景
-                setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(state.type, idOfBlock.air, state.direction));
+                setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(state.type, idOfBlock.air, state.direction, state.condition));
             } else if (state.behind === idOfBlock.stone_dark) {
                 setWorldState({ x: mine_mousex, y: mine_mousey }, newBlockState(idOfBlock.stone_dark));
             } else {

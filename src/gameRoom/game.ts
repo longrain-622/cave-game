@@ -42,7 +42,7 @@ export function gameLoop(delta: number): void {
     if (entityBlock_array.length > 0) {look_entityBlock(delta);}
     skyLoop();
 
-    lookBlocks();
+    lookBlocks(delta);
     gameGuiLoop(delta);
     drawDeadPage();
     updateDebugScreen();

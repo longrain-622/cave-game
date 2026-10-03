@@ -8,10 +8,13 @@ import {
     setGrassDirt,
     snowGrass,
     torchDrop,
+    waterFlow,
+    setWaterFlow,
 } from './bmFunction.js';
 
-function lookBlocks(): void { // 检测方块并触发方块的机制
+function lookBlocks(delta: number): void { // 检测方块并触发方块的机制
     setGrassDirt();
+    setWaterFlow(delta);
 
     if (changePos.length === 0) {return;}
 
@@ -26,6 +29,7 @@ function lookBlocks(): void { // 检测方块并触发方块的机制
 
         looking_block = grass_and_dirt(looking_block, x, y);
         looking_block = sand_gravity(looking_block, x, y);
+        waterFlow(x, y);
         looking_block = inviconGrass(looking_block, x, y);
         looking_block = cactus_and_deadBush(looking_block, x, y);
         looking_block = door(looking_block, x, y);

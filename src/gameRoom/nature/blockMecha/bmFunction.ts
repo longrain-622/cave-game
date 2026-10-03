@@ -1,9 +1,9 @@
 import { entityBlock_array, newEntityBlock } from "../entityBlock.js";
-import { isOutOfBounds, setWorldState, BlockPos, BlockState, stateWithType, blockTypeAt, blockStateAt } from "../../world.js";
+import { isOutOfBounds, setWorldState, BlockPos, BlockState, stateWithType, blockTypeAt, blockStateAt, newBlockState, getBlockState, world, world_height } from "../../world.js";
 import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
-import { idOfBlock, canOver } from "./blocks.js";
+import { idOfBlock, canOver, canWaterFlowInto, blocksWater, WATER_SOURCE, WATER_FLOW_MAX, WATER_FALLING } from "./blocks.js";
 import { mouse } from "../../mouse.js";
 import { lowest_point } from "../createWorld.js";
 import { idOfItem } from "../../dropped/itemIds.js";
@@ -205,4 +205,162 @@ export function torchDrop(looking: number, lookx: number, looky: number): number
     }
 
     return looking;
+}
+
+const WATER_TICK_DELTA: number = 6; // 水每积累多少 delta 推进一次（约 0.1 秒，与帧率无关）
+const WATER_MAX_PER_TICK: number = 512; // 单次推进的上限
+const waterPending: BlockPos[] = []; // 待处理的水格
+let waterTickTimer: number = 0;
+
+interface WaterResult {
+    strength: number; // -1 表示应当干涸，0 是水源，1~8 是水流
+    direction: number;
+}
+
+// 水向下游扩散时用的强度
+function flowStrength(condition: number): number {
+    if (condition === WATER_SOURCE || condition === WATER_FALLING) {return WATER_FLOW_MAX;}
+    return condition - 1;
+}
+
+function isWaterSource(x: number, y: number): boolean {
+    if (blockTypeAt(x, y) !== idOfBlock.water) {return false;}
+    return blockStateAt(x, y).condition === WATER_SOURCE;
+}
+
+// 写回水格，保留背景层
+function writeWater(x: number, y: number, condition: number, direction: number): void {
+    setWorldState({ x: x, y: y }, newBlockState(idOfBlock.water, blockStateAt(x, y).behind, direction, condition));
+}
+
+// 侧向来源的强度
+function sideFeedStrength(x: number, y: number, from_x: number): number {
+    const state: BlockState = blockStateAt(from_x, y);
+    if (state.type !== idOfBlock.water) {return 0;}
+    if (state.condition === WATER_SOURCE || state.condition === WATER_FALLING) {return WATER_FLOW_MAX;}
+
+    // direction 0 is left, 1 is right
+    if (state.direction === 1 && from_x < x) {return state.condition - 1;}
+    if (state.direction === 0 && from_x > x) {return state.condition - 1;}
+    return 0;
+}
+
+// 按邻居重算水格自己的状态
+function evaluateWater(x: number, y: number, state: BlockState): WaterResult {
+    let sources: number = 0;
+    if (isWaterSource(x, y - 1)) {sources++;}
+    if (isWaterSource(x - 1, y)) {sources++;}
+    if (isWaterSource(x + 1, y)) {sources++;}
+    if (sources >= 2 && blocksWater(blockTypeAt(x, y + 1))) {
+        return { strength: WATER_SOURCE, direction: state.direction };
+    }
+
+    const aboveIsWater: boolean = blockTypeAt(x, y - 1) === idOfBlock.water;
+
+    if (aboveIsWater) {
+        return { strength: WATER_FALLING, direction: state.direction };
+    }
+
+    // 竖直水流
+    if (state.condition === WATER_FALLING) {
+        return { strength: -1, direction: state.direction };
+    }
+
+    // 水平水流
+    const fromLeft: number = sideFeedStrength(x, y, x - 1);
+    const fromRight: number = sideFeedStrength(x, y, x + 1);
+    if (fromLeft > 0 || fromRight > 0) {
+        if (fromLeft === fromRight) {return { strength: fromLeft, direction: state.direction };}
+        return fromLeft > fromRight
+            ? { strength: fromLeft, direction: 1 }
+            : { strength: fromRight, direction: 0 };
+    }
+
+    if (state.condition <= 1) {
+        return { strength: -1, direction: state.direction };
+    }
+    return { strength: state.condition - 1, direction: state.direction };
+}
+
+// 向外扩散，canWaterFlowInto 允许的格子才能进水（火把、杂草等会被冲毁）
+function spreadWater(x: number, y: number, condition: number, direction: number): void {
+    const below: number = blockTypeAt(x, y + 1);
+    if (canWaterFlowInto(below)) {
+        writeWater(x, y + 1, WATER_FALLING, 0);
+        return;
+    }
+    if (below === idOfBlock.water && condition !== WATER_SOURCE) {
+        const belowIsSource: boolean = blockStateAt(x, y + 1).condition === WATER_SOURCE;
+        const selfIsFalling: boolean = condition === WATER_FALLING;
+        if (selfIsFalling || belowIsSource) {return;}
+    }
+
+    const flow: number = flowStrength(condition);
+    if (flow <= 0) {return;}
+
+    if (condition === WATER_SOURCE || condition === WATER_FALLING) {
+        if (canWaterFlowInto(blockTypeAt(x - 1, y))) {writeWater(x - 1, y, flow, 0);}
+        if (canWaterFlowInto(blockTypeAt(x + 1, y))) {writeWater(x + 1, y, flow, 1);}
+        return;
+    }
+
+    const nextX: number = direction === 0 ? x - 1 : x + 1;
+    if (canWaterFlowInto(blockTypeAt(nextX, y))) {writeWater(nextX, y, flow, direction);}
+}
+
+function updateWater(x: number, y: number): boolean { // 返回是否干涸了
+    const state: BlockState = blockStateAt(x, y);
+    if (state.type !== idOfBlock.water) {return false;} // 陈旧条目：该格已经不是水
+
+    if (state.condition === WATER_SOURCE) {
+        spreadWater(x, y, WATER_SOURCE, state.direction);
+        return false;
+    }
+
+    const result: WaterResult = evaluateWater(x, y, state);
+    if (result.strength < 0) { // 干涸
+        setWorldState({ x: x, y: y }, stateWithType(x, y, idOfBlock.air));
+        return true;
+    }
+    if (result.strength !== state.condition || result.direction !== state.direction) {
+        writeWater(x, y, result.strength, result.direction);
+    }
+    spreadWater(x, y, result.strength, result.direction);
+    return false;
+}
+
+export function waterFlow(look_x: number, look_y: number): void { // 被改动的格子若是水，就登记到下一轮重算
+    if (blockTypeAt(look_x, look_y) !== idOfBlock.water) {return;}
+    waterPending.push({ x: look_x, y: look_y });
+}
+
+export function setWaterFlow(delta: number): void { // 每帧调用：积累到量后把这一轮登记的水格全部重算一遍
+    waterTickTimer += delta;
+    if (waterTickTimer < WATER_TICK_DELTA) {return;}
+    waterTickTimer = 0;
+
+    // 干涸会连锁带走相邻的水，同一轮里顺着排下去，否则断源后整片水要一格一格地慢慢消失
+    const positions: BlockPos[] = waterPending.splice(0);
+    let head: number = 0;
+    while (head < positions.length && head < WATER_MAX_PER_TICK) {
+        const pos: BlockPos = positions[head++];
+        if (isOutOfBounds(pos.y, pos.x)) {continue;}
+        if (!updateWater(pos.x, pos.y)) {continue;}
+        positions.push({ x: pos.x - 1, y: pos.y }, { x: pos.x + 1, y: pos.y },
+            { x: pos.x, y: pos.y - 1 }, { x: pos.x, y: pos.y + 1 });
+    }
+
+    // 超出上限的部分留到下一轮
+    for (let i: number = head; i < positions.length; i++) {waterPending.push(positions[i]);}
+}
+
+// 读档后调用：让存档里没流完的水继续按规则推进（水源不必登记）
+export function resumeWaterFlow(): void {
+    for (let y = 0; y < world_height; y++) {
+        for (let x = 0; x < world[y].length; x++) {
+            const state: BlockState | undefined = getBlockState(world[y][x]);
+            if (!state || state.type !== idOfBlock.water || state.condition === WATER_SOURCE) {continue;}
+            waterPending.push({ x: x, y: y });
+        }
+    }
 }

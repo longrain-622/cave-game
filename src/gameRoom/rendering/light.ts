@@ -232,4 +232,19 @@ export function applyBackgroundLightTint(target: PIXI.Sprite | PIXI.Container, x
     writeTint(target, backgroundTintAt(x, y));
 }
 
+// 两个 tint 的分量乘积：tint 在着色器里是按分量相乘的，
+// 因此"方块自身颜色 × 光照灰度"可以合并成一个 tint，
+// 效果等同于先给方块上色、再按光照压暗
+function multiplyTint(a: number, b: number): number {
+    const r: number = Math.round(((a >> 16) & 0xff) * ((b >> 16) & 0xff) / 255);
+    const g: number = Math.round(((a >> 8) & 0xff) * ((b >> 8) & 0xff) / 255);
+    const blue: number = Math.round((a & 0xff) * (b & 0xff) / 255);
+    return (r << 16) | (g << 8) | blue;
+}
+
+// 自带颜色的方块（水等）使用：颜色与光照合并成一次 tint 赋值，仍走 tintCache
+export function applyColoredLightTint(target: PIXI.Sprite | PIXI.Container, x: number, y: number, color: number): void {
+    writeTint(target, multiplyTint(lightTintAt(x, y), color));
+}
+
 export { getLight, maxLight };

@@ -7,6 +7,7 @@ import { mouse } from '../mouse.js';
 import { idOfBlock, canBehind } from '../nature/blockMecha/blocks.js';
 import { eventBus } from '../others/eventBus.js';
 import { applyLightTint, applyBackgroundLightTint } from './light.js';
+import { drawWaterSprite } from './blockFrames.js';
 
 import * as PIXI from 'pixi.js';
 import { apiMethod } from '../../apiox/method.js';
@@ -290,7 +291,8 @@ export function updateWorldPixi(): void {
             const draw_x: number = worldCol * 64 - player.x + player.screen_x;
             const state: BlockState = getBlockState(row[worldCol]);
 
-            if (!drawTorchSprite(sprite, state, draw_x, draw_y, worldCol, worldRow)) {
+            if (!drawTorchSprite(sprite, state, draw_x, draw_y, worldCol, worldRow)
+                && !drawWaterSprite(sprite, state, draw_x, draw_y, worldCol, worldRow)) {
                 const texture: PIXI.Texture = blockTextures[state.type];
                 if (texture) {
                     sprite.texture = texture;
