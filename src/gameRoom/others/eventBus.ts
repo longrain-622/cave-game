@@ -3,6 +3,7 @@ type EventMap = {
     'player:footstep': [surface: number]; // []为无参数
     'player:hurt': [];
     'player:attack': [];
+    'player:fallInWater': [];
     'block:break': [blockId: number];
     'block:put': [blockId: number];
     'item:pickup': [];

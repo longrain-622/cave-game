@@ -30,6 +30,17 @@ interface PlayerParts {
     taking: PIXI.Sprite | null;
 }
 
+export enum playerState {
+    normal, swimming
+}
+
+// 游泳物理参数
+const waterGravRatio: number = 0.6; // 水中重力衰减比例
+const waterDrag: number = 0.1; // 水的阻力系数：越小惯性越明显（出水能弹多远、入水能沉多深都看它）
+const swimThrust: number = 1; // 水中按住跳跃键的向上推力（像素/帧²）
+const swimSpeedRatio: number = 0.4; // 水中水平移动速度比例
+const minRiseVsp: number = 3; // 按住跳跃时的最小上浮速度（像素/帧），决定振幅下限
+
 class Players {
     hp: number;
     face: number;
@@ -40,6 +51,8 @@ class Players {
     grav: number; jumpspeed: number; vsp: number; can_jump: boolean;
     leg_rad: number; hand_rad: number; needRotateHand: boolean; isRotateRighthand: boolean;
     rightOnMouse: boolean;
+    state: playerState;
+    jumpHeld: boolean;
     parts: PlayerParts;
 
     get width(): number {
@@ -61,6 +74,8 @@ class Players {
         this.grav = 0.5; this.jumpspeed = -10; this.vsp = 0; this.can_jump = false;
         this.leg_rad = 0; this.hand_rad = 0; this.needRotateHand = false; this.isRotateRighthand = false;
         this.rightOnMouse = false;
+        this.state = playerState.normal;
+        this.jumpHeld = false;
         this.parts = this.nullParts();
     }
 
@@ -170,52 +185,87 @@ function loadPlayerTexture(): void {
     }
 }
 
-apioxEvent.onKeyDoubleClick((detail) => {
-    const key = detail.key;
-    if (key === 'a' || key === 'd') {
+function registerPlayerInput(): void {
+    apioxEvent.onKeyDoubleClick((detail): void => {
+        if (!(detail.key === 'a' || detail.key === 'd')) {return;}
+        if (!(player.state === playerState.normal && player.can_jump)) {return;}
         player.acc = 3;
-    }
-});
+    });
 
-apioxEvent.onKeyDown((e) => {
-    if (uistate.invenUI_isOpening()) {return;}
-    switch (e.key) {
-        case 'a': player.face = -1; player.left = 1; break;
-        case 'd': player.face = 1; player.right = 1; break;
-        case 'w': case ' ':
-            if (player.can_jump && !uistate.invenUI_isOpening()) {
-                player.vsp = player.jumpspeed;
-                player.can_jump = false;
-            }
-            break;
-    }
-});
+    apioxEvent.onKeyDown((e): void => {
+        if (uistate.invenUI_isOpening()) {return;}
+        switch (e.key) {
+            case 'a': player.face = -1; player.left = 1; break;
+            case 'd': player.face = 1; player.right = 1; break;
+            case 'w': case ' ':
+                player.jumpHeld = true;
+                if (player.state === playerState.swimming) {break;} // 水中上浮由 playerJump 处理
+                if (player.can_jump && !uistate.invenUI_isOpening()) {
+                    player.vsp = player.jumpspeed;
+                    player.can_jump = false;
+                }
+                break;
+        }
+    });
 
-apioxEvent.onKeyUp((e) => {
-    if (e.key === 'a' || e.key === 'd') {
-        player.left = 0; player.right = 0;
-        player.acc = 0;
-    }
-});
+    apioxEvent.onKeyUp((e): void => {
+        switch (e.key) {
+            case 'a': case 'd':
+                player.left = 0;
+                player.right = 0;
+                player.acc = 0;
+                break;
+            case 'w': case ' ':
+                player.jumpHeld = false;
+                break;
+        }
+    });
 
-apioxEvent.listenGlobal('mousedown', () => {
-    if (!uistate.invenUI_isOpening() && mouse.can_use) { // 玩家手部旋转触发
-        player.needRotateHand = true;
+    apioxEvent.listenGlobal('mousedown', (): void => {
+        if (!uistate.invenUI_isOpening() && mouse.can_use) { // 玩家手部旋转触发
+            player.needRotateHand = true;
+        }
+    });
+}
+
+// 某个像素点是否处于水方块中
+function isWaterAt(x: number, y: number): boolean {
+    return blockTypeAt(Math.floor(x / 64), Math.floor(y / 64)) === idOfBlock.water;
+}
+
+// 刷新玩家状态
+function updatePlayerState(): void {
+    const headInWater: boolean = isWaterAt(player.x + 32, player.y + 8); // 头顶
+    const bodyInWater: boolean = isWaterAt(player.x + 32, player.y + 64); // 身体中部
+    const feetInWater: boolean = isWaterAt(player.x + 32, player.y + 120); // 脚底
+    const lastState: number = player.state;
+    player.state = (headInWater || bodyInWater || feetInWater) ? playerState.swimming : playerState.normal;
+
+    if (lastState !== player.state && player.state === playerState.swimming) {
+        eventBus.emit('player:fallInWater');
     }
-});
+}
 
 function playerMove(delta: number): void { // 玩家移动
     let dir = player.right - player.left;
 
     if (dir != 0) {
+        const speed: number = (player.move_speed + player.acc)
+            * (player.state === playerState.swimming ? swimSpeedRatio : 1);
         if (!place_meeting(player.x + player.right * 64, player.y + 120)
         && !place_meeting(player.x + player.right * 64, player.y + 20)) {
-            player.x += dir * (player.move_speed + player.acc) * delta;
+            player.x += dir * speed * delta;
         }
     }
 
     // 改变玩家腿部旋转方向
-    if (player.left === 1 || player.right === 1) {
+    if (player.state === playerState.swimming) {
+        const kicking: boolean = player.left === 1 || player.right === 1 || player.jumpHeld;
+        if (kicking || (player.leg_rad !== 0 && player.leg_rad < 2 * Math.PI)) {
+            player.leg_rad += 0.4 * delta;
+            if (player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
+        }
+    } else if (player.left === 1 || player.right === 1) {
         player.leg_rad += (0.3 + player.acc / 48) * delta;
         if (player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
     } else {
@@ -240,18 +290,27 @@ function playerMove(delta: number): void { // 玩家移动
     }
 }
 
-function playerJump(delta: number): void { // 玩家跳跃
-    player.vsp += player.grav * delta;
+function playerJump(delta: number): void { // 玩家跳跃（水中为划水与水的阻力）
+    if (isWaterAt(player.x + 32, player.y + 120)) {
+        player.vsp += player.grav * waterGravRatio * delta;
+        if (player.jumpHeld) {player.vsp -= swimThrust * delta;}
+        player.vsp -= player.vsp * waterDrag * delta;
+
+        if (player.jumpHeld && player.vsp < 0 && player.vsp > -minRiseVsp) {
+            player.vsp = -minRiseVsp;
+        }
+    } else {
+        player.vsp += player.grav * delta;
+    }
     if (player.vsp != 0) {
         for (let i = 0; i < Math.abs(player.vsp); i++) {
             if (player.vsp > 0) {
                 if (!(place_meeting(player.x+8, player.y+128) || place_meeting(player.x + 56, player.y + 128))) {
                     player.y++;
                 } else {
-                    // 计算摔落伤害
                     const fallSpeed = player.vsp;
                     if (fallSpeed > 16) {
-                        player.hurt(Math.floor((fallSpeed - 16) / 2));
+                        player.hurt(Math.floor((fallSpeed - 16) / 2)); // 计算摔落伤害
                     }
 
                     player.vsp = 0;
@@ -298,16 +357,13 @@ function updateTakingItem(): void {
     player.parts.taking.visible = true;
     player.parts.taking.texture = tex;
 
-    // 先赋值纹理再按纹理尺寸算 scale，避免 width/height setter 残留 _width 导致拉伸
-    if (isToolItem) {
-        // 工具（flipDraw 物品的 scale.x 再取反：对角镜像 = 轴翻转 + 旋转 90°，旋转见下方）
-        player.parts.taking.anchor.set(0, 1);
+    if (isToolItem) { // 先赋值纹理再按纹理尺寸算 scale，避免 width/height setter 残留 _width 导致拉伸
+        player.parts.taking.anchor.set(0, 1); // 工具（flipDraw 物品的 scale.x 再取反：对角镜像 = 轴翻转 + 旋转 90°，旋转见下方）
         player.parts.taking.scale.set(
             (player.rightOnMouse ? 1 : -1) * (flipDiag ? -1 : 1) * 48 / tex.orig.width,
             48 / tex.orig.height
         );
-    } else {
-        // 普通物品
+    } else { // 普通物品
         player.parts.taking.anchor.set(0.5);
         player.parts.taking.scale.set(24 / tex.orig.width, 24 / tex.orig.height);
     }
@@ -378,12 +434,15 @@ function updatePlayerRender(): void {
 function main(): void {
     player.initPlayer(readingWorld);
     enableKeyDoubleClickDetection();
+    registerPlayerInput();
     loadPlayerTexture();
 }
 main();
 
 function playerLoop(delta: number): void {
     player.rightOnMouse = mouse.x > player.screen_x + player.width / 2;
+
+    updatePlayerState();
 
     // 打开背包无法移动
     if (!uistate.invenUI_isOpening() && player.hp > 0){ 

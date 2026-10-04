@@ -1,8 +1,9 @@
 // audioManager.ts
 import { eventBus } from './eventBus.js';
 import { soundManager } from './soundManager.js';
-import { getRandomInt } from '../const.js';
+import { getRandomInt } from '../../constants/utils.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
+import { player, playerState } from '../player.js';
 
 function playBlockSound(id: number, isBreaking: boolean): void {
     switch (id) {
@@ -62,26 +63,50 @@ function playBlockSound(id: number, isBreaking: boolean): void {
     }
 }
 
-eventBus.on('block:break', (blockId: number) => {
-    playBlockSound(blockId, true);
-});
-eventBus.on('block:put', (blockId: number) => {
-    playBlockSound(blockId, false);
-});
+function registerEventAudio(): void {
+    eventBus.on('block:break', (blockId: number): void => {
+        playBlockSound(blockId, true);
+    });
 
-eventBus.on('item:pickup', () => {
-    soundManager.play('pop', 0.4);
-});
+    eventBus.on('block:put', (blockId: number): void => {
+        playBlockSound(blockId, false);
+    });
 
-eventBus.on('player:hurt', () => {
-    switch (getRandomInt(0, 2)) {
-        case 0: soundManager.play('playerhurt1'); break;
-        case 1: soundManager.play('playerhurt2'); break;
-        case 2: soundManager.play('playerhurt3'); break;
+    eventBus.on('item:pickup', (): void => {
+        soundManager.play('pop', 0.4);
+    });
+
+    eventBus.on('player:hurt', (): void => {
+        switch (getRandomInt(0, 2)) {
+            case 0: soundManager.play('playerhurt1'); break;
+            case 1: soundManager.play('playerhurt2'); break;
+            case 2: soundManager.play('playerhurt3'); break;
+        }
+    });
+
+    eventBus.on('player:attack', (): void => {
+        switch (getRandomInt(0, 1)) {
+            case 0: soundManager.play('strong1'); break;
+            case 1: soundManager.play('strong2'); break;
+        }
+    });
+
+    eventBus.on('player:fallInWater', (): void => {
+        soundManager.playOnce('waterSplash', 1, 'player:swimming');
+    });
+}
+
+export function notEventAudio(): void { // run it in the loop
+    if (player.state === playerState.swimming && !(player.left === 0 && player.right === 0)) {
+        switch (getRandomInt(0, 2)) {
+            case 0: soundManager.playOnce('swim1', 1, 'player:swimming'); break;
+            case 1: soundManager.playOnce('swim2', 1, 'player:swimming'); break;
+            case 2: soundManager.playOnce('swim3', 1, 'player:swimming'); break;
+        }
     }
-});
+}
 
-eventBus.on('player:attack', () => {
-    soundManager.play('strong' + String(getRandomInt(1, 2)));
-});
-
+function main(): void {
+    registerEventAudio();
+}
+main();

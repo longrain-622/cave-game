@@ -1,20 +1,25 @@
 import { apiObjects } from "../../apiox/dom.js";
 import { apioxTime } from "../../apiox/time.js";
 
-// soundManager.ts
+interface SoundMessage {
+    name: string;
+    url: string;
+}
+
 class SoundManager {
     private audioContext: AudioContext;
     private sounds: Map<string, AudioBuffer> = new Map();
     private loadingPromises: Map<string, Promise<void>> = new Map();
     private initPromise: Promise<void>; // 整体初始化完成的 Promise
+    private exclusivePlaying: Set<string> = new Set(); // 记录正在独占播放的音效
+    private isReady: boolean = false;
 
     constructor() {
         this.audioContext = new (apiObjects.win.AudioContext || (apiObjects.win as any).webkitAudioContext)();
-        // 启动自动初始化（异步，不阻塞模块导出）
         this.initPromise = this.init();
     }
 
-    //BGM 相关
+    // BGM 相关
     private bgmList: string[] = ['wethands', 'dryhands', 'danny', 'clark', 'haggstrom', 'livingmice', 'miceonvenus', 'subwoofer', 'sweden']; // 音效名称
     private currentBgmSource: AudioBufferSourceNode | null = null;
     private currentBgmGain: GainNode | null = null;
@@ -23,7 +28,7 @@ class SoundManager {
 
     // 自动加载所有游戏音效
     private async init(): Promise<void> {
-        const soundList = [
+        const soundList: SoundMessage[] = [
             { name: 'wethands', url: 'assets/sounds/bgm/wethands.mp3' },
             { name: 'dryhands', url: 'assets/sounds/bgm/dryhands.mp3' },
             { name: 'danny', url: 'assets/sounds/bgm/danny.mp3' },
@@ -54,9 +59,16 @@ class SoundManager {
             { name: 'glassBreak1', url: 'assets/sounds/dig/glassBreak1.ogg' },
             { name: 'glassBreak2', url: 'assets/sounds/dig/glassBreak2.ogg' },
             { name: 'glassBreak3', url: 'assets/sounds/dig/glassBreak3.ogg' },
-            //此处继续添加其他音效
+            { name: 'waterSplash', url: 'assets/sounds/water/Water_splash1.ogg' },
+            { name: 'bucketEmpty', url: 'assets/sounds/water/Bucket_empty1.ogg' },
+            { name: 'bucketFill', url: 'assets/sounds/water/Bucket_fill1.ogg' },
+            { name: 'swim1', url: 'assets/sounds/water/Swim5.ogg' },
+            { name: 'swim2', url: 'assets/sounds/water/Swim6.ogg' },
+            { name: 'swim3', url: 'assets/sounds/water/Swim7.ogg' },
+            // 此处继续添加其他音效
         ];
         await Promise.all(soundList.map(s => this.loadSound(s.name, s.url)));
+        this.isReady = true;
         console.log('all sounds were loaded');
     }
 
@@ -89,11 +101,9 @@ class SoundManager {
     private async playRandomBGM(volume: number): Promise<void> {
         if (!this.isBgmPlaying) {return;}
 
-        // 随机选择一首
         const randomIndex = Math.floor(Math.random() * this.bgmList.length);
         const bgmName = this.bgmList[randomIndex];
 
-        // 等待 AudioContext 恢复（如果尚未运行）
         if (this.audioContext.state === 'suspended') {
             await this.audioContext.resume();
         }
@@ -105,10 +115,9 @@ class SoundManager {
             return;
         }
 
-        // 创建音频源
         const source = this.audioContext.createBufferSource();
         source.buffer = buffer;
-        source.loop = false; // 不循环，靠定时器控制下一首
+        source.loop = false;
 
         const gainNode = this.audioContext.createGain();
         gainNode.gain.value = volume;
@@ -116,11 +125,9 @@ class SoundManager {
         source.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
 
-        // 记录当前播放的节点
         this.currentBgmSource = source;
         this.currentBgmGain = gainNode;
 
-        // 监听播放结束事件
         source.onended = () => {
             this.scheduleNextBGM(volume);
         };
@@ -134,7 +141,7 @@ class SoundManager {
         this.bgmTimer = apioxTime.setOut(() => {
             this.bgmTimer = null;
             this.playRandomBGM(volume).catch(e => console.error('cannot play sound:', e));
-        }, 600000); //10min
+        }, 600000);
     }
 
     // 调整 BGM 音量
@@ -163,9 +170,10 @@ class SoundManager {
     }
 
     // 播放音效（自动等待初始化完成）
-    async play(name: string, volume: number = 1.0): Promise<void> {
-        // 等待整个初始化完成（包括所有音效加载）
-        await this.initPromise;
+    async play(name: string, volume: number = 1): Promise<void> {
+        if (!this.isReady) {
+            await this.initPromise;
+        }
 
         const buffer = this.sounds.get(name);
         if (!buffer) {
@@ -173,7 +181,6 @@ class SoundManager {
             return;
         }
 
-        // 恢复 AudioContext（自动处理自动播放策略）
         if (this.audioContext.state === 'suspended') {
             await this.audioContext.resume();
         }
@@ -184,10 +191,56 @@ class SoundManager {
         gainNode.gain.value = volume;
         source.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
+
+        source.onended = () => {
+            source.disconnect();
+            gainNode.disconnect();
+        };
+
         source.start();
     }
 
-    // 可选：提前恢复音频上下文（用于用户首次交互）
+    // group 相同的音效互相独占；不传 group 时默认用 name 作为 group
+    async playOnce(name: string, volume: number = 1, group?: string): Promise<void> {
+        if (!this.isReady) {
+            await this.initPromise;
+        }
+
+        const buffer = this.sounds.get(name);
+        if (!buffer) {
+            console.warn(`sound ${name} cannot load`);
+            return;
+        }
+
+        const key = group ?? name;
+
+        if (this.exclusivePlaying.has(key)) {
+            return;
+        }
+
+        if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume();
+        }
+
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        const gainNode = this.audioContext.createGain();
+        gainNode.gain.value = volume;
+        source.connect(gainNode);
+        gainNode.connect(this.audioContext.destination);
+
+        this.exclusivePlaying.add(key);
+
+        source.onended = () => {
+            this.exclusivePlaying.delete(key);
+            source.disconnect();
+            gainNode.disconnect();
+        };
+
+        source.start();
+    }
+
+    // 提前恢复音频上下文
     async resumeContext(): Promise<void> {
         if (this.audioContext.state === 'suspended') {
             await this.audioContext.resume();
@@ -195,5 +248,4 @@ class SoundManager {
     }
 }
 
-// 导出单例（模块加载时即开始自动初始化）
 export const soundManager = new SoundManager();

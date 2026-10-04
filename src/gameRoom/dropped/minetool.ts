@@ -1,7 +1,9 @@
 import { Blocks, blocksArray, idOfBlock } from "../nature/blockMecha/blocks.js";
 import { inventory, widgets } from "../gui/gameGUI/inventory.js";
 import { idOfItem } from "./items.js";
+import { player, playerState } from "../player.js";
 
+// 输入 ID 返回硬度
 function getBlockHardnessById(blockId: number): number {
     let left: number = 0;
     let right: number = blocksArray.length - 1;
@@ -16,10 +18,14 @@ function getBlockHardnessById(blockId: number): number {
             right = mid - 1;
         }
     }
-    return 0; //未找到返回0硬度
+    return 0;
 }
 
-export function calculateHardness(id: number): number { //根据工具等计算方块硬度
+// 根据工具等计算方块硬度
+export function calculateHardness(id: number): number {
+    if (getBlockHardnessById(id) < 0) {return -1;}
+    const swimFactor: number = player.state === playerState.swimming ? 5 : 1;
+
     switch (id) {
         case idOfBlock.stone: case idOfBlock.cobblestone: case idOfBlock.sandstone:
         case idOfBlock.iron_ore: case idOfBlock.coal_ore:
@@ -27,7 +33,7 @@ export function calculateHardness(id: number): number { //根据工具等计算�
         case idOfBlock.andesite: case idOfBlock.diorite: case idOfBlock.granite:
             switch (inventory.items[widgets.select].item) {
                 case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe: case idOfItem.iron_pickaxe:
-                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
+                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed * swimFactor;
             }
             break;
 
@@ -37,7 +43,7 @@ export function calculateHardness(id: number): number { //根据工具等计算�
         case idOfBlock.crafting_table:
             switch (inventory.items[widgets.select].item) {
                 case idOfItem.wooden_axe: case idOfItem.stone_axe: case idOfItem.iron_axe:
-                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
+                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed * swimFactor;
             }
             break;
 
@@ -45,10 +51,12 @@ export function calculateHardness(id: number): number { //根据工具等计算�
         case idOfBlock.sand: case idOfBlock.snowGrass:
             switch (inventory.items[widgets.select].item) {
                 case idOfItem.wooden_shovel: case idOfItem.stone_shovel: case idOfItem.iron_shovel:
-                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed;
+                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed * swimFactor;
             }
+            break;
 
-        default: return getBlockHardnessById(id);
+        default: return getBlockHardnessById(id) * swimFactor;
     }
-    return getBlockHardnessById(id);
+
+    return getBlockHardnessById(id) * swimFactor;
 }

@@ -364,7 +364,7 @@ function generateTrees(worlding: number[][], toIndex: (id: number) => number): v
 
         while (y < world_height && typeOf(worlding, x, y) === idOfBlock.air) {y++;}
         if (y < world_height && (typeOf(worlding, x, y) === idOfBlock.grass || typeOf(worlding, x, y) === idOfBlock.snowGrass)) { // 确保是草
-            worlding[y][x] = toIndex(idOfBlock.dirt); // 将草换成泥
+            worlding[y][x] = registerBlockState(newBlockState(idOfBlock.dirt, idOfBlock.dirt)); // 将草换成泥
             for (let k = 0; k < oak_height; k++) {
                 y--;
                 if (y >= 0) {worlding[y][x] = toIndex(idOfBlock.oak);} // 橡木

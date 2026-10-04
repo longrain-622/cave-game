@@ -20,6 +20,7 @@ import { entityBlock_array, look_entityBlock } from './nature/entityBlock.js';
 import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
 
 import { ApioxObject } from '../apiox/dom.js';
+import { notEventAudio } from './others/audioManager.js';
 
 //设置房间大小
 export const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
@@ -46,4 +47,5 @@ export function gameLoop(delta: number): void {
     gameGuiLoop(delta);
     drawDeadPage();
     updateDebugScreen();
+    notEventAudio();
 }
