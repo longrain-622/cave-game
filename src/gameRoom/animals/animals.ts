@@ -10,6 +10,8 @@ import { natureAnimals, newAnimal, Animal, animalArray } from './animalIds.js';
 import { setAnimalList } from './boids.js';
 import { animalActions } from './instance/generic.js';
 import { initAnimalY } from './instance/generic.js';
+import { blockTypeAt, world_height } from '../world.js';
+import { idOfBlock } from '../nature/blockMecha/blocks.js';
 
 const look_range: number = 64; // 渲染的范围的一半
 
@@ -46,7 +48,15 @@ function createAnimals(): void {
     if (getRandomInt(1, 5) === 3 && animalArray.length < 8) {
         const type: number = natureAnimals[getRandomInt(0, natureAnimals.length - 1)];
         const left: number = getRandomInt(0, 1) * (room.width + 512);
-        animal = newAnimal(type, Math.floor(player.x / 64 + room.width / 2 / 64 + 4) * 64 - left, player.y);
+        const x: number = Math.floor(player.x / 64 + room.width / 2 / 64 + 4) * 64 - left;
+
+        for (let k = 0; k < world_height - 1; k++) {
+            if (blockTypeAt(x, k) === idOfBlock.water) {
+                return;
+            }
+        }
+
+        animal = newAnimal(type, x, player.y);
         initAnimalY(animal);
         animalArray.push(animal);
     }

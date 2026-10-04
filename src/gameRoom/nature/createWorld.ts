@@ -278,7 +278,7 @@ function createChunk(startX: number, behind: boolean): void { // startX:当前�
         worlding.push(worldLine);
     }
 
-    // 生成树、杂草、仙人掌
+    // 生成树、杂草、仙人掌等
     generateTrees(worlding, toIndex);
     generateWeeds(worlding, toIndex);
     generateCacti(worlding, toIndex);
@@ -287,10 +287,10 @@ function createChunk(startX: number, behind: boolean): void { // startX:当前�
     for (let y = 0; y < world_height; y++) {
         for (let x = 0; x < chunk.width; x++) {
             const globalX: number = startX + x;
-            if (typeOf(worlding, x, y) !== idOfBlock.stone) {continue;} //只在石头中挖洞
+            if (typeOf(worlding, x, y) !== idOfBlock.stone) {continue;}
 
             const stoneTop: number = terrain_stone[x];
-            if (y < stoneTop + 4 || y > world_height - 10) {continue;} //垂直范围
+            if (y < stoneTop + 4 || y > world_height - 10) {continue;} // 垂直范围
 
             const noiseVal: number = caveNoise2D.fbm2D(
                 globalX * 0.025, // 横向频率（控制洞穴水平间隔）
@@ -311,28 +311,32 @@ function createChunk(startX: number, behind: boolean): void { // startX:当前�
             function getFbm2D(noiseObj: PerlinNoise): number {
                 return noiseObj.fbm2D(globalX * 0.07, y * 0.07, 2, 0.5, 2.0);
             }
+
             const ore_combined = {
                 iron: getFbm2D(ironNoise2D),
                 coal: getFbm2D(coalNoise2D),
             };
-
-            // 安山岩、闪长岩、花岗岩（优先级高于矿石，后赋值覆盖矿石）
-            const rock_combined = {
+            const rock_combined = { // 安山岩、闪长岩、花岗岩（优先级高于矿石，后赋值覆盖矿石）
                 andesite: getFbm2D(andesiteNoise2D),
                 diorite: getFbm2D(dioriteNoise2D),
                 granite: getFbm2D(graniteNoise2D),
             };
-
-            // 阈值 控制洞穴密度
-            const threshold = {
+            const threshold = { // 阈值 控制洞穴密度
                 cave: -0.12, iron: 0.36, coal: 0.32,
                 andesite: 0.34, diorite: 0.34, granite: 0.34,
             }
-            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = toIndex(idOfBlock.coal_ore);}
-            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = toIndex(idOfBlock.iron_ore);}
-            if (Math.abs(rock_combined.andesite) > threshold.andesite) {worlding[y][x] = toIndex(idOfBlock.andesite);}
-            if (Math.abs(rock_combined.diorite) > threshold.diorite) {worlding[y][x] = toIndex(idOfBlock.diorite);}
-            if (Math.abs(rock_combined.granite) > threshold.granite) {worlding[y][x] = toIndex(idOfBlock.granite);}
+
+            const coalOre: number = registerBlockState(newBlockState(idOfBlock.coal_ore, idOfBlock.stone));
+            const ironOre: number = registerBlockState(newBlockState(idOfBlock.iron_ore, idOfBlock.stone));
+            const andesite: number = registerBlockState(newBlockState(idOfBlock.andesite, idOfBlock.stone));
+            const diorite: number = registerBlockState(newBlockState(idOfBlock.diorite, idOfBlock.stone));
+            const granite: number = registerBlockState(newBlockState(idOfBlock.granite, idOfBlock.stone));
+
+            if (Math.abs(ore_combined.coal) > threshold.coal) {worlding[y][x] = coalOre;}
+            if (Math.abs(ore_combined.iron) > threshold.iron) {worlding[y][x] = ironOre;}
+            if (Math.abs(rock_combined.andesite) > threshold.andesite) {worlding[y][x] = andesite;}
+            if (Math.abs(rock_combined.diorite) > threshold.diorite) {worlding[y][x] = diorite;}
+            if (Math.abs(rock_combined.granite) > threshold.granite) {worlding[y][x] = granite;}
             if (combined < threshold.cave) {worlding[y][x] = toIndex(idOfBlock.stone_dark);}
         }
     }

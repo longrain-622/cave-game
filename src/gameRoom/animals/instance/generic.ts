@@ -12,6 +12,13 @@ import { createDrop } from '../../dropped/droppedItem.js';
 import { idOfItem } from "../../dropped/itemIds.js";
 import { apioxEvent } from "../../../apiox/event.js";
 
+// 水中物理参数（对应玩家游泳的一套参数，数值越大浮得越快）
+const waterGravRatio: number = 0.6; // 水中重力衰减比例
+const waterDrag: number = 0.1; // 水的阻力系数
+const buoyancy: number = 0.5; // 浮力加速度（向上，像素/帧²）
+const shoreSeekRange: number = 16; // 在水中寻找上岸点的最远水平距离（格）
+const minRiseVsp: number = 3;
+
 export function initAnimalY(animal: Animal): void {
     let a: number = 0;
     while (blockTypeAt(Math.floor(animal.x / 64), a) === -1) {
@@ -23,10 +30,16 @@ export function initAnimalY(animal: Animal): void {
 export function animalBeginMove(animal: Animal): void { // 开始移动
     const x: number = Math.floor(animal.x / 64);
     const y: number = Math.floor((animal.y + animal.height / 2) / 64);
-    const dir: number = flockDirection(animal);
-    let target: BlockPos | null = lookForPath(x, y, getRandomInt(3, 8), dir);
-    if (target === null && dir !== 0) {
-        target = lookForPath(x, y);
+    let target: BlockPos | null = null;
+
+    if (isInWater(animal)) {
+        target = lookForShore(x, y); // 在水里：不管群聚方向，先游向最近的上岸点
+    } else {
+        const dir: number = flockDirection(animal);
+        target = lookForPath(x, y, getRandomInt(3, 8), dir);
+        if (target === null && dir !== 0) {
+            target = lookForPath(x, y);
+        }
     }
     if (target === null) {
         animal.can_move = false;
@@ -53,6 +66,26 @@ function isWalkable(row: number, col: number): boolean {
     const rowData: number[] | undefined = world[row];
     if (col <= idOfBlock.air || col >= rowData.length) {return false;}
     return canOver(blockTypeAt(col, row));
+}
+
+// 该格能否站立：可通行且不是水
+function canStand(row: number, col: number): boolean {
+    return isWalkable(row, col) && !(blockTypeAt(col, row) === idOfBlock.water);
+}
+
+// 该格能否作为落脚点：站得下且下方是地面
+function isLanding(row: number, col: number): boolean {
+    return canStand(row, col) && !isWalkable(row + 1, col);
+}
+
+// 某个像素点是否处于水方块中
+function isWaterAt(x: number, y: number): boolean {
+    return blockTypeAt(Math.floor(x / 64), Math.floor(y / 64)) === idOfBlock.water;
+}
+
+// 动物是否泡在水中
+function isInWater(animal: Animal): boolean {
+    return isWaterAt(animal.x + animal.width / 2, animal.y + animal.height / 2);
 }
 
 // 寻找玩家
@@ -110,7 +143,7 @@ function lookForPlayer(world_x: number, world_y: number): BlockPos | null {
 }
 */
 
-// 寻找待前往的目标点
+// 寻找待前往的目标点（水会挡住去路，寻路不会寻到水里）
 function lookForPath(world_x: number, world_y: number, step: number = getRandomInt(3, 8), dir: number = 0): BlockPos | null {
     let direction: number = dir;
     if (direction === 0) {
@@ -122,25 +155,48 @@ function lookForPath(world_x: number, world_y: number, step: number = getRandomI
     for (let i = 1; i <= step; i++) {
         const col: number = world_x + direction * i;
 
-        if (isWalkable(currentY, col)) {
+        if (blockTypeAt(col, currentY) === idOfBlock.water) {return null;}
+
+        if (canStand(currentY, col)) {
             if (!isWalkable(currentY + 1, col)) {
                 continue;
             }
-            if (!isWalkable(currentY + 2, col)) {
+            if (canStand(currentY + 1, col) && !isWalkable(currentY + 2, col)) {
                 currentY++;
                 continue;
             }
             return null;
         } else {
-            if (isWalkable(currentY - 1, col)) {
+            if (canStand(currentY - 1, col)) {
                 currentY--;
-            } else {
-                return null;
+                continue;
             }
+            return null;
         }
     }
 
     return { x: world_x + step * direction, y: currentY };
+}
+
+// 水面之上第一格：动物在水里浮起后的落脚高度层
+function waterStandRow(col: number, row: number): number {
+    let standRow: number = row;
+    while (standRow >= 0 && blockTypeAt(col, standRow) === idOfBlock.water) {
+        standRow--;
+    }
+    return standRow;
+}
+
+// 水中的寻路：左右两侧找最近的可上岸的岸（落脚高度与水面平齐）
+function lookForShore(world_x: number, world_y: number): BlockPos | null {
+    const standRow: number = waterStandRow(world_x, world_y);
+
+    for (let i = 1; i <= shoreSeekRange; i++) {
+        if (isLanding(standRow, world_x - i)) {return { x: world_x - i, y: standRow };}
+        if (isLanding(standRow, world_x + i)) {return { x: world_x + i, y: standRow };}
+    }
+
+    return null;
 }
 
 // 实体的行为
@@ -160,19 +216,27 @@ export function animalActions(delta: number): void {
             continue;
         }
 
-        // 正常逻辑：hp <= 0 时进入死亡
         if (animal.hp <= 0) {
             killAnimal(animal);
             continue;
         }
 
-        // 敌人视野检测玩家
         if (isEnemy(animal.type)) {
-            findPlayer(animal);
+            findPlayer(animal); // 敌人视野检测玩家
         }
 
-        // 重力检测
-        animal.vsp += player.grav * delta;
+        // 重力检测（在水中受浮力：惯性参数与玩家一致，自动向上浮）
+        const inWater: boolean = isInWater(animal);
+        if (inWater) {
+            animal.vsp += player.grav * waterGravRatio * delta;
+            animal.vsp -= buoyancy * delta;
+            animal.vsp -= animal.vsp * waterDrag * delta;
+            if (animal.vsp < 0 && animal.vsp > -minRiseVsp) {
+                animal.vsp = -minRiseVsp;
+            }
+        } else {
+            animal.vsp += player.grav * delta;
+        }
         if (animal.vsp !== 0) {
             for (let i = 0; i < Math.abs(animal.vsp); i++) {
                 if (animal.vsp > 0) {
@@ -182,7 +246,7 @@ export function animalActions(delta: number): void {
                         animal.y += 1;
                     } else {
                         const fallSpeed = animal.vsp;
-                        if (fallSpeed > 12) {
+                        if (fallSpeed > 12 && !inWater) {
                             animalInjured(animal, false, Math.floor((fallSpeed - 12) / 2));
                         }
 
@@ -205,6 +269,7 @@ export function animalActions(delta: number): void {
             !place_meeting(animal.x + animal.width - 8, animal.y + animal.height + 1)) {
             animal.can_jump = false;
         }
+        if (inWater) {animal.can_jump = true;} // 水中浮起时也能起跳，游到岸边可以直接蹦上岸
 
         // 移动
         if (animal.doing === 1) {
@@ -223,6 +288,11 @@ export function animalActions(delta: number): void {
                 if (!place_meeting(frontX, animal.y + animal.height - 16) &&
                     !place_meeting(frontX, animal.y + 16)) {
                     animal.x += animal.dir * animal.movespeed * delta;
+
+                    while (place_meeting(animal.x + animal.width / 2, animal.y + animal.height - 1) &&
+                        !place_meeting(animal.x + animal.width / 2, animal.y)) {
+                        animal.y -= 1; // 脚陷进方块里就向上顶回（从水里跳上岸时脚会陷进岸边）
+                    }
                 } else {
                     /*
                         被墙挡住：前方是 1 格高的矮墙才跳（80 = 检测点 16 + 一格 64），
