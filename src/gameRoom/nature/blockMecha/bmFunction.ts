@@ -282,7 +282,12 @@ function evaluateWater(x: number, y: number, state: BlockState): WaterResult {
     return { strength: state.condition - 1, direction: state.direction };
 }
 
-// 向外扩散，canWaterFlowInto 允许的格子才能进水（火把、杂草等会被冲毁）
+function hasSupport(x: number, y: number): boolean {
+    const below: number = blockTypeAt(x, y + 1);
+    return below !== idOfBlock.water && blocksWater(below);
+}
+
+// 向外扩散
 function spreadWater(x: number, y: number, condition: number, direction: number): void {
     const below: number = blockTypeAt(x, y + 1);
     if (canWaterFlowInto(below)) {
@@ -305,7 +310,10 @@ function spreadWater(x: number, y: number, condition: number, direction: number)
     }
 
     const nextX: number = direction === 0 ? x - 1 : x + 1;
-    if (canWaterFlowInto(blockTypeAt(nextX, y))) {writeWater(nextX, y, flow, direction);}
+    if (canWaterFlowInto(blockTypeAt(nextX, y)) &&
+        (hasSupport(nextX, y) || hasSupport(x, y))) {
+        writeWater(nextX, y, flow, direction);
+    }
 }
 
 function updateWater(x: number, y: number): boolean { // 返回是否干涸了
