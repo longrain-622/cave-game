@@ -1,7 +1,7 @@
 import { idOfItem } from '../gameRoom/dropped/itemIds.js';
 import { inventory } from '../gameRoom/gui/gameGUI/inventory.js';
 import { Slots } from '../gameRoom/gui/gameGUI/inventoryConfig.js';
-import { player } from '../gameRoom/player.js';
+import { player, playerHurt } from '../gameRoom/player.js';
 import { apioxEvent } from '../apiox/event.js';
 import { idOfAnimal, animalArray, Animal, newAnimal } from '../gameRoom/animals/animalIds.js';
 import { initAnimalY } from '../gameRoom/animals/instance/generic.js';
@@ -68,7 +68,7 @@ function main(): void {
     if (enable.selfHarm) {
         apioxEvent.onKeyDown((ev): void => {
             if (ev.key !== 'h') {return;}
-            player.hurt(2);
+            playerHurt(player, 2);
         });
     }
 

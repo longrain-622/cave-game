@@ -1,4 +1,4 @@
-import { player } from "../../player.js";
+import { initPlayerPosition, player } from "../../player.js";
 import { gui_isDrawing, ensureGuiMounted } from "./inventory.js";
 import { guiTextures } from "./inventoryConfig.js";
 import { genericTextStyle } from "../../rendering/rendering.js";
@@ -127,7 +127,7 @@ function initDeathUI(): void {
     deathPixi.buttonSprite_continue.on('click', (): void => {
         if (player.hp <= 0) {
             player.hp = 20;
-            player.initXY();
+            initPlayerPosition(player);
             uistate.deathUI_isOpening = false;
             deathContainer.visible = uistate.deathUI_isOpening;
         }

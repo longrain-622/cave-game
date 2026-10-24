@@ -1,4 +1,4 @@
-import { player } from '../../player.js';
+import { player, playerHurt } from '../../player.js';
 import { isEnemy, AnimalAttr, Animal, animalArray } from '../animalIds.js';
 import { AnimalParts, subTexture } from './parts.js';
 import { place_meeting } from '../../world.js';
@@ -70,7 +70,7 @@ export function attackPlayer(entity: Animal, hurt: number): void {
         entity.attackTimer <= 0
     ) {
         entity.attackTimer = 64;
-        player.hurt(hurt);
+        playerHurt(player, hurt);
     }
 }
 

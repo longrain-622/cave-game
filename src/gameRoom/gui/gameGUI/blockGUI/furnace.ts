@@ -493,7 +493,6 @@ export function draw_furnace(): void {
     furnaceGui.furnaceContainer.visible = uistate.furnace_isOpening;
     updateFurnaceSlots();
     drawProgress();
-    drawFurnaceHighlights();
 
     // 绘制背包物品和高亮 叠加在同一个 highlightGraphics 上
     updateBackpackSlots();

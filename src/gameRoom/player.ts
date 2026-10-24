@@ -40,74 +40,104 @@ const waterDrag: number = 0.1; // 水的阻力系数：越小惯性越明显（�
 const swimThrust: number = 1; // 水中按住跳跃键的向上推力（像素/帧²）
 const swimSpeedRatio: number = 0.4; // 水中水平移动速度比例
 const minRiseVsp: number = 3; // 按住跳跃时的最小上浮速度（像素/帧），决定振幅下限
+const airAccel: number = 0.5; // // 空中按住方向键时水平方向上的加速度
 
-class Players {
+interface Players {
     hp: number;
     face: number;
-    x: number; y: number;
-    screen_x: number; screen_y: number;
-    left: number; right: number;
-    move_speed: number; acc: number;
-    grav: number; jumpspeed: number; vsp: number; can_jump: boolean;
-    leg_rad: number; hand_rad: number; needRotateHand: boolean; isRotateRighthand: boolean;
+    x: number;
+    y: number;
+    screen_x: number;
+    screen_y: number;
+    left: number;
+    right: number;
+    width: number;
+    height: number;
+
+    move_speed: number;
+    acc: number;
+    grav: number;
+    jumpspeed: number;
+    vsp: number;
+    hsp: number;
+    can_jump: boolean;
+
+    leg_rad: number;
+    hand_rad: number;
+    needRotateHand: boolean; 
+    isRotateRighthand: boolean;
     rightOnMouse: boolean;
+
     state: playerState;
     jumpHeld: boolean;
     parts: PlayerParts;
+}
 
-    get width(): number {
-        return 64;
-    }
+function newPlayers(): Players {
+    const newPlayer: Players = {
+        hp: 20,
+        face: -1,
+        x: (world[0].length / 2) * 64,
+        y: Math.floor(world_height / 2) * 64 - 300,
+        screen_x: room.width / 2,
+        screen_y: room.height / 2 - 40,
+        left: 0,
+        right: 0,
+        width: 64,
+        height: 128,
 
-    get height(): number {
-        return 128;
-    }
+        move_speed: 4.5,
+        acc: 0,
+        grav: 0.5,
+        jumpspeed: -10,
+        vsp: 0,
+        hsp: 0,
+        can_jump: false,
 
-    constructor() {
-        this.hp = 20;
-        this.face = -1;
-        this.x = (world[0].length / 2) * 64;
-        this.y = Math.floor(world_height / 2) * 64 - 300;
-        this.screen_x = room.width / 2;
-        this.screen_y = room.height / 2 - 40;
-        this.left = 0; this.right = 0; this.move_speed = 7; this.acc = 0;
-        this.grav = 0.5; this.jumpspeed = -10; this.vsp = 0; this.can_jump = false;
-        this.leg_rad = 0; this.hand_rad = 0; this.needRotateHand = false; this.isRotateRighthand = false;
-        this.rightOnMouse = false;
-        this.state = playerState.normal;
-        this.jumpHeld = false;
-        this.parts = this.nullParts();
-    }
+        leg_rad: 0,
+        hand_rad: 0,
+        needRotateHand: false,
+        isRotateRighthand: false,
+        rightOnMouse: false,
 
-    private nullParts(): PlayerParts {
-        return { container: null, head: null, body: null, leftArm: null, rightArm: null, leftLeg: null, rightLeg: null, taking: null };
-    }
+        state: playerState.normal,
+        jumpHeld: false,
+        parts: {
+            container: null,
+            head: null,
+            body: null,
+            leftArm: null,
+            rightArm: null,
+            leftLeg: null,
+            rightLeg: null,
+            taking: null
+        },
+    };
 
-    initPlayer(readingWorld: WorldArchive | null): void {
-        if (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.player)) {
-            this.hp = readingWorld.player.hp;
-            this.x = readingWorld.player.x;
-            this.y = readingWorld.player.y;
-        }
-    }
+    return newPlayer;
+}
 
-    initXY(): void { // 初始化玩家坐标,在createWorld.js中调用
-        this.x = chunk.num * chunk.width * 64 / 2;
-
-        let i: number = 0;
-        while (blockTypeAt(Math.floor(this.x / 64), i) === -1) {i++;}
-        this.y = i*64 - 256;
-    }
-
-    hurt(howmany: number): void {
-        this.hp -= howmany;
-        eventBus.emit('player:hurt');
+function initPlayer(player: Players, readingWorld: WorldArchive | null): void {
+    if (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.player)) {
+        player.hp = readingWorld.player.hp;
+        player.x = readingWorld.player.x;
+        player.y = readingWorld.player.y;
     }
 }
-const player: Players = new Players();
 
-// 初始化 Pixi 相关资源（应在 Pixi Application 创建后调用）
-// 注意：与 inventory.ts 共享同一个 BaseTexture 实例（BaseTexture.from 幂等命中缓存），此路径勿改
+export function initPlayerPosition(player: Players): void { // 初始化玩家坐标,在createWorld.js中调用
+    player.x = chunk.num * chunk.width * 64 / 2;
+    let i: number = 0;
+    while (blockTypeAt(Math.floor(player.x / 64), i) === -1) {i++;}
+    player.y = i * 64 - 256;
+}
+
+export function playerHurt(player: Players, howmany: number): void {
+    player.hp -= howmany;
+    eventBus.emit('player:hurt');
+}
+
+const player: Players = newPlayers();
 const playerTextureUrl: string = 'assets/images/games/player/players.png';
 
 // 贴图加载完成后构建玩家各部位精灵
@@ -189,7 +219,7 @@ function registerPlayerInput(): void {
     apioxEvent.onKeyDoubleClick((detail): void => {
         if (!(detail.key === 'a' || detail.key === 'd')) {return;}
         if (!(player.state === playerState.normal && player.can_jump)) {return;}
-        player.acc = 3;
+        player.acc = 2;
     });
 
     apioxEvent.onKeyDown((e): void => {
@@ -249,12 +279,28 @@ function updatePlayerState(): void {
 function playerMove(delta: number): void { // 玩家移动
     let dir = player.right - player.left;
 
-    if (dir != 0) {
-        const speed: number = (player.move_speed + player.acc)
-            * (player.state === playerState.swimming ? swimSpeedRatio : 1);
-        if (!place_meeting(player.x + player.right * 64, player.y + 120)
-        && !place_meeting(player.x + player.right * 64, player.y + 20)) {
-            player.x += dir * speed * delta;
+    if (player.state === playerState.swimming) {
+        player.hsp = dir * (player.move_speed + player.acc) * swimSpeedRatio;
+    } else if (player.can_jump) {
+        player.hsp = dir * (player.move_speed + player.acc);
+    } else if (dir !== 0) {
+        const target: number = dir * (player.move_speed + player.acc);
+        if (player.hsp < target) {
+            player.hsp = Math.min(player.hsp + airAccel * delta, target);
+        } else if (player.hsp > target) {
+            player.hsp = Math.max(player.hsp - airAccel * delta, target);
+        }
+    } else {
+        if (player.hsp >= 0.3) {player.hsp -= 0.3 * delta;}
+        else if (player.hsp <= -0.3) {player.hsp += 0.3 * delta;}
+        else {player.hsp = 0;}
+    }
+
+    if (player.hsp !== 0) {
+        const edgeX: number = player.x + (player.hsp > 0 ? 64 : 0);
+        if (!place_meeting(edgeX, player.y + 120)
+        && !place_meeting(edgeX, player.y + 20)) {
+            player.x += player.hsp * delta;
         }
     }
 
@@ -310,7 +356,7 @@ function playerJump(delta: number): void { // 玩家跳跃（水中为划水与�
                 } else {
                     const fallSpeed = player.vsp;
                     if (fallSpeed > 16) {
-                        player.hurt(Math.floor((fallSpeed - 16) / 2)); // 计算摔落伤害
+                        playerHurt(player, Math.floor((fallSpeed - 16) / 2)); // 计算摔落伤害
                     }
 
                     player.vsp = 0;
@@ -432,7 +478,7 @@ function updatePlayerRender(): void {
 }
 
 function main(): void {
-    player.initPlayer(readingWorld);
+    initPlayer(player, readingWorld);
     enableKeyDoubleClickDetection();
     registerPlayerInput();
     loadPlayerTexture();
