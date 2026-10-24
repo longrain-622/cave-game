@@ -1,17 +1,17 @@
 import { player } from '../player.js';
 import { isOnScreen } from '../const.js';
-import { idOfAnimal, animalArray, Animal } from './animalIds.js';
-import { app } from '../rendering/rendering.js';
-import { AnimalParts } from './instance/parts.js';
-import { zombieTextureUrl, createZombieParts, updateZombieLegs } from './instance/zombie.js';
+import { idOfAnimal, animalArray, Animal } from '../animals/animalIds.js';
+import { app } from './rendering.js';
+import { AnimalParts } from './animalParts.js';
+import { zombieTextureUrl, createZombieParts, updateZombieLegs } from './zombieRender.js';
 import * as PIXI from 'pixi.js';
-import { applyLightTint } from '../rendering/light.js';
+import { applyLightTint } from './light.js';
 import {
-    pigTextureUrl, createPigParts, 
+    pigTextureUrl, createPigParts,
     cowTextureUrl, createCowParts,
     sheepTextureUrl, sheepFurTextureUrl, createSheepParts,
     chickenTextureUrl, createChickenParts
-} from "./instance/normalAnimal.js";
+} from "./normalAnimalRender.js";
 
 export let can_drawEntity: boolean = false;
 

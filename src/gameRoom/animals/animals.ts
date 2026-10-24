@@ -3,7 +3,6 @@ import { room } from '../../constants/generic.js';
 import { player } from '../player.js';
 
 import '../others/audioManager.js';
-import { apioxTime } from '../../apiox/time.js';
 import { WorldArchive } from '../../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from '../gameState.js';
 import { natureAnimals, newAnimal, Animal, animalArray } from './animalIds.js';
@@ -14,6 +13,7 @@ import { blockTypeAt, world_height } from '../world.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
 
 const look_range: number = 64; // 渲染的范围的一半
+let timerCreateAnimal: number = 0;
 
 // 加载存档中的动物
 function loadAnimals(readingWorld: WorldArchive | null) {
@@ -65,9 +65,16 @@ function createAnimals(): void {
 function main(): void {
     setAnimalList(animalArray); // 注入动物列表供 boids 使用（animalArray 引用不变，只需一次）
     if (coverWhenSave) {loadAnimals(readingWorld);}
-    apioxTime.setInt(createAnimals, 2000);
 }
 main();
+
+export function natureSpawnAnimals(delta: number): void {
+    timerCreateAnimal += delta;
+    if (timerCreateAnimal >= 120) {
+        timerCreateAnimal = 0;
+        createAnimals();
+    }
+}
 
 export function animalsLoop(delta: number): void {
     animalActions(delta);

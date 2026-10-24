@@ -22,8 +22,8 @@ floatContainer.zIndex = 10;
 let isTriggered: boolean = false; // 状态锁
 let selectedCraftingType: 'crafting' | 'result' | null = null;
 let selectedCraftingIndex: number = -1;  // 对于输出槽始终为0
-let selectedIndex: number = -1;
-let selecting = new Slots(-1, 0); // 正在选取中的物品
+export let selectedIndex: number = -1;
+export let selecting = new Slots(-1, 0); // 正在选取中的物品
 
 // 高亮对象 储存高亮有关属性
 const highWhite: {
@@ -48,21 +48,19 @@ apioxEvent.onKeyDown((ev: ApioxKeyboardEvent) => {
     if (!isNaN(num) && num >= 1 && num <= 9 && ev.key.length === 1) {widgets.select = num - 1;}
 });
 apioxEvent.onWheel((event: ApioxWheelEvent) => {
-    // deltaY > 0 向下滚动，< 0 向上滚动
-    //滚动物品栏
-    widgets.select += 1 * event.deltaY/Math.abs(event.deltaY);
+    widgets.select += 1 * event.deltaY/Math.abs(event.deltaY); // 滚动物品栏
     if (widgets.select > 8){widgets.select = 0;}
     else if (widgets.select < 0){widgets.select = 8;}
 });
 apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
-    if (isTriggered) {return;} //防重复
+    if (isTriggered) {return;} // 防重复
 
     // 左键部分
     if (e.button === 0) {
         //工作台优先
         if (uistate.craftingTable_isOpening) {
-            handleWorkbenchClick(); //尝试处理工作台合成区域
-            if (selectedWbType === null) { //未命中工作台区域 操作背包
+            handleWorkbenchClick(); // 尝试处理工作台合成区域
+            if (selectedWbType === null) { // 未命中工作台区域 操作背包
                 handleBackpackClick();
             }
             return;
@@ -287,7 +285,6 @@ apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
                 return; // 关键：处理完后立即返回
             }
 
-            // 其他情况（鼠标空且目标空，或鼠标有但目标满且不同物品）无操作，也要返回
             return;
         }
 
@@ -326,7 +323,6 @@ apioxEvent.onMouseDown((e: ApioxMouseEvent) => {
                     selecting = new Slots(-1, 0);
                 }
             }
-            // 其他情况（物品不同或已满）不做操作
         }
     }
 });
@@ -335,7 +331,7 @@ apioxEvent.onMouseUp(() => {
 });
 
 // 高亮检测（同时记录悬停槽位索引，供点击处理使用）
-function locateHighWhite(obj_IC: InventoryConfig, inven_X: number, inven_Y: number, graphics: PIXI.Graphics): void {
+export function locateHighWhite(obj_IC: InventoryConfig, inven_X: number, inven_Y: number, graphics: PIXI.Graphics): void {
     highWhite.screenX = inven_X + obj_IC.startX;
     highWhite.screenY = inven_Y + obj_IC.startY;
 
@@ -362,7 +358,7 @@ function locateHighWhite(obj_IC: InventoryConfig, inven_X: number, inven_Y: numb
     }
 }
 
-function locateHighWhiteForCrafting(obj_IC: InventoryConfig, invenX: number, invenY: number, slotsArray: Slots[], type: "crafting" | "result", graphics: PIXI.Graphics): void {
+export function locateHighWhiteForCrafting(obj_IC: InventoryConfig, invenX: number, invenY: number, slotsArray: Slots[], type: "crafting" | "result", graphics: PIXI.Graphics): void {
     const startX: number = invenX + obj_IC.startX;
     const startY: number = invenY + obj_IC.startY;
     const slotW: number = obj_IC.slotWidth + obj_IC.paddingX;
@@ -471,17 +467,18 @@ export function setSelectedIndex(newVal: number): void {
     selectedIndex = newVal;
 }
 
-export function gameGuiLoop(delta: number): void {
-    if (player.hp > 0) {
-        heartsAct(delta);
-        drawHeart();
-        floatContainer.visible = uistate.invenUI_isOpening();
-        drawInventory();
-        draw_craftingTable();
-        draw_chest();
-        draw_furnace();
-        furnaceLoop(delta);
-    }
+export function gameGuiLogicLoop(delta: number): void {
+    if (player.hp <= 0) {return;}
+    heartsAct(delta);
+    furnaceLoop(delta);
 }
 
-export { selecting, selectedIndex, locateHighWhite, locateHighWhiteForCrafting };
+export function gameGuiRenderingLoop(): void {
+    if (player.hp <= 0) {return;}
+    drawHeart();
+    floatContainer.visible = uistate.invenUI_isOpening();
+    drawInventory();
+    draw_craftingTable();
+    draw_chest();
+    draw_furnace();
+}

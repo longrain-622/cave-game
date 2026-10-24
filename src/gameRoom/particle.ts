@@ -1,30 +1,20 @@
 import { place_meeting, blockTypeAt } from "./world.js";
-import { isOnScreen } from "./const.js";
 import { getRandomInt } from "../constants/utils.js";
 import { player } from "./player.js";
-import { blockTextures, app } from "./rendering/rendering.js";
-import { applyLightTint } from "./rendering/light.js";
 import { eventBus } from "./others/eventBus.js";
 import { idOfBlock } from "./nature/blockMecha/blocks.js";
-import * as PIXI from 'pixi.js';
 
 // Other than the idOfBlock, some special particle type
-enum particleType {
+export enum particleType {
     generic = 512,
     splash,
 }
 
-// Particle images
-const particleAssets: Record<string, string> = {
-    splash: '/assets/images/games/particle/splash.png',
-};
-
-const splashFrameSize: number = 8;
-const splashFrameCount: number = 4;
+export const splashFrameSize: number = 8;
+export const splashFrameCount: number = 4;
 const splashSize: number = splashFrameSize * 4;
-const splashFrames: PIXI.Texture[] = []; // all children parts in splash textures
 
-interface Particles {
+export interface Particles {
     type: number;
     inited: boolean;
     x: number;
@@ -74,114 +64,7 @@ export function createParticles(type: number, x: number, y: number): void {
     particleArray.push(newParticles(type, x, y));
 }
 
-const particleLayer: PIXI.Container = new PIXI.Container();
-export let can_drawParticle: boolean = false;
-const subTextureCache: Record<string, PIXI.Texture> = {}; // 子纹理缓存
-
-// 从方块贴图中裁剪子区域
-function getSubTexture(
-    type: number,
-    sx: number,
-    sy: number,
-    sw: number,
-    sh: number,
-): PIXI.Texture | undefined {
-    const baseTexture: PIXI.Texture = blockTextures[type];
-    if (!baseTexture) {return undefined;}
-
-    const key: string = type + '_' + sx + '_' + sy + '_' + sw + '_' + sh;
-    if (!subTextureCache[key]) {
-        subTextureCache[key] = new PIXI.Texture(
-            baseTexture.baseTexture,
-            new PIXI.Rectangle(sx, sy, sw, sh),
-        );
-    }
-    return subTextureCache[key];
-}
-
-// 粒子的绘制方式
-interface ParticleDrawing {
-    texture: (particle: Particles) => PIXI.Texture | undefined;
-    anchor: number;
-}
-
-// 从自己的方块贴图里裁一小块
-function blockParticleTexture(particle: Particles): PIXI.Texture | undefined {
-    let sx: number = 0;
-    let sy: number = 0;
-
-    switch (particle.type) {
-        case idOfBlock.invicon_grass:
-        case idOfBlock.deadBush:
-        case idOfBlock.chest:
-            sx = 8;
-            sy = 12;
-            break;
-
-        case idOfBlock.oak_door_bottom:
-        case idOfBlock.oak_door_top:
-        case idOfBlock.oak_door_bottom_open:
-        case idOfBlock.oak_door_top_open:
-            sx = 6;
-            break;
-    }
-
-    return getSubTexture(
-        particle.type,
-        sx,
-        sy,
-        Math.round(particle.width / 4),
-        Math.round(particle.height / 4),
-    );
-}
-
-// 水花用自己的 part 子纹理，frame 决定用哪一个
-function splashParticleTexture(particle: Particles): PIXI.Texture | undefined {
-    return splashFrames[particle.frame];
-}
-
-const blockParticleDrawing: ParticleDrawing = {
-    texture: blockParticleTexture,
-    anchor: 0,
-};
-
-// 绘制方式登记表
-const particleDrawings: Record<number, ParticleDrawing> = {
-    [particleType.splash]: {
-        texture: splashParticleTexture,
-        anchor: 0.5,
-    },
-};
-
-function particleDrawingAt(type: number): ParticleDrawing {
-    return particleDrawings[type] ?? blockParticleDrawing;
-}
-
-const particleSpriteMap: Map<Particles, PIXI.Sprite> = new Map(); // 每个粒子对应的渲染 Sprite
-
-// 把 splash.png 切成 4 个 part 的子纹理，粒子的 frame 决定用哪一个
-function initSplashFrames(): void {
-    PIXI.Assets.load<PIXI.Texture>(particleAssets.splash).then((texture: PIXI.Texture) => {
-        for (let i: number = 0; i < splashFrameCount; i++) {
-            const frame: PIXI.Rectangle = new PIXI.Rectangle(
-                i * splashFrameSize,
-                0,
-                splashFrameSize,
-                splashFrameSize,
-            );
-            splashFrames.push(new PIXI.Texture(texture.baseTexture, frame));
-        }
-    }).catch((error: unknown) => {
-        console.error('load splash particle texture error', error);
-    });
-}
-
 function main(): void {
-    app.stage.addChild(particleLayer);
-    particleLayer.zIndex = 3.6;
-    eventBus.once('textures:ready', () => { can_drawParticle = true; }); // 纹理就绪前不绘制
-    initSplashFrames();
-
     eventBus.on('player:fallInWater', (): void => {
         for (let i = 0; i < getRandomInt(16, 32); i++) {
             createParticles(
@@ -290,17 +173,9 @@ function splashBehavior(particle: Particles, delta: number): boolean {
     return false;
 }
 
-// 从粒子数组和渲染层同时移除一个粒子
+// 从粒子数组移除一个粒子
 function removeParticles(index: number): void {
-    const particle: Particles = particleArray[index];
     particleArray.splice(index, 1);
-
-    const sprite: PIXI.Sprite | undefined = particleSpriteMap.get(particle);
-    if (sprite) {
-        particleLayer.removeChild(sprite);
-        sprite.destroy();
-        particleSpriteMap.delete(particle); // 同步销毁对应的渲染 Sprite
-    }
 }
 
 export function particleAct(delta: number): void { // 控制粒子的行为
@@ -325,50 +200,5 @@ export function particleAct(delta: number): void { // 控制粒子的行为
                 normalBehavior(particle, delta);
                 break;
         }
-    }
-}
-
-export function drawParticles(): void {
-    if (!can_drawParticle) {return;}
-
-    for (let k = 0; k < particleArray.length; k++) {
-        const obj: Particles = particleArray[k];
-        const drawing: ParticleDrawing = particleDrawingAt(obj.type);
-        const originX: number = obj.width * drawing.anchor;
-        const originY: number = obj.height * drawing.anchor;
-        const screenX: number = player.screen_x + obj.x - player.x - originX;
-        const screenY: number = player.screen_y + obj.y - player.y - originY;
-
-        let sprite: PIXI.Sprite | undefined = particleSpriteMap.get(obj);
-        if (!sprite) {
-            sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
-            particleLayer.addChild(sprite);
-            particleSpriteMap.set(obj, sprite);
-        }
-
-        if (!isOnScreen(screenX, screenY, obj.width, obj.height)) {
-            sprite.visible = false;
-            continue;
-        }
-
-        const texture: PIXI.Texture | undefined = drawing.texture(obj);
-        if (!texture) {
-            sprite.visible = false;
-            continue;
-        }
-
-        if (sprite.texture !== texture) {
-            sprite.texture = texture;
-            sprite.width = obj.width;
-            sprite.height = obj.height;
-        }
-
-        sprite.position.set(screenX, screenY);
-        applyLightTint(
-            sprite,
-            obj.x + obj.width / 2 - originX,
-            obj.y + obj.height / 2 - originY,
-        );
-        sprite.visible = true;
     }
 }

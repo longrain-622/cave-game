@@ -1,18 +1,15 @@
 import { place_meeting } from '../world.js';
-import { getRandomInt, point_coll_rect, distance, isOnScreen } from '../const.js';
-import { app, blockTextures } from '../rendering/rendering.js';
+import { getRandomInt, point_coll_rect, distance } from '../const.js';
 import { player } from '../player.js';
-import { applyLightTint } from '../rendering/light.js';
 import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
 import { eventBus } from '../others/eventBus.js';
-import { idOfItem, itemTextures } from './items.js';
+import { idOfItem } from './items.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
 import '../others/audioManager.js';
 import { apioxEvent } from '../../apiox/event.js';
-import * as PIXI from 'pixi.js';
 
-interface Droppeds {
+export interface Droppeds {
     type: number;
     x: number;
     y: number;
@@ -34,33 +31,10 @@ function newDroppeds(type: number, x: number, y: number): Droppeds {
     };
 }
 
-let dropArray: Droppeds[] = [];
+export const dropArray: Droppeds[] = [];
 let look_range = 32; // 渲染范围 单位：格
 
-const dropLayer: PIXI.Container = new PIXI.Container(); // 掉落物渲染层
-const dropSpriteMap: Map<Droppeds, PIXI.Sprite> = new Map(); // 每个掉落物对应的渲染 Sprite（掉落物移除时同步销毁）
-let can_drawDrop: boolean = false; // 纹理未就绪时等待
-
-function main(): void {
-    app.stage.addChild(dropLayer);
-    dropLayer.zIndex = 3.55;
-
-    // 纹理就绪前不绘制
-    eventBus.once('textures:ready', () => { can_drawDrop = true; });
-}
-main();
-
-// 移除掉落物时同步销毁其渲染 Sprite
-function removeDropSprite(drop: Droppeds): void {
-    const sprite: PIXI.Sprite | undefined = dropSpriteMap.get(drop);
-    if (sprite) {
-        dropLayer.removeChild(sprite);
-        sprite.destroy();
-        dropSpriteMap.delete(drop);
-    }
-}
-
-function createDrop(type: number, x: number, y: number) {
+export function createDrop(type: number, x: number, y: number) {
     if (type !== -1) {
         const newDrop = newDroppeds(type, x, y);
         dropArray.push(newDrop);
@@ -70,14 +44,13 @@ function createDrop(type: number, x: number, y: number) {
     for (let i = 0; i < dropArray.length; i++) {
         if (Math.abs(dropArray[i].x - player.x) >= look_range * 64 ||
             Math.abs(dropArray[i].y - player.y) >= look_range * 64) {
-            removeDropSprite(dropArray[i]);
             dropArray.splice(i, 1);
             i--; // 调整索引，避免跳过下一个掉落物
         }
     }
 }
 
-function lookDrops(targetBlock: number): number { //返回对应方块掉落物的类型
+export function lookDrops(targetBlock: number): number { //返回对应方块掉落物的类型
     let dropObj: number = targetBlock;
     const isTakingPickaxe: boolean = (
         inventory.items[widgets.select].item === idOfItem.wooden_pickaxe ||
@@ -101,54 +74,6 @@ function lookDrops(targetBlock: number): number { //返回对应方块掉落物�
         case idOfBlock.torch: dropObj = idOfItem.torch; break;
     }
     return dropObj;
-}
-
-function drawDrops(): void {
-    if (!can_drawDrop) {return;}
-
-    // 兜底清理已移除掉落物的渲染 Sprite（正常情况下在移除处已同步销毁）
-    const aliveDrops: Set<Droppeds> = new Set(dropArray);
-    for (const [drop, sprite] of dropSpriteMap) {
-        if (aliveDrops.has(drop)) {continue;}
-        dropLayer.removeChild(sprite);
-        sprite.destroy();
-        dropSpriteMap.delete(drop);
-    }
-
-    for (let k = 0; k < dropArray.length; k++) {
-        const drop: Droppeds = dropArray[k];
-        const screenX: number = player.screen_x + drop.x - player.x;
-        const screenY: number = player.screen_y + drop.y - player.y;
-
-        let sprite: PIXI.Sprite | undefined = dropSpriteMap.get(drop);
-        if (!sprite) {
-            sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
-            dropLayer.addChild(sprite);
-            dropSpriteMap.set(drop, sprite);
-        }
-
-        if (!isOnScreen(screenX, screenY, drop.width, drop.height)) {
-            sprite.visible = false;
-            continue;
-        }
-
-        // 方块掉落物用方块贴图，物品掉落物用物品贴图（两者 ID 不冲突）
-        const texture: PIXI.Texture = blockTextures[drop.type] || itemTextures[drop.type];
-        if (!texture) {
-            sprite.visible = false; // 无对应贴图（如空气），不绘制
-            continue;
-        }
-
-        // 纹理与尺寸在掉落物生命周期内不变，仅在首次（或纹理变化时）赋值
-        if (sprite.texture !== texture) {
-            sprite.texture = texture;
-            sprite.width = drop.width;
-            sprite.height = drop.height;
-        }
-        sprite.position.set(screenX, screenY);
-        applyLightTint(sprite, drop.x + drop.width / 2, drop.y + drop.height / 2);
-        sprite.visible = true;
-    }
 }
 
 // 普通物理运动（重力、水平阻力、碰撞）
@@ -188,7 +113,7 @@ function applyNormalPhysics(drop: Droppeds, delta: number) {
     }
 }
 
-function dropsX(delta: number) {
+export function dropsX(delta: number) {
     const MAGNET_DIST: number = 200; // 触发吸引的距离（像素）
     const PICKUP_DELAY_FRAMES: number = 64; // 延迟帧数，期间不可吸引和拾取
     let MAGNET_SPEED: number = 4; // 吸引速度（每帧移动像素数）
@@ -255,7 +180,6 @@ function dropsX(delta: number) {
                 point_coll_rect(drop.x + drop.width, drop.y + drop.height, player.x, player.y, player.width, player.height)
             ) {
                 pickupObj(drop.type);
-                removeDropSprite(drop);
                 dropArray.splice(i, 1);
                 i--; // 调整索引，因为数组长度改变
                 eventBus.emit('item:pickup');
@@ -281,10 +205,3 @@ apioxEvent.onKeyDown((e) => { // 丢弃物品
         }
     }
 });
-
-function dropLoop(delta: number) {
-    drawDrops();
-    dropsX(delta);
-}
-
-export { createDrop, dropLoop, dropArray, lookDrops };

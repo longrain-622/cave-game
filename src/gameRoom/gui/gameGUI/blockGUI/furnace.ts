@@ -710,7 +710,15 @@ function firingItem(whichFurnace: Furnace, delta: number): void {
 // 每帧处理所有熔炉的烧制
 export function furnaceLoop(delta: number): void {
     for (let i = 0; i < furnaceArray.length; i++) {
-        if (!point_coll_rect(furnaceArray[i].world_x * 64, furnaceArray[i].world_y * 64, player.x - lookRange / 2, player.y - lookRange / 2, lookRange, lookRange)) {
+        if (
+            !point_coll_rect(
+                furnaceArray[i].world_x * 64,
+                furnaceArray[i].world_y * 64,
+                player.x - lookRange / 2,
+                player.y - lookRange / 2,
+                lookRange, lookRange
+            )
+        ) {
             continue; // 超出玩家视野范围的熔炉跳过，继续处理其余熔炉
         }
         firingItem(furnaceArray[i], delta);
@@ -726,7 +734,9 @@ export function breakFurnace(furnace_world_x: number, furnace_world_y: number): 
             currentFurnace = null;
         }
 
-        const target: Furnace | undefined = furnaceArray.find(obj => (obj.world_x === furnace_world_x && obj.world_y === furnace_world_y));
+        const target: Furnace | undefined = furnaceArray.find(
+            obj => (obj.world_x === furnace_world_x && obj.world_y === furnace_world_y)
+        );
         if (!target) {return;}
         furnaceArray.splice(furnaceArray.indexOf(target), 1);
 
@@ -734,7 +744,11 @@ export function breakFurnace(furnace_world_x: number, furnace_world_y: number): 
         for (let i = 0; i < allSlots.length; i++) {
             if (allSlots[i].item === -1) {continue;}
             for (let k = 0; k < allSlots[i].num; k++) {
-                createDrop(allSlots[i].item, furnace_world_x * 64 + getRandomInt(0, 64), furnace_world_y * 64 + getRandomInt(0, 64));
+                createDrop(
+                    allSlots[i].item,
+                    furnace_world_x * 64 + getRandomInt(0, 64),
+                    furnace_world_y * 64 + getRandomInt(0, 64)
+                );
             }
         }
     }
