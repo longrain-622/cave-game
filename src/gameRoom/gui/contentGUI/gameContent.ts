@@ -27,81 +27,110 @@ gameContent.addChild(blackBg);
 gameContent.setChildIndex(blackBg, 0);
 
 // 按钮尺寸
-//const btnW = 200;
+const btnW = 200;
 const btnH = 20;
 const centerX = room.width / 2;
 const centerY = room.height / 2;
-const gap = 30; // 两个按钮之间的垂直间距
+const gap = 20; // 相邻按钮之间的垂直间距
 const btnScale = 3;
+const btnStep = btnH * btnScale + gap; // 相邻按钮中心点的垂直距离
+const fontSize: number = 24;
+const fontY_offset: number = 4;
 
-// 创建按钮
-const topBtn = new PIXI.Sprite(buttonTextures.normal!);
-topBtn.anchor.set(0.5); // 以中心点为基准定位
-topBtn.position.set(centerX, centerY - btnH / 2 - gap);
-topBtn.eventMode = 'static';
-topBtn.cursor = 'pointer';
-topBtn.scale.set(btnScale, btnScale);
-topBtn.on('pointerover', () => { // 鼠标/指针进入
-    if (buttonTextures.hover) {topBtn.texture = buttonTextures.hover;}
-});
-topBtn.on('pointerout', () => { // 鼠标/指针离开
-    if (buttonTextures.normal) {topBtn.texture = buttonTextures.normal;}
-});
+interface ContentButton {
+    width: number;
+    height: number;
+    centerX: number;
+    centerY: number;
+    label: PIXI.Text;
+    sprite: PIXI.Sprite;
+}
 
-const bottomBtn = new PIXI.Sprite(buttonTextures.normal!); // 第二个按钮
-bottomBtn.anchor.set(0.5);
-bottomBtn.position.set(centerX, centerY + btnH / 2 + gap);
-bottomBtn.eventMode = 'static';
-bottomBtn.cursor = 'pointer';
-bottomBtn.scale.set(btnScale, btnScale);
-bottomBtn.on('pointerover', () => { // 鼠标/指针进入
-    if (buttonTextures.hover) {bottomBtn.texture = buttonTextures.hover;}
-});
-bottomBtn.on('pointerout', () => { // 鼠标/指针离开
-    if (buttonTextures.normal) {bottomBtn.texture = buttonTextures.normal;}
-});
+function initContentButton(
+    centerX: number,
+    centerY: number,
+    width: number = btnW,
+    height: number = btnH
+): ContentButton {
+    const label = new PIXI.Text('', textStyle2());
+    label.style.fontSize = fontSize;
+    label.anchor.set(0.5);
+    label.position.set(centerX, centerY + fontY_offset);
 
-gameContent.addChild(topBtn, bottomBtn);
-topBtn.visible = true;
-bottomBtn.visible = true;
+    const button: ContentButton = {
+        width: width,
+        height: height,
+        centerX: centerX,
+        centerY: centerY,
+        label: label,
+        sprite: new PIXI.Sprite(buttonTextures.normal!),
+    };
+
+    button.sprite.anchor.set(0.5);
+    button.sprite.position.set(centerX, centerY);
+    button.sprite.scale.set(btnScale, btnScale);
+    button.sprite.eventMode = 'static';
+    button.sprite.cursor = 'pointer';
+
+    button.sprite.on('pointerover', () => { // 鼠标/指针进入
+        if (buttonTextures.hover) {button.sprite.texture = buttonTextures.hover;}
+    });
+    button.sprite.on('pointerout', () => { // 鼠标/指针离开
+        if (buttonTextures.normal) {button.sprite.texture = buttonTextures.normal;}
+    });
+
+    return button;
+}
+
+// 以 centerY 为中心，按数组顺序从上到下等间距排列按钮
+function layoutContentButtons(buttons: ContentButton[]): void {
+    const firstY: number = centerY - ((buttons.length - 1) * btnStep) / 2;
+    buttons.forEach((button: ContentButton, index: number): void => {
+        const y: number = firstY + index * btnStep;
+        button.centerY = y;
+        button.sprite.position.y = y;
+        button.label.position.y = y + fontY_offset;
+    });
+}
+
+// 创建按钮（数组顺序即从上到下的显示顺序）
+const topBtn: ContentButton = initContentButton(centerX, centerY);
+const openLanBtn: ContentButton = initContentButton(centerX, centerY);
+const bottomBtn: ContentButton = initContentButton(centerX, centerY);
+const contentButtons: ContentButton[] = [topBtn, openLanBtn, bottomBtn];
+
+layoutContentButtons(contentButtons);
+
+for (const button of contentButtons) {gameContent.addChild(button.sprite);}
+for (const button of contentButtons) {gameContent.addChild(button.label);}
 
 const txt = { // 文本对象
     title: new PIXI.Text('', textStyle2()),
-    backToGame: new PIXI.Text('', textStyle2()),
-    backToTitle: new PIXI.Text('', textStyle2()),
 };
 
 /*设置文本样式*/ {
-    const fontSize: number = 24;
     txt.title.style.fontSize = fontSize;
-    txt.backToGame.style.fontSize = fontSize;
-    txt.backToTitle.style.fontSize = fontSize;
-
     txt.title.anchor.set(0.5);
-    txt.backToGame.anchor.set(0.5);
-    txt.backToTitle.anchor.set(0.5);
-
-    const fontY_offset: number = 4;
     txt.title.position.set(room.width / 2, room.height / 4);
-    txt.backToGame.position.set(topBtn.x, topBtn.y + fontY_offset); // 位置与 topBtn 相同
-    txt.backToTitle.position.set(bottomBtn.x, bottomBtn.y + fontY_offset); //位置与 bottomBtn 相同
 }
 
 interface GameContentTexts {
     title: string;
     backToGame: string;
     exitToContent: string;
+    openLAN: string;
 }
 
 async function loadGameContentTexts() {
     try {
         const data = await apioxHttp.get<{ gameContent: GameContentTexts }>(`assets/locales/${getLang()}/game.json`);
-        const specificOrder = ['title', 'backToGame', 'exitToContent'] as const;
-        const [titleText, backText, exitText] = specificOrder.map(key => data.gameContent[key]);
+        const specificOrder = ['title', 'backToGame', 'exitToContent', 'openLAN'] as const;
+        const [titleText, backText, exitText, lanText] = specificOrder.map(key => data.gameContent[key]);
 
         txt.title.text = titleText;
-        txt.backToGame.text = backText;
-        txt.backToTitle.text = exitText;
+        topBtn.label.text = backText;
+        bottomBtn.label.text = exitText;
+        openLanBtn.label.text = lanText;
     } catch (error) {
         console.error('load game text error', error);
     }
@@ -109,8 +138,6 @@ async function loadGameContentTexts() {
 loadGameContentTexts();
 
 gameContent.addChild(txt.title);
-gameContent.addChild(txt.backToGame);
-gameContent.addChild(txt.backToTitle);
 
 apioxEvent.onKeyDown((e: ApioxKeyboardEvent): void => {
     if (e.key !== 'Escape') {return;}
@@ -119,11 +146,11 @@ apioxEvent.onKeyDown((e: ApioxKeyboardEvent): void => {
     uistate.gameContent_isOpening = !uistate.gameContent_isOpening;
     gameContent.visible = uistate.gameContent_isOpening;
 });
-topBtn.on('pointerdown', () => {
+topBtn.sprite.on('pointerdown', () => {
     uistate.gameContent_isOpening = false;
     gameContent.visible = false;
 });
-bottomBtn.on('pointerdown', async () => {
+bottomBtn.sprite.on('pointerdown', async () => {
     quitGame();
 });
 

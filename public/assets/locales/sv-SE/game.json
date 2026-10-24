@@ -7,6 +7,7 @@
   "gameContent": {
     "title": "Spelmeny",
     "backToGame": "Tillbaka till spelet",
+    "openLAN": "Öppna för LAN",
     "exitToContent": "Spara och återvänd till titelskärmen"
   },
   "exitingPage": {

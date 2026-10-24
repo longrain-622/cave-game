@@ -7,6 +7,7 @@
   "gameContent": {
     "title": "Игровое меню",
     "backToGame": "Вернуться в игру",
+    "openLAN": "Открыть для локальной сети",
     "exitToContent": "Сохранить и выйти в главное меню"
   },
   "exitingPage": {

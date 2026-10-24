@@ -7,6 +7,7 @@
   "gameContent": {
     "title": "ゲームメニュー",
     "backToGame": "ゲームに戻る",
+    "openLAN": "LANに公開",
     "exitToContent": "保存してタイトル画面に戻る"
   },
   "exitingPage": {

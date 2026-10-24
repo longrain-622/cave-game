@@ -7,6 +7,7 @@
   "gameContent": {
     "title": "Menú del juego",
     "backToGame": "Volver al juego",
+    "openLAN": "Abrir al LAN",
     "exitToContent": "Guardar y volver a la pantalla de título"
   },
   "exitingPage": {

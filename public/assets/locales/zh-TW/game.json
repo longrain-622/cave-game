@@ -7,6 +7,7 @@
   "gameContent": {
     "title": "遊戲選單",
     "backToGame": "回到遊戲",
+    "openLAN": "對區域網路開放",
     "exitToContent": "儲存並退回標題畫面"
   },
   "exitingPage": {

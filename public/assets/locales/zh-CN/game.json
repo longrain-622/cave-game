@@ -7,6 +7,7 @@
   "gameContent": {
     "title": "游戏菜单",
     "backToGame": "回到游戏",
+    "openLAN": "对局域网开放",
     "exitToContent": "保存并退回到标题画面"
   },
   "exitingPage": {
