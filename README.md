@@ -26,11 +26,12 @@ This game is open source and free of charge. It involves no monetization and no 
 | Storage | [localforage](https://localforage.github.io/localForage/) |
 | Language | TypeScript |
 | Build | [Vite](https://vitejs.dev/) |
+| Desktop | [Electron](https://www.electronjs.org/) + [electron-builder](https://www.electron.build/) |
 | Testing | [Vitest](https://vitest.dev/) |
 
 ## Getting Started
 
-Requirements: Node.js 20+ and npm.
+Requirements: Node.js 22.12+ and npm.
 
 ```bash
 npm install        # Install dependencies
@@ -42,6 +43,28 @@ npm run typecheck  # Type-check src + test (recommended before committing)
 ```
 
 > **Note**: The root `index.html` is the Vite build entry (it references `/src/*.ts`). It cannot be opened directly with a static file server or by double-clicking it (`file://`) — use `npm run dev` for development, and deploy or preview the `dist/` output from `npm run build`. Browsers run only the built `dist/` output.
+
+## Desktop App (Electron)
+
+```bash
+npm run electron:dev    # Start Vite dev server and open an Electron window
+npm run electron:start  # Build dist, then run it in an Electron window
+npm run electron:dir    # Build an unpacked desktop app (release/win-unpacked)
+npm run electron:build  # Build the Windows installer (release/)
+```
+
+The desktop build loads `dist/` through a privileged `app://cavegame/` protocol instead of `file://`, so ES modules, `fetch`, IndexedDB saves, and audio keep working with a stable origin. Saves live in Electron's per-user data directory (`%APPDATA%/CaveGame` on Windows) and are separate from browser saves. The Windows installer is a per-user install with no administrator prompt. `F11` toggles fullscreen; `F12` opens DevTools in development runs.
+
+The first install may need to download the Electron runtime. If GitHub is unreachable, use a mirror for both install and packaging:
+
+```bash
+export ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+export ELECTRON_BUILDER_BINARIES_MIRROR=https://npmmirror.com/mirrors/electron-builder-binaries/
+npm install
+npm run electron:build
+```
+
+On Windows, set the same two variables with `set` (cmd) or `$env:NAME = "..."` (PowerShell) before running the commands.
 
 ## Project Structure
 
@@ -57,7 +80,10 @@ npm run typecheck  # Type-check src + test (recommended before committing)
 │   └── user/         Save/load
 ├── public/assets/  Game assets (images, sounds, locale files, fonts) — Vite publicDir,
 │                    copied verbatim to dist/assets/ and served at /assets/...
+├── electron/     Electron main process (`main.cjs`) and packaging resources
+├── scripts/      Development helpers (Electron + Vite launcher)
 ├── test/         Vitest unit tests
+├── release/      electron-builder output (gitignored)
 └── dist/         Vite build output (gitignored)
 ```
 
@@ -69,6 +95,7 @@ Standard Vite single-source build:
 - **The game chain is lazy-loaded**: the 15 game modules are dynamically imported by `LoadScripts` (and the game entry by `main`/`content`) via **relative dynamic imports**, so Vite code-splits them into async chunks that load only when the player enters the game room — preserving the original on-demand behavior.
 - **Assets as `publicDir`**: `public/assets/` is Vite's `publicDir`, copied verbatim into `dist/assets/` and served at `/assets/...`. Runtime string paths (`PIXI.Assets`, `fetch`, `Audio`) are page-relative (`assets/...`) so they resolve identically in dev and after deploy.
 - **Dependencies bundled normally**: `pixi.js` and `localforage` are resolved from `node_modules` by Vite (no importmap, no `dist/node_modules` mirroring, no `external`).
+- **Desktop shell**: `electron/main.cjs` runs the renderer with Node integration disabled and context isolation enabled. In production it serves the built files from `dist/` (including inside `app.asar`) via the privileged `app://cavegame/` scheme, so the game sees one stable origin in every desktop run.
 
 > Dev workflow: `npm run dev` — HMR works directly on `src/`, no manual compilation step. Build: `npm run build` → `dist/`, verify with `npm run preview`.
 

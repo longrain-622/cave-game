@@ -2,13 +2,17 @@
   "name": "cavegame",
   "version": "1.1.0-alpha.1",
   "description": "A 2d pixel-style game.",
-  "main": "./src/main.ts",
+  "main": "./electron/main.cjs",
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit -p tsconfig.test.json",
     "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "node scripts/electronDev.mjs",
+    "electron:start": "npm run build && electron .",
+    "electron:dir": "npm run build && electron-builder --dir",
+    "electron:build": "npm run build && electron-builder"
   },
   "repository": {
     "type": "git",
@@ -24,12 +28,65 @@
   },
   "license": "MIT",
   "type": "module",
+  "build": {
+    "appId": "com.sinuxu.cavegame",
+    "productName": "CaveGame",
+    "copyright": "Copyright © Sinuxu Studio",
+    "asar": true,
+    "directories": {
+      "output": "release",
+      "buildResources": "electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "!node_modules/**/*"
+    ],
+    "win": {
+      "icon": "public/assets/images/icon.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "packElevateHelper": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "CaveGame"
+    },
+    "linux": {
+      "icon": "public/assets/images/icon.png",
+      "category": "Game",
+      "target": [
+        "AppImage"
+      ]
+    },
+    "mac": {
+      "icon": "public/assets/images/icon.png",
+      "category": "public.app-category.games",
+      "target": [
+        "dmg"
+      ]
+    }
+  },
   "dependencies": {
     "localforage": "^1.10.0",
     "pixi.js": "^7.4.2"
   },
   "devDependencies": {
     "@types/localforage": "^0.0.33",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0",
     "typescript": "^7.0.2",
     "vite": "^8.0.16",
     "vitest": "^4.1.10"
