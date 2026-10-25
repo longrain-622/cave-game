@@ -1,10 +1,10 @@
 import { player } from "../player.js";
-import { idOfItem, itemTextures, item_isDrawing } from './itemIds.js';
-export { idOfItem, itemTextures, item_isDrawing };
+import { idOfItem } from './itemIds.js';
+export { idOfItem };
 import { Slots } from "../gui/gameGUI/inventoryConfig.js";
 import { idOfBlock } from "../nature/blockMecha/blocks.js";
 import { isOutOfBounds, isBlockFold, setWorldState, newBlockState, blockTypeAt, blockStateAt, BlockState } from "../world.js";
-import { mouse } from "../mouse.js";
+import { mouse } from "../input/mouseState.js";
 import { createDrop } from "./droppedItem.js";
 
 export function flipDraw(id: number): boolean {

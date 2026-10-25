@@ -1,16 +1,12 @@
 import { player } from "../../player.js";
 import { BlockPos, world, place_meeting, blockTypeAt } from "../../world.js";
-import { point_coll_rect } from "../../const.js";
 import { idOfBlock, canOver } from "../../nature/blockMecha/blocks.js";
 import { getRandomInt } from "../../../constants/utils.js";
 import { isEnemy, idOfAnimal, Animal, animalArray } from "../animalIds.js";
 import { findPlayer, chasePlayer } from "./zombie.js";
 import { flockDirection } from "../boids.js";
-import { mouse } from '../../mouse.js';
-import { eventBus } from '../../others/eventBus.js';
 import { createDrop } from '../../dropped/droppedItem.js';
 import { idOfItem } from "../../dropped/itemIds.js";
-import { apioxEvent } from "../../../apiox/event.js";
 
 // 水中物理参数（对应玩家游泳的一套参数，数值越大浮得越快）
 const waterGravRatio: number = 0.6; // 水中重力衰减比例
@@ -333,20 +329,3 @@ function killAnimal(which: Animal): void {
         case idOfAnimal.chicken: createDrop(idOfItem.chicken, which.x, which.y); break;
     }
 }
-
-apioxEvent.listenGlobal('click', (): void => {
-    if (mouse.can_use) { // 攻击动物
-        for (let i = 0; i < animalArray.length; i++) {
-            const animal = animalArray[i];
-            if (animal.isDying || animal.hp <= 0) {continue;} // 已死亡不再受攻击
-
-            let target_x = player.screen_x + animal.x - player.x;
-            let target_y = player.screen_y + animal.y - player.y;
-
-            if (point_coll_rect(mouse.x, mouse.y, target_x, target_y, animal.width, animal.height)) {
-                animalInjured(animal, true, 1);
-                eventBus.emit('player:attack');
-            }
-        }
-    }
-});

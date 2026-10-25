@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 
-import { Animal } from '../animals/animalIds.js';
+import { Animal } from '../../animals/animalIds.js';
 import { AnimalParts, subTexture } from './animalParts.js';
 
 export const zombieTextureUrl: string = 'assets/images/games/entity/zombie.png';

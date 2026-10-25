@@ -1,6 +1,6 @@
 import { player } from "../../player.js";
-import { widgets } from "./inventory.js";
-import { guiTextures, gui_isDrawing } from "./inventoryConfig.js";
+import { widgets } from "./inventoryState.js";
+import { guiTextures, gui_isDrawing } from "./guiTextures.js";
 import * as PIXI from 'pixi.js';
 
 // 心形血量容器

@@ -1,13 +1,14 @@
 import * as PIXI from 'pixi.js';
 
-import { player } from '../player.js';
-import { app, blockTextures } from './rendering.js';
-import { applyLightTint } from './light.js';
-import { inventory, widgets } from '../gui/gameGUI/inventory.js';
-import { uistate } from '../gui/uiState.js';
-import { idOfBlock } from '../nature/blockMecha/blocks.js';
-import { isTool, itemTextures } from '../dropped/itemIds.js';
-import { flipDraw } from '../dropped/items.js';
+import { player } from '../../player.js';
+import { app, blockTextures } from '../rendering.js';
+import { applyLightTint } from '../light.js';
+import { inventory, widgets } from '../../gui/gameGUI/inventoryState.js';
+import { uistate } from '../../gui/uiState.js';
+import { idOfBlock } from '../../nature/blockMecha/blocks.js';
+import { isTool } from '../../dropped/itemIds.js';
+import { itemTextures } from '../items/itemTextures.js';
+import { flipDraw } from '../../dropped/items.js';
 
 export let can_drawPlayer: boolean = false;
 

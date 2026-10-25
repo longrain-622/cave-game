@@ -1,12 +1,12 @@
 import * as PIXI from 'pixi.js';
 
-import { player } from '../player.js';
-import { isOnScreen } from '../const.js';
-import { app, blockTextures, isDrawing } from './rendering.js';
-import { applyLightTint } from './light.js';
-import { eventBus } from '../others/eventBus.js';
-import { idOfBlock } from '../nature/blockMecha/blocks.js';
-import { particleArray, particleType, Particles, splashFrameSize, splashFrameCount } from '../particle.js';
+import { player } from '../../player.js';
+import { isOnScreen } from '../../const.js';
+import { app, blockTextures, isDrawing } from '../rendering.js';
+import { applyLightTint } from '../light.js';
+import { eventBus } from '../../others/eventBus.js';
+import { idOfBlock } from '../../nature/blockMecha/blocks.js';
+import { particleArray, particleType, Particles, splashFrameSize, splashFrameCount } from '../../particle.js';
 
 // Particle images
 const particleAssets: Record<string, string> = {

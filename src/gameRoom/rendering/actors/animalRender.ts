@@ -1,11 +1,11 @@
-import { player } from '../player.js';
-import { isOnScreen } from '../const.js';
-import { idOfAnimal, animalArray, Animal } from '../animals/animalIds.js';
-import { app } from './rendering.js';
+import { player } from '../../player.js';
+import { isOnScreen } from '../../const.js';
+import { idOfAnimal, animalArray, Animal } from '../../animals/animalIds.js';
+import { app } from '../rendering.js';
 import { AnimalParts } from './animalParts.js';
 import { zombieTextureUrl, createZombieParts, updateZombieLegs } from './zombieRender.js';
 import * as PIXI from 'pixi.js';
-import { applyLightTint } from './light.js';
+import { applyLightTint } from '../light.js';
 import {
     pigTextureUrl, createPigParts,
     cowTextureUrl, createCowParts,

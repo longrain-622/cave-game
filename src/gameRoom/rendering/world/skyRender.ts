@@ -1,10 +1,10 @@
-import { world_height, chunk } from '../world.js';
-import { getRandomInt } from '../const.js';
-import { room } from '../../constants/generic.js';
-import { app, blockTextures } from './rendering.js';
-import { player } from '../player.js';
-import { clock } from '../nature/sky.js';
-import { idOfBlock } from '../nature/blockMecha/blocks.js';
+import { world_height, chunk } from '../../world.js';
+import { getRandomInt } from '../../const.js';
+import { room } from '../../../constants/generic.js';
+import { app, blockTextures } from '../rendering.js';
+import { player } from '../../player.js';
+import { clock } from '../../nature/sky.js';
+import { idOfBlock } from '../../nature/blockMecha/blocks.js';
 import * as PIXI from 'pixi.js';
 
 // 时间常量 单位：秒

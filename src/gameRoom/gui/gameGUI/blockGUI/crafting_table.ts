@@ -1,13 +1,14 @@
-import { ct_crafting, ct_get, Slots, invenConfig, iC_hand, guiTextures } from "../inventoryConfig.js";
+import { ct_crafting, ct_get, Slots, invenConfig, iC_hand } from "../inventoryConfig.js";
+import { guiTextures } from "../guiTextures.js";
 import { selecting, locateHighWhite } from "../gameGuiState.js";
 import { updateSelectingItem, inventory } from "../inventory.js";
 import { updateResultForGrid, consumeFromGrid } from './crafting.js';
 import { recipes } from "./craftingRecipe.js";
-import { mouse } from "../../../mouse.js";
+import { mouse } from "../../../input/mouse.js";
 import { blockTypeAt } from "../../../world.js";
 import { room } from "../../../../constants/generic.js";
 import { blockTextures, genericTextStyle } from "../../../rendering/rendering.js";
-import { itemTextures } from "../../../dropped/items.js";
+import { itemTextures } from "../../../rendering/items/itemTextures.js";
 import { uistate } from "../../uiState.js";
 import { idOfBlock } from "../../../nature/blockMecha/blocks.js";
 import * as PIXI from 'pixi.js';

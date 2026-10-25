@@ -1,50 +1,18 @@
 import { room } from "../../../constants/generic.js";
-import { guiTextures, gui_isDrawing, invenConfig, iC_hand, Slots, iC_make, iC_get, iC_clothe, iC_otherHand } from "./inventoryConfig.js";
-import { mouse } from "../../mouse.js";
+import { invenConfig, iC_hand, Slots, iC_make, iC_get, iC_clothe, iC_otherHand } from "./inventoryConfig.js";
+import { guiTextures, gui_isDrawing } from "./guiTextures.js";
+import { inventory, widgets, pickupObj } from "./inventoryState.js";
+import { mouse } from "../../input/mouse.js";
 import { craftingResultSlot, craftingSlots } from "./blockGUI/crafting.js";
 import { craftingTableContainer } from "./blockGUI/crafting_table.js";
 import { guiApp } from "../application.js";
 import { uistate } from "../uiState.js";
 import { genericTextStyle, blockTextures } from "../../rendering/rendering.js";
-import { itemTextures } from "../../dropped/items.js";
-import { readingWorld, coverWhenSave } from "../../gameState.js";
+import { itemTextures } from "../../rendering/items/itemTextures.js";
 import { selecting, locateHighWhite, locateHighWhiteForCrafting, resetSlotSelection, widgetContainer, floatContainer } from './gameGuiState.js';
 import { heartContainer } from "./hearts.js";
 import { deathContainer } from "./death.js";
 import * as PIXI from 'pixi.js';
-
-//背包对象
-interface Inventories {
-    items: Slots[]; //存储槽位对象的数组
-    width: number; height: number; //屏幕上绘制的宽高
-    initSlots: (num: number) => void; //初始化槽位
-}
-
-const inventory: Inventories = {
-    items: [],
-    width: 704, height: 664,
-    initSlots(num: number) {
-        for (let i = 0; i < num; i++) {
-            this.items.push(new Slots(-1, 0));
-        }
-    },
-};
-
-//物品栏对象
-interface Widgets {
-    width: number; height: number;
-    x: number; y: number;
-    select: number;
-}
-
-const widgets: Widgets = {
-    width: 760, height: 88,
-    x: 0, y: 0,
-    select: 0
-};
-
-widgets.x = (room.width - widgets.width) / 2;
-widgets.y = room.height - widgets.height;
 
 // pixiJS
 const invenX: number = (room.width - inventory.width) / 2;
@@ -93,10 +61,10 @@ export function ensureGuiMounted(): void {
 }
 
 export function initInventoryUI() {
-    //如果已经添加过，避免重复
+    // 如果已经添加过，避免重复
     ensureGuiMounted();
 
-    //清空容器避免重复初始化
+    // 清空容器避免重复初始化
     inventoryContainer.removeChildren();
     widgetContainer.removeChildren();
 
@@ -104,14 +72,14 @@ export function initInventoryUI() {
     const widgetBgTex: PIXI.Texture = new PIXI.Texture(widgetTex, new PIXI.Rectangle(0, 0, 190, 22));
     const widgetSelectTex: PIXI.Texture = new PIXI.Texture(widgetTex, new PIXI.Rectangle(0, 22, 24, 24));
 
-    //物品栏背景
+    // 物品栏背景
     widgetBg = new PIXI.Sprite(widgetBgTex);
     widgetBg.width = widgets.width;
     widgetBg.height = widgets.height;
     widgetBg.position.set(widgets.x, widgets.y);
     widgetContainer.addChild(widgetBg);
 
-    //物品栏选中高亮
+    // 物品栏选中高亮
     widgetSelectHighlight = new PIXI.Sprite(widgetSelectTex);
     widgetSelectHighlight.width = 96;
     widgetSelectHighlight.height = 96;
@@ -127,7 +95,7 @@ export function initInventoryUI() {
     blackBg.visible = true;
     inventoryContainer.addChild(blackBg);
 
-    //背包背景
+    // 背包背景
     inventoryBg = new PIXI.Sprite(invenBgTex);
     inventoryBg.width = inventory.width;
     inventoryBg.height = inventory.height;
@@ -135,11 +103,11 @@ export function initInventoryUI() {
     inventoryBg.visible = true;
     inventoryContainer.addChild(inventoryBg);
 
-    //创建底部热键栏
+    // 创建底部热键栏
     for (let i = 0; i < iC_hand.cols; i++) {
         const x: number = widgets.x + 13 + i * 80 + 32 - 24;
         const y: number = widgets.y - 2 + widgets.height / 4;
-        //创建精灵并添加到 widgetContainer
+        // 创建精灵并添加到 widgetContainer
         const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
         sprite.width = 48; sprite.height = 48;
         sprite.position.set(x, y);
@@ -156,13 +124,13 @@ export function initInventoryUI() {
         widgetSlotTexts.push(text);
     }
 
-    //创建背包内的 36 个槽位
-    //先清空 slotSprites/slotTexts（避免残留）
+    // 创建背包内的 36 个槽位
+    // 先清空 slotSprites/slotTexts（避免残留）
     slotSprites = [];
     slotTexts = [];
 
     const width: number = 48, height: number = 48;
-    //背包热键栏（9格，索引 0~8）
+    // 背包热键栏（9格，索引 0~8）
     for (let i = 0; i < iC_hand.cols; i++) {
         const x: number = invenX + iC_hand.startX + i * (iC_hand.slotWidth + iC_hand.paddingX) + 8;
         const y: number = invenY + iC_hand.startY + 8;
@@ -182,7 +150,7 @@ export function initInventoryUI() {
         slotTexts.push(text);
     }
 
-    //背包主体（27格，索引 9~35）
+    // 背包主体（27格，索引 9~35）
     for (let row = 0; row < invenConfig.rows; row++) {
         for (let col = 0; col < invenConfig.cols; col++) {
             const x: number = invenX + invenConfig.startX + col * (invenConfig.slotWidth + invenConfig.paddingX) + 8;
@@ -204,7 +172,7 @@ export function initInventoryUI() {
         }
     }
 
-    //合成网格（4个槽位）
+    // 合成网格（4个槽位）
     for (let i = 0; i < 4; i++) {
         const row: number = Math.floor(i / 2);
         const col: number = i % 2;
@@ -227,7 +195,7 @@ export function initInventoryUI() {
         craftingSlotTexts.push(text);
     }
 
-    //合成输出槽
+    // 合成输出槽
     const resX: number = invenX + iC_get.startX + 8;
     const resY: number = invenY + iC_get.startY + 8;
     craftingResultSprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
@@ -244,7 +212,7 @@ export function initInventoryUI() {
     craftingResultText.visible = false;
     inventoryContainer.addChild(craftingResultText);
 
-    //配方书按钮
+    // 配方书按钮
     bookSprite = new PIXI.Sprite(guiTextures.inventory);
     bookSprite.texture.frame = new PIXI.Rectangle(178, 0, 20, 18);
     bookSprite.width = 80;
@@ -263,7 +231,7 @@ export function initInventoryUI() {
     // 与 player.ts 共享同一个 BaseTexture 实例（BaseTexture.from 幂等命中缓存，避免重复加载与帧覆盖）
     const playerBaseTex = PIXI.BaseTexture.from('assets/images/games/player/players.png');
     function createPlayerPart(sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number): PIXI.Sprite {
-        //辅助函数：创建身体部位的 Sprite
+        // 辅助函数：创建身体部位的 Sprite
         const tex = new PIXI.Texture(playerBaseTex, new PIXI.Rectangle(sx, sy, sw, sh));
         const sprite = new PIXI.Sprite(tex);
         sprite.position.set(dx, dy);
@@ -279,12 +247,12 @@ export function initInventoryUI() {
     playerPreviewContainer.addChild(createPlayerPart(20, 52, 4, 12, baseX + 16 * scale, baseY + 80 * scale, 16 * scale, 48 * scale)); //右腿
     inventoryContainer.addChild(playerPreviewContainer);
 
-    //高亮图形（透明矩形）
+    // 高亮图形（透明矩形）
     highlightGraphics = new PIXI.Graphics();
     highlightGraphics.visible = false;
     inventoryContainer.addChild(highlightGraphics);
 
-    //鼠标拖拽物品
+    // 鼠标拖拽物品
     selectingSprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
     selectingSprite.width = 48;
     selectingSprite.height = 48;
@@ -298,19 +266,19 @@ export function initInventoryUI() {
     floatContainer.addChild(selectingText);
 }
 
-//在背包或物品栏中绘制物品的函数
-//更新单个槽位的显示（根据 Slots 对象）
+// 在背包或物品栏中绘制物品的函数
+// 更新单个槽位的显示（根据 Slots 对象）
 function updateSlotDisplay(sprite: PIXI.Sprite, text: PIXI.Text, slot: Slots): void {
     if (!slot || slot.item === -1) {
         sprite.visible = false;
         text.visible = false;
         return;
     }
-    //获取物品纹理（块或物品）
+    // 获取物品纹理（块或物品）
     let tex: PIXI.Texture | null = null;
-    if (slot.item < 512) { //方块
+    if (slot.item < 512) { // 方块
         tex = blockTextures[slot.item] || null;
-    } else { //物品
+    } else { // 物品
         tex = itemTextures[slot.item] || null;
     }
     if (tex) {
@@ -320,7 +288,7 @@ function updateSlotDisplay(sprite: PIXI.Sprite, text: PIXI.Text, slot: Slots): v
         sprite.visible = false;
     }
 
-    //数量文本
+    // 数量文本
     if (slot.num > 1) {
         text.text = String(slot.num);
         text.visible = true;
@@ -329,7 +297,7 @@ function updateSlotDisplay(sprite: PIXI.Sprite, text: PIXI.Text, slot: Slots): v
     }
 }
 
-//更新所有背包槽位（36个）
+// 更新所有背包槽位（36个）
 function updateAllSlots(): void {
     for (let i = 0; i < inventory.items.length; i++) {
         updateSlotDisplay(slotSprites[i], slotTexts[i], inventory.items[i]);
@@ -342,7 +310,7 @@ function updateWidgetSlots(): void {
     }
 }
 
-//更新合成网格（4个）和输出
+// 更新合成网格（4个）和输出
 function updateCraftingSlots(): void {
     for (let i = 0; i < craftingSlots.length; i++) {
         updateSlotDisplay(craftingSlotSprites[i], craftingSlotTexts[i], craftingSlots[i]);
@@ -350,14 +318,14 @@ function updateCraftingSlots(): void {
     updateSlotDisplay(craftingResultSprite, craftingResultText, craftingResultSlot);
 }
 
-//更新拖拽物品（跟随鼠标）
+// 更新拖拽物品（跟随鼠标）
 function updateSelectingItem(): void {
     if (selecting.item === -1) {
         selectingSprite.visible = false;
         selectingText.visible = false;
         return;
     }
-    //设置纹理（同 updateSlotDisplay）
+    // 设置纹理（同 updateSlotDisplay）
     const sprX: number = mouse.x - selectingSprite.width / 2;
     const sprY: number = mouse.y - selectingSprite.height / 2;
     let tex = null;
@@ -380,10 +348,8 @@ function updateSelectingItem(): void {
 }
 
 export function drawInventory(): void {
-    //确保 GUI 图片已加载完成，否则不绘制
-    if (!gui_isDrawing) {return;}
-    //确保 UI 元素已初始化（只执行一次）
-    if (!inventoryBg) {initInventoryUI();}
+    if (!gui_isDrawing) {return;} // 确保 GUI 图片已加载完成，否则不绘制
+    if (!inventoryBg) {initInventoryUI();} // 确保 UI 元素已初始化（只执行一次）
 
     widgetSelectHighlight.position.set(widgets.x - 4 + widgets.select * 80, widgets.y - 4); //更新选中高亮位置（根据 widgets.select）
     updateWidgetSlots();
@@ -393,63 +359,30 @@ export function drawInventory(): void {
         return;
     }
 
-    // 重置所有高亮状态
-    resetSlotSelection();
+    resetSlotSelection(); // 重置所有高亮状态
 
-    //设置容器可见性
+    // 设置容器可见性
     inventoryContainer.visible = uistate.inventory_isOpening;
-    inventoryBg.visible = true; //显示背景和固定元素
-    updateAllSlots(); //更新所有槽位
-    updateCraftingSlots(); //更新合成区域
-    bookSprite.visible = true; //配方书按钮
-    playerPreviewContainer.visible = true; //玩家预览
-    highlightGraphics.visible = true; //高亮
-    updateSelectingItem(); //拖拽物品
+    inventoryBg.visible = true; // 显示背景和固定元素
+    updateAllSlots(); // 更新所有槽位
+    updateCraftingSlots(); // 更新合成区域
+    bookSprite.visible = true; // 配方书按钮
+    playerPreviewContainer.visible = true; // 玩家预览
+    highlightGraphics.visible = true; // 高亮
+    updateSelectingItem(); // 拖拽物品
 
-    //绘制高亮
-    //清空旧高亮并使其可见
+    // 绘制高亮
     highlightGraphics.clear();
     highlightGraphics.visible = true;
-    //检测普通背包格子
-    locateHighWhite(invenConfig, invenX, invenY, highlightGraphics); //背包主体
-    locateHighWhite(iC_hand, invenX, invenY, highlightGraphics); //背包内的热键栏
+    // 检测普通背包格子
+    locateHighWhite(invenConfig, invenX, invenY, highlightGraphics); // 背包主体
+    locateHighWhite(iC_hand, invenX, invenY, highlightGraphics); // 背包内的热键栏
     locateHighWhite(iC_clothe, invenX, invenY, highlightGraphics);
     locateHighWhite(iC_otherHand, invenX, invenY, highlightGraphics);
-    //检测合成区域
+    // 检测合成区域
     locateHighWhiteForCrafting(iC_make, invenX, invenY, craftingSlots, 'crafting', highlightGraphics);
     locateHighWhiteForCrafting(iC_get, invenX, invenY, [craftingResultSlot], 'result', highlightGraphics);
 }
 
-function pickupObj(item: number): void { //拾取物品
-    //找到空格
-    let targetSlot: number = 0;
-    while ((inventory.items[targetSlot].item !== -1 && inventory.items[targetSlot].item !== item)
-    || inventory.items[targetSlot].num >= inventory.items[targetSlot].max) {
-        targetSlot += 1;
-        if (targetSlot >= inventory.items.length - 1) {return;}
-    }
-
-    //拾取
-    inventory.items[targetSlot].item = item;
-    inventory.items[targetSlot].num += 1;
-    return;
-}
-
-function inventoryMain(): void {
-    //初始化背包
-    if (coverWhenSave && readingWorld !== null) {
-        for (let i = 0; i < readingWorld.inventory.items.length; i++) {
-            const readSlot = readingWorld.inventory.items[i];
-            const putSlot = new Slots(readSlot.item, readSlot.num, readSlot.durability);
-            inventory.items.push(putSlot);
-        }
-        while (inventory.items.length < 36) {
-            inventory.initSlots(1);
-        }
-    } else {
-        inventory.initSlots(36);
-    }
-}
-inventoryMain();
-
-export { pickupObj, updateSelectingItem, inventory, widgets, gui_isDrawing };
+export { pickupObj, inventory, widgets };
+export { updateSelectingItem };

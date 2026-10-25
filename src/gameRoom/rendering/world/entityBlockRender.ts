@@ -1,11 +1,11 @@
 import * as PIXI from 'pixi.js';
 
-import { player } from '../player.js';
-import { isOnScreen } from '../const.js';
-import { app, blockTextures, isDrawing } from './rendering.js';
-import { applyLightTint } from './light.js';
-import { eventBus } from '../others/eventBus.js';
-import { entityBlock_array, EntityBlock } from '../nature/entityBlock.js';
+import { player } from '../../player.js';
+import { isOnScreen } from '../../const.js';
+import { app, blockTextures, isDrawing } from '../rendering.js';
+import { applyLightTint } from '../light.js';
+import { eventBus } from '../../others/eventBus.js';
+import { entityBlock_array, EntityBlock } from '../../nature/entityBlock.js';
 
 const entityBlockLayer: PIXI.Container = new PIXI.Container(); // 实体方块渲染层
 const entityBlockSpriteMap: Map<EntityBlock, PIXI.Sprite> = new Map(); // 每个实体方块对应的渲染 Sprite（移除时同步销毁）

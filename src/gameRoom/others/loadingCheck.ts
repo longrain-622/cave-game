@@ -1,10 +1,10 @@
 // loadingCheck.ts
 import { isDrawing } from "../rendering/rendering.js";
-import { can_drawPlayer } from "../rendering/playerRender.js";
-import { can_drawEntity } from "../rendering/animalRender.js";
-import { gui_isDrawing } from "../gui/gameGUI/inventory.js";
-import { sky_isDrawing } from "../rendering/skyRender.js";
-import { item_isDrawing } from "../dropped/items.js";
+import { can_drawPlayer } from "../rendering/actors/playerRender.js";
+import { can_drawEntity } from "../rendering/actors/animalRender.js";
+import { gui_isDrawing } from "../gui/gameGUI/guiTextures.js";
+import { sky_isDrawing } from "../rendering/world/skyRender.js";
+import { item_isDrawing } from "../rendering/items/itemTextures.js";
 import { apioxTime } from "../../apiox/time.js";
 import { finishLoading } from "./loadingPage.js";
 import { blockFrameLoaded } from "../rendering/blockFrames.js";

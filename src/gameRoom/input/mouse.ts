@@ -1,51 +1,31 @@
-import { player } from './player.js';
-import { setWorldState, isOutOfBounds, isBlockFold, newBlockState, blockTypeAt, blockStateAt, BlockState } from './world.js';
-import { distance, getRandomInt } from './const.js';
-import { room } from '../constants/generic.js';
-import { inventory, widgets } from './gui/gameGUI/inventory.js';
-import { uistate } from './gui/uiState.js';
-import { Slots } from './gui/gameGUI/inventoryConfig.js';
-import { createDrop, lookDrops } from './dropped/droppedItem.js';
-import { calculateHardness } from './dropped/minetool.js';
-import { createParticles } from './particle.js';
-import { eventBus } from './others/eventBus.js';
-import { soundManager } from './others/soundManager.js';
-import { idOfItem, putDoor, putTorch, useItem } from './dropped/items.js';
-import { door_openOrClose } from './nature/blockMecha/bmFunction.js';
-import { lowest_point } from './nature/createWorld.js';
-import { idOfBlock, canBehind } from './nature/blockMecha/blocks.js';
-import { breakChest } from './gui/gameGUI/blockGUI/chest.js';
-import { breakFurnace } from './gui/gameGUI/blockGUI/furnace.js';
-import './others/audioManager.js';
-import { apioxEvent, ApioxMouseEvent } from '../apiox/event.js';
-import { ApioxObject } from '../apiox/dom.js';
+import { player } from '../player.js';
+import { setWorldState, isOutOfBounds, isBlockFold, newBlockState, blockTypeAt, blockStateAt, BlockState } from '../world.js';
+import { distance, getRandomInt } from '../const.js';
+import { room } from '../../constants/generic.js';
+import { inventory, widgets } from '../gui/gameGUI/inventoryState.js';
+import { uistate } from '../gui/uiState.js';
+import { Slots } from '../gui/gameGUI/inventoryConfig.js';
+import { createDrop, lookDrops } from '../dropped/droppedItem.js';
+import { calculateHardness } from '../dropped/minetool.js';
+import { createParticles } from '../particle.js';
+import { eventBus } from '../others/eventBus.js';
+import { soundManager } from '../others/soundManager.js';
+import { idOfItem, putDoor, putTorch, useItem } from '../dropped/items.js';
+import { door_openOrClose } from '../nature/blockMecha/bmFunction.js';
+import { lowest_point } from '../nature/createWorld.js';
+import { idOfBlock, canBehind } from '../nature/blockMecha/blocks.js';
+import { breakChest } from '../gui/gameGUI/blockGUI/chest.js';
+import { breakFurnace } from '../gui/gameGUI/blockGUI/furnace.js';
+import '../others/audioManager.js';
+import { apioxEvent, ApioxMouseEvent } from '../../apiox/event.js';
+import { ApioxObject } from '../../apiox/dom.js';
+import { mouse, Mouse } from './mouseState.js';
+
+export { mouse };
+export type { Mouse };
 
 const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
 let bgmStarted: boolean = false;
-
-// 鼠标数据
-interface Mouse {
-    x: number; y: number;
-    world_x: number; world_y: number; // 鼠标在数组中的坐标
-    can_use: boolean; // 根据与玩家的距离判断能否挖方块等
-    can_put: boolean;
-    isDown: boolean; timer: number; destory: number; // 检测挖方块用的计时器、方块被挖掘的程度
-    downingButton: number; blockhardness: number; // 鼠标接触的方块的硬度
-    last_world_x: number; last_world_y: number;
-    last_tool: number; last_targetBlock: number;
-}
-
-export const mouse: Mouse = {
-    x: 0, y: 0,
-    world_x: 0, world_y: 0,
-    can_use: true,
-    can_put: false,
-    isDown: false, timer: 0, destory: 0,
-    downingButton: 0,
-    blockhardness: 0,
-    last_world_x: -1, last_world_y: -1,
-    last_tool: -1, last_targetBlock: -1,
-};
 
 apioxEvent.onMouseMove(
     (event: ApioxMouseEvent): void => {

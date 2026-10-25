@@ -8,7 +8,7 @@ import { lowest_point } from '../src/gameRoom/nature/createWorld.js';
 import { entityBlock_array } from '../src/gameRoom/nature/entityBlock.js';
 import { particleArray } from '../src/gameRoom/particle.js';
 import { dropArray } from '../src/gameRoom/dropped/droppedItem.js';
-import { mouse } from '../src/gameRoom/mouse.js';
+import { mouse } from '../src/gameRoom/input/mouseState.js';
 import {
     setGrassDirt,
     grass_and_dirt,
@@ -39,7 +39,7 @@ vi.mock('pixi.js', async (importOriginal) => {
     const actual = await importOriginal<typeof import('pixi.js')>();
     return { ...actual, Assets: { load: async () => ({}) } };
 });
-vi.mock('../src/gameRoom/mouse.js', () => ({
+vi.mock('../src/gameRoom/input/mouseState.js', () => ({
     mouse: { world_x: 0, world_y: 0, x: 0, y: 0 },
 }));
 vi.mock('../src/gameRoom/gui/gameGUI/inventory.js', () => ({

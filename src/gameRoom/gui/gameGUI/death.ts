@@ -1,6 +1,6 @@
 import { initPlayerPosition, player } from "../../player.js";
-import { gui_isDrawing, ensureGuiMounted } from "./inventory.js";
-import { guiTextures } from "./inventoryConfig.js";
+import { ensureGuiMounted } from "./inventory.js";
+import { guiTextures, gui_isDrawing } from "./guiTextures.js";
 import { genericTextStyle } from "../../rendering/rendering.js";
 import { room } from "../../../constants/generic.js";
 import { apiObjects } from "../../../apiox/dom.js";

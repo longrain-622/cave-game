@@ -1,7 +1,6 @@
-import { idOfItem } from "../../dropped/items.js";
-import * as PIXI from 'pixi.js';
+import { idOfItem } from "../../dropped/itemIds.js";
 
-interface InventoryConfig {
+export interface InventoryConfig {
     cols: number; // 列数
     rows: number;
     slotWidth: number; slotHeight: number; // 每个格子的宽度px
@@ -19,25 +18,85 @@ function createConfig(overrides: Partial<InventoryConfig>): InventoryConfig {
 }
 
 // inventory
-export const invenConfig = createConfig({startX: 32, startY: 336});
-export const iC_hand = createConfig({rows: 1, startX: 32, startY: 568});
-export const iC_clothe = createConfig({cols: 1, rows: 4, startX: 32, startY: 32});
-export const iC_otherHand = createConfig({cols: 1, rows: 1, startX: 308, startY: 248});
-export const iC_make = createConfig({cols: 2, rows: 2, startX: 392, startY: 72});
-export const iC_get = createConfig({cols: 1, rows: 1, startX: 616, startY: 112});
+export const invenConfig = createConfig({
+    startX: 32,
+    startY: 336
+});
+export const iC_hand = createConfig({
+    rows: 1,
+    startX: 32,
+    startY: 568
+});
+export const iC_clothe = createConfig({
+    cols: 1,
+    rows: 4,
+    startX: 32,
+    startY: 32
+});
+export const iC_otherHand = createConfig({
+    cols: 1,
+    rows: 1,
+    startX: 308,
+    startY: 248
+});
+export const iC_make = createConfig({
+    cols: 2,
+    rows: 2,
+    startX: 392,
+    startY: 72
+});
+export const iC_get = createConfig({
+    cols: 1,
+    rows: 1,
+    startX: 616,
+    startY: 112
+});
 // crafting table
-export const ct_crafting = createConfig({cols: 3, rows: 3, startX: 120, startY: 68});
-export const ct_get = createConfig({cols: 1, rows: 1, slotWidth: 96, slotHeight: 96, startX: 480, startY: 124});
+export const ct_crafting = createConfig({
+    cols: 3,
+    rows: 3,
+    startX: 120,
+    startY: 68
+});
+export const ct_get = createConfig({
+    cols: 1,
+    rows: 1,
+    slotWidth: 96,
+    slotHeight: 96,
+    startX: 480,
+    startY: 124
+});
 // chest
-export const chestConfig = createConfig({startX: 32, startY: 72});
+export const chestConfig = createConfig({
+    startX: 32,
+    startY: 72
+});
 // furnace
-export const furnaceConfig_input = createConfig({cols: 1, rows: 1, startX: 224, startY: 68});
-export const furnaceConfig_output = createConfig({cols: 1, rows: 1, startX: 448, startY: 124, slotWidth: 96, slotHeight: 96});
-export const furnaceConfig_fuel = createConfig({cols: 1, rows: 1, startX: 224, startY: 212});
+export const furnaceConfig_input = createConfig({
+    cols: 1,
+    rows: 1,
+    startX: 224,
+    startY: 68
+});
+export const furnaceConfig_output = createConfig({
+    cols: 1,
+    rows: 1,
+    startX: 448,
+    startY: 124,
+    slotWidth: 96,
+    slotHeight: 96
+});
+export const furnaceConfig_fuel = createConfig({
+    cols: 1,
+    rows: 1,
+    startX: 224,
+    startY: 212
+});
 
 // 槽位类
-class Slots {
-    item: number; num: number;
+export class Slots {
+    item: number;
+    num: number;
     durability: number;
 
     get max(): number { // 堆叠上限
@@ -75,33 +134,3 @@ class Slots {
         this.durability = durability; // 耐久度，-1表示不需要该属性
     }
 }
-
-// GUI 贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
-// 注意：players.png 由 player.ts 直接 BaseTexture.from 加载（共享同一实例），不在此重复加载
-const guiAssets: Record<string, string> = {
-    inventory: '/assets/images/games/gui/container/inventory.png',
-    widgets: '/assets/images/games/gui/widgets.png',
-    icons: '/assets/images/games/gui/hearts/icons.png',
-    crafting_table: '/assets/images/games/gui/container/craftingtable.png',
-    chest: '/assets/images/games/gui/shulker_box.png',
-    furnace: '/assets/images/games/gui/furnace_gui.png',
-};
-
-// 加载后的 GUI 贴图纹理（按 alias 索引），供各 GUI 模块直接使用
-export const guiTextures: Record<string, PIXI.Texture> = {};
-export let gui_isDrawing: boolean = false;
-
-function main(): void {
-    // 用 PixiJS Assets 加载 GUI 贴图（替代 Image 对象），全部就绪后再填充 guiTextures
-    PIXI.Assets.load<Record<string, PIXI.Texture>>(Object.values(guiAssets)).then((textures: Record<string, PIXI.Texture>) => {
-        for (const [alias, url] of Object.entries(guiAssets)) {
-            guiTextures[alias] = textures[url];
-        }
-        gui_isDrawing = true;
-    }).catch((error: unknown) => {
-        console.error('load gui textures error', error);
-    });
-}
-main();
-
-export { Slots, InventoryConfig };

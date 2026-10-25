@@ -1,7 +1,7 @@
 import { place_meeting } from '../world.js';
 import { getRandomInt, point_coll_rect, distance } from '../const.js';
 import { player } from '../player.js';
-import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';
+import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventoryState.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
 import { eventBus } from '../others/eventBus.js';
 import { idOfItem } from './items.js';

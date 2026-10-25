@@ -1,5 +1,5 @@
 import { Blocks, blocksArray, idOfBlock } from "../nature/blockMecha/blocks.js";
-import { inventory, widgets } from "../gui/gameGUI/inventory.js";
+import { inventory, widgets } from "../gui/gameGUI/inventoryState.js";
 import { idOfItem } from "./items.js";
 import { player, playerState } from "../player.js";
 

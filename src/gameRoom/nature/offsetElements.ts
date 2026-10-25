@@ -4,8 +4,8 @@ import { player } from "../player.js";
 import { animalArray } from "../animals/animalIds.js";
 import { dropArray } from "../dropped/droppedItem.js";
 import { particleArray } from "../particle.js";
-import { furnaceArray } from "../gui/gameGUI/blockGUI/furnace.js";
-import { chests } from "../gui/gameGUI/blockGUI/chest.js";
+import { furnaceArray } from "../containers/furnaceState.js";
+import { chests } from "../containers/chestState.js";
 import { entityBlock_array } from "./entityBlock.js";
 
 eventBus.on('chunk:create', (behind) => {

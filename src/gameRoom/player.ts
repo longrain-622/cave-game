@@ -2,7 +2,7 @@ import { world_height, world, chunk, place_meeting, blockTypeAt } from './world.
 import { enableKeyDoubleClickDetection } from './const.js';
 import { room } from '../constants/generic.js';
 import { uistate } from './gui/uiState.js';
-import { mouse } from './mouse.js';
+import { mouse } from './input/mouseState.js';
 import { eventBus } from './others/eventBus.js';
 import { WorldArchive } from '../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from './gameState.js';

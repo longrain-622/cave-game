@@ -4,7 +4,7 @@ import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
 import { idOfBlock, canOver, canWaterFlowInto, blocksWater, WATER_SOURCE, WATER_FLOW_MAX, WATER_FALLING } from "./blocks.js";
-import { mouse } from "../../mouse.js";
+import { mouse } from "../../input/mouseState.js";
 import { lowest_point } from "../createWorld.js";
 import { idOfItem } from "../../dropped/itemIds.js";
 

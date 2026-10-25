@@ -1,27 +1,27 @@
 import { playerLoop, updatePlayerState } from './player.js';
 import { room } from '../constants/generic.js';
-import { mouseAct } from './mouse.js';
+import { mouseAct } from './input/mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
-import { blockFrameLoop } from './rendering/blockFrames.js';
-import { updatePlayerRender } from './rendering/playerRender.js';
+import { blockFrameLoop } from './nature/blockFrameState.js';
+import { updatePlayerRender } from './rendering/actors/playerRender.js';
 
 import { animalsLoop, natureSpawnAnimals } from './animals/animals.js';
 import { animalArray } from './animals/animalIds.js';
-import { drawAnimals } from './rendering/animalRender.js';
+import { drawAnimals } from './rendering/actors/animalRender.js';
 
 import { gameGuiLogicLoop, gameGuiRenderingLoop } from './gui/gameGUI/gameGuiState.js';
 import { dropArray, dropsX } from './dropped/droppedItem.js';
-import { drawDrops } from './rendering/dropRender.js';
+import { drawDrops } from './rendering/items/dropRender.js';
 import { drawDeadPage } from './gui/gameGUI/death.js';
 import { updateDebugScreen } from './gui/contentGUI/debugScreen.js';
 
 import { particleArray, particleAct } from './particle.js';
-import { drawParticles } from './rendering/particleRender.js';
+import { drawParticles } from './rendering/items/particleRender.js';
 import { skyLogicLoop } from './nature/sky.js';
-import { skyRendering } from './rendering/skyRender.js';
+import { skyRendering } from './rendering/world/skyRender.js';
 import { createChunkAnyTime } from './nature/createWorld.js';
 import { entityBlock_array, entityBlockLogic } from './nature/entityBlock.js';
-import { renderingEntityBlock } from './rendering/entityBlockRender.js';
+import { renderingEntityBlock } from './rendering/world/entityBlockRender.js';
 import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
 
 import { ApioxObject } from '../apiox/dom.js';

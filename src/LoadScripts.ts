@@ -16,6 +16,7 @@ export async function loadScripts() {
       await import('./gameRoom/player.js'),
       await import('./gameRoom/nature/blockMecha/blockMechanism.js'),
       await import('./gameRoom/animals/animals.js'),
+      await import('./gameRoom/input/animalAttack.js'),
       //await import('./debug/debug.js'),
       await import('./gameRoom/gui/gameGUI/blockGUI/crafting_table.js'),
       await import('./gameRoom/nature/offsetElements.js'),

@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js';
 import { idOfBlock, WATER_FLOW_MAX, WATER_FALLING } from '../nature/blockMecha/blocks.js';
 import { getTemperatureAt, TEMP } from '../nature/createWorld.js';
+import { fireMaxTick, waterMaxTick, waterTick } from '../nature/blockFrameState.js';
 import { BlockState, worldXAt } from '../world.js';
 import { applyColoredLightTint } from './light.js';
 import { app } from './rendering.js';
@@ -37,38 +38,15 @@ function splitFrames(sheet: PIXI.Texture, frameCount: number, stepY: number = fr
     return frames;
 }
 
-let timer: number = 0;
-let waterTimer: number = 0;
-
-const fireMaxTick: number = 31;
-let fireTick: number = 0; // 0 ~ 31
 let fireFrames: PIXI.Texture[] = [];
-
-const waterMaxTick: number = 31;
-let waterTick: number = 0; // 0 ~ 31
 let waterFrames: PIXI.Texture[] = [];
 let waterFlowFrames: PIXI.Texture[] = []; // 竖直水流
 let waterSlopeFrames: PIXI.Texture[][] = []; // 水平水流的梯形帧 [slot][waterTick]，slot = (condition - 1) * 2 + direction
-const waterTickDelta: number = 4; // 水每个动画帧持续的 delta 数
 
 function main(): void {
     initBlockFrames();
 }
 main();
-
-export function blockFrameLoop(delta: number): void {
-    timer += delta;
-    if (timer >= 2) {
-        timer = 0;
-        fireTick = (fireTick + 1) % (fireMaxTick + 1);
-    }
-
-    waterTimer += delta;
-    if (waterTimer >= waterTickDelta) {
-        waterTimer = 0;
-        waterTick = (waterTick + 1) % (waterMaxTick + 1);
-    }
-}
 
 // 当地温度对应的水颜色
 function waterColorOfTemperature(temp: number): number {

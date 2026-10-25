@@ -1,71 +1,19 @@
-import { guiTextures, gui_isDrawing, Slots, chestConfig, invenConfig, iC_hand } from '../inventoryConfig.js';
+import { Slots, chestConfig, invenConfig, iC_hand } from '../inventoryConfig.js';
+import { guiTextures, gui_isDrawing } from '../guiTextures.js';
 import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../gameGuiState.js';
 import { inventory, updateSelectingItem, guiContainer } from '../inventory.js';
 import { genericTextStyle, blockTextures } from '../../../rendering/rendering.js';
-import { itemTextures } from '../../../dropped/items.js';
-import { world, blockTypeAt } from '../../../world.js';
-import { getRandomInt } from '../../../const.js';
+import { itemTextures } from '../../../rendering/items/itemTextures.js';
+import { blockTypeAt } from '../../../world.js';
 import { room } from '../../../../constants/generic.js';
-import { mouse } from '../../../mouse.js';
+import { mouse } from '../../../input/mouse.js';
 import { uistate } from '../../uiState.js';
 import { idOfBlock } from '../../../nature/blockMecha/blocks.js';
-import { createDrop } from '../../../dropped/droppedItem.js';
-import { coverWhenSave, readingWorld } from '../../../gameState.js';
+import { Chest, lookChest, removeChestAt } from '../../../containers/chestState.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../../apiox/event.js';
 
-export interface Chest { // 记录每个箱子的信息
-    world_x: number; world_y: number;
-    fold: Slots[]; // 所装物品
-}
-export let chests: Chest[] = [];
 let currentChest: Chest | null = null;
-
-// 初始化（读档）箱子数组
-function loadChest(): void {
-    if (coverWhenSave && readingWorld !== null) {
-        for (let i = 0; i < readingWorld.chests.length; i++) {
-            const readChest = readingWorld.chests[i];
-
-            let fold: Slots[] = [];
-            for (let k = 0; k < readChest.fold.length; k++) {
-                const readChestSlot = readChest.fold[k];
-                const putChestSlot = new Slots(readChestSlot.item, readChestSlot.num, readChestSlot.durability);
-                fold.push(putChestSlot);
-            }
-
-            const putChest: Chest = {
-                world_x: readChest.world_x,
-                world_y: readChest.world_y,
-                fold: fold,
-            }
-
-            chests.push(putChest);
-        }
-    }
-}
-
-function lookChest(look_x: number, look_y: number): Chest {
-    // 清除无用的箱子对象
-    for (let i = chests.length - 1; i >= 0; i--) {
-        const cst: Chest = chests[i];
-        if (!world[cst.world_y] || blockTypeAt(cst.world_x, cst.world_y) !== idOfBlock.chest) {
-            chests.splice(i, 1);
-        }
-    }
-
-    // 检查或补漏箱子对象
-    let existing = chests.find(c => c.world_x === look_x && c.world_y === look_y);
-    if (!existing) {
-        existing = {
-            world_x: look_x,
-            world_y: look_y,
-            fold: Array.from({ length: 27 }, () => new Slots(-1, 0)) // 27个空槽
-        };
-        chests.push(existing);
-    }
-    return existing;
-}
 
 function setCurrentChest(wx: number, wy: number): void {
     currentChest = lookChest(wx, wy);
@@ -469,27 +417,13 @@ export function handleChestBackpackContextMenu(): void {
 
 //箱子被破坏时的处理
 export function breakChest(chest_world_x: number, chest_world_y: number): void {
-    if (blockTypeAt(chest_world_x, chest_world_y) === idOfBlock.chest && chests.length > 0) {
-        //破坏箱子后关闭 GUI 状态
-        if (uistate.chest_isOpening) {
-            uistate.chest_isOpening = false;
-            currentChest = null;
-        }
+    if (blockTypeAt(chest_world_x, chest_world_y) !== idOfBlock.chest) {return;}
 
-        const target = chests.find(obj => (obj.world_x === chest_world_x && obj.world_y === chest_world_y));
-        if (!target) {return;}
-        chests.splice(chests.indexOf(target), 1);
-
-        for (let i = 0; i < target.fold.length; i++) {
-            if (target.fold[i].item === -1) {continue;}
-            for (let k = 0; k < target.fold[i].num; k++) {
-                createDrop(target.fold[i].item, chest_world_x * 64 + getRandomInt(0, 64), chest_world_y * 64 + getRandomInt(0, 64));
-            }
-        }
+    //破坏箱子后关闭 GUI 状态
+    if (uistate.chest_isOpening) {
+        uistate.chest_isOpening = false;
+        currentChest = null;
     }
-}
 
-function chestMain(): void {
-    loadChest();
+    removeChestAt(chest_world_x, chest_world_y);
 }
-chestMain();

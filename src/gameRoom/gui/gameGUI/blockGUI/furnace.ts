@@ -1,87 +1,20 @@
-import { Slots, guiTextures, furnaceConfig_fuel, furnaceConfig_input, furnaceConfig_output, invenConfig, iC_hand, gui_isDrawing, InventoryConfig } from '../inventoryConfig.js';
+import { Slots, furnaceConfig_fuel, furnaceConfig_input, furnaceConfig_output, invenConfig, iC_hand, InventoryConfig } from '../inventoryConfig.js';
+import { guiTextures, gui_isDrawing } from '../guiTextures.js';
 import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../gameGuiState.js';
 import { guiContainer, inventory, updateSelectingItem } from '../inventory.js';
 import { room } from '../../../../constants/generic.js';
 import { genericTextStyle, blockTextures } from '../../../rendering/rendering.js';
-import { itemTextures } from '../../../dropped/items.js';
-import { world, blockTypeAt } from '../../../world.js';
-import { getRandomInt, point_coll_rect } from '../../../const.js';
-import { readingWorld, coverWhenSave } from '../../../gameState.js';
-import { WorldArchive, FurnaceArchive } from '../../../../types/worldArchive.js';
-import { mouse } from '../../../mouse.js';
-import { player } from '../../../player.js';
+import { itemTextures } from '../../../rendering/items/itemTextures.js';
+import { blockTypeAt } from '../../../world.js';
+import { mouse } from '../../../input/mouse.js';
 import { uistate } from '../../uiState.js';
 import { idOfBlock } from '../../../nature/blockMecha/blocks.js';
-import { createDrop } from '../../../dropped/droppedItem.js';
-import { notNullUndefined } from '../../../../constants/utils.js';
+import { Furnace, lookFurnace, removeFurnaceAt } from '../../../containers/furnaceState.js';
+import { getFurnaceRecipe, FurnaceRecipe } from './furnaceRecipe.js';
 import * as PIXI from 'pixi.js';
 import { apioxEvent, ApioxMouseEvent } from '../../../../apiox/event.js';
-import { getFurnaceRecipe, FurnaceRecipe, fuels } from './furnaceRecipe.js';
 
-export interface Furnace {
-    world_x: number; world_y: number;
-    fuel: Slots;
-    input: Slots;
-    output: Slots;
-    fuelProgress: number; // 燃料燃烧的进度
-    outputProgress: number;
-}
-export const furnaceArray: Furnace[] = [];
 let currentFurnace: Furnace | null = null;
-const lookRange: number = 32 * 64; // 最大渲染距离，超过此值的实例，循环自动跳过，单位：px
-
-// 加载存档中的所有熔炉
-function loadFurnace(readWorld: WorldArchive | null): void {
-    if (!(coverWhenSave && notNullUndefined(readWorld))) {return;}
-    if (!notNullUndefined(readWorld.furnaces)) {
-        console.log('cannot load the furnaces of your world!');
-        return;
-    }
-
-    for (let f = 0; f < readWorld.furnaces.length; f++) {
-        const readFurnace: FurnaceArchive = readWorld.furnaces[f];
-        const input = new Slots(readFurnace.input.item, readFurnace.input.num, readFurnace.input.durability);
-        const output = new Slots(readFurnace.output.item, readFurnace.output.num, readFurnace.output.durability);
-        const fuel = new Slots(readFurnace.fuel.item, readFurnace.fuel.num, readFurnace.fuel.durability);
-
-        const addFurnace: Furnace = {
-            world_x: readFurnace.world_x, world_y: readFurnace.world_y,
-            fuel: fuel,
-            input: input,
-            output: output,
-            fuelProgress: readFurnace.fuelProgress,
-            outputProgress: readFurnace.outputProgress,
-        };
-
-        furnaceArray.push(addFurnace);
-    }
-}
-
-function lookFurnace(look_x: number, look_y: number): Furnace {
-    // 清除无用的熔炉对象
-    for (let i = furnaceArray.length - 1; i >= 0; i--) {
-        const fur: Furnace = furnaceArray[i];
-        if (!world[fur.world_y] || blockTypeAt(fur.world_x, fur.world_y) !== idOfBlock.furnace) {
-            furnaceArray.splice(i, 1);
-        }
-    }
-
-    // 查找或补漏某个位置的熔炉对象
-    let existing = furnaceArray.find(f => f.world_x === look_x && f.world_y === look_y);
-    if (!existing) {
-        existing = {
-            world_x: look_x,
-            world_y: look_y,
-            input: new Slots(-1, 0),
-            output: new Slots(-1, 0),
-            fuel: new Slots(-1, 0),
-            fuelProgress: 0,
-            outputProgress: 0,
-        };
-        furnaceArray.push(existing);
-    }
-    return existing;
-}
 
 function setCurrentFurnace(wx: number, wy: number): void {
     currentFurnace = lookFurnace(wx, wy);
@@ -637,124 +570,15 @@ export function handleFurnaceBackpackContextMenu(): void {
     }
 }
 
-// 烧制物品
-// 当有熔炉处于正在使用的状态时，每帧执行一次
-function firingItem(whichFurnace: Furnace, delta: number): void {
-    // 检测输入物品对应的配方
-    // 输入被拿走（空气）时同样找不到配方，走下面的分支：进度归零、火焰熄灭，不会冻结
-    const recipe: FurnaceRecipe | undefined = getFurnaceRecipe(whichFurnace.input.item);
-    if (!recipe) {
-        whichFurnace.outputProgress = 0;
-        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
-        return;
-    }
-
-    // 输出槽已有物品且与成品种类不同，则不进行烧制
-    if (whichFurnace.output.item !== idOfBlock.air) {
-        if (whichFurnace.output.item !== recipe.output) {
-            whichFurnace.outputProgress = 0;
-            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
-            return;
-        }
-        // 输出槽已堆叠满，无法继续放入成品
-        if (whichFurnace.output.num >= whichFurnace.output.max) {
-            whichFurnace.outputProgress = 0;
-            if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
-            return;
-        }
-    }
-
-    // 燃料槽为空或物品不是燃料，不烧制
-    if (!fuels.includes(whichFurnace.fuel.item)) {
-        whichFurnace.outputProgress = 0;
-        if (whichFurnace.fuelProgress > 0) {whichFurnace.fuelProgress -= delta;}
-        return;
-    }
-
-    // 递增进度
-    whichFurnace.outputProgress += delta;
-    whichFurnace.fuelProgress += delta;
-
-    // 进度达到配方所需时间，输出成品
-    if (whichFurnace.outputProgress >= recipe.time) {
-        // 消耗一个输入物品
-        whichFurnace.input.num--;
-        if (whichFurnace.input.num <= 0) {
-            whichFurnace.input.item = idOfBlock.air;
-            whichFurnace.input.num = 0;
-        }
-
-        // 输出成品：输出槽为空则放置，否则数量递增
-        if (whichFurnace.output.item === -1) {
-            whichFurnace.output.item = recipe.output;
-            whichFurnace.output.num = 1;
-            whichFurnace.output.durability = -1;
-        } else {
-            whichFurnace.output.num++;
-        }
-        whichFurnace.outputProgress = 0;
-    }
-
-    // 消耗燃料
-    if (whichFurnace.fuelProgress >= 512) {
-        whichFurnace.fuelProgress = 0;
-        whichFurnace.fuel.num--;
-
-        if (whichFurnace.fuel.num <= 0) {
-            whichFurnace.fuel.item = idOfBlock.air;
-            whichFurnace.fuel.num = 0;
-        }
-    }
-}
-
-// 每帧处理所有熔炉的烧制
-export function furnaceLoop(delta: number): void {
-    for (let i = 0; i < furnaceArray.length; i++) {
-        if (
-            !point_coll_rect(
-                furnaceArray[i].world_x * 64,
-                furnaceArray[i].world_y * 64,
-                player.x - lookRange / 2,
-                player.y - lookRange / 2,
-                lookRange, lookRange
-            )
-        ) {
-            continue; // 超出玩家视野范围的熔炉跳过，继续处理其余熔炉
-        }
-        firingItem(furnaceArray[i], delta);
-    }
-}
-
 // 熔炉被破坏时的处理
 export function breakFurnace(furnace_world_x: number, furnace_world_y: number): void {
-    if (blockTypeAt(furnace_world_x, furnace_world_y) === idOfBlock.furnace && furnaceArray.length > 0) {
-        // 破坏熔炉后关闭 GUI 状态
-        if (uistate.furnace_isOpening) {
-            uistate.furnace_isOpening = false;
-            currentFurnace = null;
-        }
+    if (blockTypeAt(furnace_world_x, furnace_world_y) !== idOfBlock.furnace) {return;}
 
-        const target: Furnace | undefined = furnaceArray.find(
-            obj => (obj.world_x === furnace_world_x && obj.world_y === furnace_world_y)
-        );
-        if (!target) {return;}
-        furnaceArray.splice(furnaceArray.indexOf(target), 1);
-
-        const allSlots: Slots[] = [target.input, target.output, target.fuel];
-        for (let i = 0; i < allSlots.length; i++) {
-            if (allSlots[i].item === -1) {continue;}
-            for (let k = 0; k < allSlots[i].num; k++) {
-                createDrop(
-                    allSlots[i].item,
-                    furnace_world_x * 64 + getRandomInt(0, 64),
-                    furnace_world_y * 64 + getRandomInt(0, 64)
-                );
-            }
-        }
+    // 破坏熔炉后关闭 GUI 状态
+    if (uistate.furnace_isOpening) {
+        uistate.furnace_isOpening = false;
+        currentFurnace = null;
     }
-}
 
-function furnaceMain(): void {
-    loadFurnace(readingWorld);
+    removeFurnaceAt(furnace_world_x, furnace_world_y);
 }
-furnaceMain();

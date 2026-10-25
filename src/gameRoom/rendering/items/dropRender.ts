@@ -1,12 +1,12 @@
 import * as PIXI from 'pixi.js';
 
-import { player } from '../player.js';
-import { isOnScreen } from '../const.js';
-import { app, blockTextures, isDrawing } from './rendering.js';
-import { applyLightTint } from './light.js';
-import { itemTextures } from '../dropped/items.js';
-import { eventBus } from '../others/eventBus.js';
-import { dropArray, Droppeds } from '../dropped/droppedItem.js';
+import { player } from '../../player.js';
+import { isOnScreen } from '../../const.js';
+import { app, blockTextures, isDrawing } from '../rendering.js';
+import { applyLightTint } from '../light.js';
+import { itemTextures } from './itemTextures.js';
+import { eventBus } from '../../others/eventBus.js';
+import { dropArray, Droppeds } from '../../dropped/droppedItem.js';
 
 const dropLayer: PIXI.Container = new PIXI.Container(); // 掉落物渲染层
 const dropSpriteMap: Map<Droppeds, PIXI.Sprite> = new Map(); // 每个掉落物对应的渲染 Sprite（掉落物移除时同步销毁）

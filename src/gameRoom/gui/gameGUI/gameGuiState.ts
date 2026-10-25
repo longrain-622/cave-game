@@ -1,4 +1,5 @@
-import { handleFurnaceClick, handleFurnaceContextMenu, getFurnaceSelectedIndex, handleFurnaceBackpackClick, handleFurnaceBackpackContextMenu, draw_furnace, furnaceLoop } from "./blockGUI/furnace.js";
+import { handleFurnaceClick, handleFurnaceContextMenu, getFurnaceSelectedIndex, handleFurnaceBackpackClick, handleFurnaceBackpackContextMenu, draw_furnace } from "./blockGUI/furnace.js";
+import { furnaceLoop } from "../../containers/furnaceState.js";
 import { handleChestClick, handleChestContextMenu, getChestSelectedIndex, handleChestBackpackClick, handleChestBackpackContextMenu, draw_chest } from "./blockGUI/chest.js";
 import { uistate } from "../uiState.js";
 import { player } from "../../player.js";
@@ -9,7 +10,7 @@ import { handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType, draw_
 import { apioxEvent, ApioxKeyboardEvent, ApioxMouseEvent, ApioxWheelEvent } from "../../../apiox/event.js";
 import { Slots, InventoryConfig } from "./inventoryConfig.js";
 import { heartsAct, drawHeart } from "./hearts.js";
-import { mouse } from "../../mouse.js";
+import { mouse } from "../../input/mouse.js";
 import * as PIXI from 'pixi.js';
 
 // 底部物品栏容器（直接挂在 guiApp.stage）与拖拽浮层容器

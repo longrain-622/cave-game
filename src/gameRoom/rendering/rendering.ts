@@ -2,8 +2,8 @@
 import { isOutOfBounds, getBlockState, world, BlockState } from '../world.js';
 import { room } from '../../constants/generic.js';
 import { player } from '../player.js';
-import { initSkyBackground, initSkyContainer } from './skyRender.js';
-import { mouse } from '../mouse.js';
+import { initSkyBackground, initSkyContainer } from './world/skyRender.js';
+import { mouse } from '../input/mouse.js';
 import { idOfBlock, canBehind } from '../nature/blockMecha/blocks.js';
 import { eventBus } from '../others/eventBus.js';
 import { applyLightTint, applyBackgroundLightTint } from './light.js';
