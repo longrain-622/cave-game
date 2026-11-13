@@ -3,7 +3,7 @@ import * as PIXI from 'pixi.js';
 import { player } from '../../player.js';
 import { app, blockTextures } from '../rendering.js';
 import { applyLightTint } from '../light.js';
-import { inventory, widgets } from '../../gui/gameGUI/inventoryState.js';
+import { inventory, widgets } from '../../gui/gameGUI/inventory.js';
 import { uistate } from '../../gui/uiState.js';
 import { idOfBlock } from '../../nature/blockMecha/blocks.js';
 import { isTool } from '../../dropped/itemIds.js';

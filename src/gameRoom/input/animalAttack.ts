@@ -1,12 +1,12 @@
 import { apioxEvent } from '../../apiox/event.js';
 import { point_coll_rect } from '../const.js';
 import { player } from '../player.js';
-import { mouse } from './mouseState.js';
+import { mouse } from '../mouse.js';
 import { animalArray } from '../animals/animalIds.js';
 import { animalInjured } from '../animals/instance/generic.js';
 import { eventBus } from '../others/eventBus.js';
 
-apioxEvent.listenGlobal('click', (): void => {
+function onClick(): void {
     if (mouse.can_use) { // 攻击动物
         for (let i = 0; i < animalArray.length; i++) {
             const animal = animalArray[i];
@@ -21,4 +21,9 @@ apioxEvent.listenGlobal('click', (): void => {
             }
         }
     }
-});
+}
+
+function main(): void {
+    apioxEvent.listenGlobal('click', onClick);
+}
+main();

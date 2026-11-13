@@ -1,20 +1,43 @@
-import { player } from "../../player.js";
-import { widgets } from "./inventoryState.js";
-import { guiTextures, gui_isDrawing } from "./guiTextures.js";
+import { player } from '../../../player.js';
+import { widgets } from '../../../gui/gameGUI/inventory.js';
+import { guiTextures, gui_isDrawing } from '../application.js';
+import { heartContainer } from '../application.js';
 import * as PIXI from 'pixi.js';
 
-// 心形血量容器
-export const heartContainer = new PIXI.Container();
-heartContainer.visible = true;
-heartContainer.zIndex = 0;
+export interface HeartState {
+    lasthp: number;
+    timer: number;
+    drawWhite: boolean;
+    drawWhite_phaser: number;
+}
 
-const heart: {
-    lasthp: number; timer: number; drawWhite: boolean; drawWhite_phaser: number;
-} = {
+export const heartState: HeartState = {
     lasthp: 20,
     timer: 0,
     drawWhite: false,
-    drawWhite_phaser: 1
+    drawWhite_phaser: 1,
+};
+
+// 心形血条的动画计时（血量变化时触发白闪）
+export function heartsAct(delta: number): void {
+    if (player.hp !== heartState.lasthp) {
+        heartState.drawWhite = true;
+        heartState.lasthp = player.hp;
+        heartState.drawWhite_phaser = 2;
+    }
+
+    if (heartState.drawWhite) {
+        heartState.timer += delta;
+        if (heartState.timer >= 6) {
+            heartState.drawWhite_phaser++;
+            heartState.timer = 0;
+        }
+        if (heartState.drawWhite_phaser > 4) {
+            heartState.drawWhite = false;
+            heartState.drawWhite_phaser = 1;
+            heartState.timer = 0;
+        }
+    }
 }
 
 // 心形纹理
@@ -67,33 +90,11 @@ function initHearts(): void {
     heartInitialized = true;
 }
 
-function heartsAct(delta: number): void {
-    // 检测血量是否变化
-    if (player.hp !== heart.lasthp) {
-        heart.drawWhite = true; // 变化时触发白色效果
-        heart.lasthp = player.hp; // 更新记录的值
-        heart.drawWhite_phaser = 2;
-    }
-
-    if (heart.drawWhite) {
-        heart.timer += delta;
-        if (heart.timer >= 6) {
-            heart.drawWhite_phaser++;
-            heart.timer = 0;
-        }
-        if (heart.drawWhite_phaser > 4) {
-            heart.drawWhite = false;
-            heart.drawWhite_phaser = 1;
-            heart.timer = 0;
-        }
-    }
-}
-
-function drawHeart(): void {
+export function drawHeart(): void {
     if (!gui_isDrawing) {return;} // GUI 贴图未加载完成，跳过绘制
     initHearts();
     if (!heartTextures) {return;} // 防御
-    const isWhitePhase: boolean = (heart.drawWhite_phaser % 2 === 0);
+    const isWhitePhase: boolean = (heartState.drawWhite_phaser % 2 === 0);
     for (let i = 0; i < 10; i++) {
         const sprite: PIXI.Sprite = heartSprites[i];
         const bgSprite: PIXI.Sprite = bgSprites[i];
@@ -115,5 +116,3 @@ function drawHeart(): void {
     //控制容器可见性
     heartContainer.visible = true;
 }
-
-export { drawHeart, heartsAct };

@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
-import { genericTextStyle } from '../../rendering/rendering.js';
-import { getSetting } from '../../../constants/settingConfig.js';
-import { apioxEvent } from '../../../apiox/event.js';
+import { genericTextStyle } from '../../rendering.js';
+import { getSetting } from '../../../../constants/settingConfig.js';
+import { apioxEvent } from '../../../../apiox/event.js';
 
 interface TouchButton {
     anchor_x: number; anchor_y: number;
@@ -101,7 +101,7 @@ export function initTouchButtons(app: PIXI.Application) {
     });
 }
 
-function mobileTouchMain(): void {
+function main(): void {
     if (getSetting().phoneButton_isOpening) {
         TouchButton_added.push(newTouchButton({ anchor_x: 0, anchor_y: 0.7, key: 'a', size: 3 }));
         TouchButton_added.push(newTouchButton({ anchor_x: 0.20, anchor_y: 0.7, key: 'd', size: 3 }));
@@ -110,4 +110,4 @@ function mobileTouchMain(): void {
         TouchButton_added = [];
     }
 }
-mobileTouchMain();
+main();

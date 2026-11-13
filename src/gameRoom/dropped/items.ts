@@ -4,7 +4,7 @@ export { idOfItem };
 import { Slots } from "../gui/gameGUI/inventoryConfig.js";
 import { idOfBlock } from "../nature/blockMecha/blocks.js";
 import { isOutOfBounds, isBlockFold, setWorldState, newBlockState, blockTypeAt, blockStateAt, BlockState } from "../world.js";
-import { mouse } from "../input/mouseState.js";
+import { mouse } from "../mouse.js";
 import { createDrop } from "./droppedItem.js";
 
 export function flipDraw(id: number): boolean {

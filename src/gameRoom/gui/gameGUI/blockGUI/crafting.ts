@@ -33,7 +33,7 @@ export function findMatchingRecipe(
             let match: boolean = true;
             let times: number = Infinity;
 
-            //检查配方内部
+            // 检查配方内部
             for (let r = 0; r < shapeRows; r++) {
                 for (let c = 0; c < shapeCols; c++) {
                     const target: Slots | null = matrix[offRow + r]?.[offCol + c];
@@ -50,7 +50,7 @@ export function findMatchingRecipe(
             }
             if (!match || times === Infinity) {continue;}
 
-            //检查配方外是否有多余物品
+            // 检查配方外是否有多余物品
             let hasExtra: boolean = false;
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
@@ -88,7 +88,7 @@ function findMatchingRecipeWithOffset(
             let match: boolean = true;
             let times: number = Infinity;
 
-            //检查配方内部
+            // 检查配方内部
             for (let r = 0; r < shapeRows; r++) {
                 for (let c = 0; c < shapeCols; c++) {
                     const target: Slots | null = matrix[offRow + r]?.[offCol + c];
@@ -105,7 +105,7 @@ function findMatchingRecipeWithOffset(
             }
             if (!match || times === Infinity) {continue;}
 
-            //检查配方外是否有多余物品
+            // 检查配方外是否有多余物品
             let hasExtra: boolean = false;
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
@@ -207,7 +207,7 @@ export function consumeCraftingMaterials(times?: number): number {
 }
 
 export function slotsToMatrixGeneric(slots: Slots[], cols: number, rows: number): (Slots | null)[][] {
-    //将任意尺寸的 Slots 数组转为矩阵（供匹配使用）
+    // 将任意尺寸的 Slots 数组转为矩阵（供匹配使用）
     const matrix: (Slots | null)[][] = [];
     for (let r = 0; r < rows; r++) {
         matrix[r] = [];
@@ -240,7 +240,7 @@ export function findMatchingRecipeGeneric(
             let match: boolean = true;
             let times: number = Infinity;
 
-            //检查配方内部
+            // 检查配方内部
             for (let r = 0; r < shapeRows; r++) {
                 for (let c = 0; c < shapeCols; c++) {
                     const target: Slots | null = matrix[offRow + r]?.[offCol + c];
@@ -257,7 +257,7 @@ export function findMatchingRecipeGeneric(
             }
             if (!match || times === Infinity) {continue;}
 
-            //检查配方外是否有多余物品
+            // 检查配方外是否有多余物品
             let hasExtra: boolean = false;
             for (let r = 0; r < gridRows; r++) {
                 for (let c = 0; c < gridCols; c++) {
@@ -276,7 +276,7 @@ export function findMatchingRecipeGeneric(
             }
             if (hasExtra) {continue;}
 
-            //匹配成功
+            // 匹配成功
             return { offsetRow: offRow, offsetCol: offCol, times };
         }
     }

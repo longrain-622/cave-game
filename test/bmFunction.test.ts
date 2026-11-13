@@ -8,7 +8,7 @@ import { lowest_point } from '../src/gameRoom/nature/createWorld.js';
 import { entityBlock_array } from '../src/gameRoom/nature/entityBlock.js';
 import { particleArray } from '../src/gameRoom/particle.js';
 import { dropArray } from '../src/gameRoom/dropped/droppedItem.js';
-import { mouse } from '../src/gameRoom/input/mouseState.js';
+import { mouse } from '../src/gameRoom/mouse.js';
 import {
     setGrassDirt,
     grass_and_dirt,
@@ -22,7 +22,7 @@ import {
 
 // 依赖链中与浏览器强耦合的模块（PIXI 渲染、玩家、鼠标、背包、音频）在此 mock，
 // 其余模块（world/blocks/entityBlock/particle/droppedItem 等）使用真实实现
-vi.mock('../src/gameRoom/rendering.js', () => ({
+vi.mock('../src/gameRoom/rendering/rendering.js', () => ({
     app: { view: { style: {} }, stage: { sortableChildren: true, addChild: () => {} } },
     blockTextures: {},
     gameRoom: null,
@@ -39,7 +39,7 @@ vi.mock('pixi.js', async (importOriginal) => {
     const actual = await importOriginal<typeof import('pixi.js')>();
     return { ...actual, Assets: { load: async () => ({}) } };
 });
-vi.mock('../src/gameRoom/input/mouseState.js', () => ({
+vi.mock('../src/gameRoom/mouse.js', () => ({
     mouse: { world_x: 0, world_y: 0, x: 0, y: 0 },
 }));
 vi.mock('../src/gameRoom/gui/gameGUI/inventory.js', () => ({

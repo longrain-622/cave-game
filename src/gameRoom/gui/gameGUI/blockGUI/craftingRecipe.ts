@@ -7,7 +7,7 @@ interface RecipePos {
     amount: number;
 }
 
-interface RecipeShape {
+export interface RecipeShape {
     cells: (RecipePos | null)[][];
     outputId: number;
     outputCount: number; // 单次合成产出数量
@@ -16,7 +16,7 @@ interface RecipeShape {
 }
 
 // 配方库
-const recipes: RecipeShape[] = [
+export const recipes: RecipeShape[] = [
     { // 木板
         cells: [[{ itemId: idOfBlock.oak, amount: 1 }]],
         outputId: idOfBlock.planks,
@@ -220,5 +220,3 @@ const recipes: RecipeShape[] = [
         gridHeight: 2
     },
 ];
-
-export { RecipeShape, recipes };

@@ -1,13 +1,13 @@
 // exitingPage.ts
 import * as PIXI from 'pixi.js';
 import { guiApp } from '../application.js';
-import { textStyle1 } from '../../../constants/pixiStyles.js';
-import { blockTextures } from '../../rendering/rendering.js';
-import { idOfBlock } from '../../nature/blockMecha/blocks.js';
-import { room } from '../../../constants/generic.js';
-import { apioxHttp } from '../../../apiox/http.js';
-import { getLang } from '../../../others/i18nLang.js';
-import { eventBus } from '../../others/eventBus.js';
+import { textStyle1 } from '../../../../constants/pixiStyles.js';
+import { blockTextures } from '../../rendering.js';
+import { idOfBlock } from '../../../nature/blockMecha/blocks.js';
+import { room } from '../../../../constants/generic.js';
+import { apioxHttp } from '../../../../apiox/http.js';
+import { getLang } from '../../../../others/i18nLang.js';
+import { eventBus } from '../../../others/eventBus.js';
 
 interface ExitPagePixi {
     container: PIXI.Container;
@@ -64,6 +64,11 @@ const exitPagePixi: ExitPagePixi = {
     }
 };
 
+// 显示"正在保存"页面（由退出按钮在调用 quitGame 前触发）
+export function showExitPage(): void {
+    exitPagePixi.container.visible = true;
+}
+
 // 获取"保存世界中"文字（异步加载本地化文本，语言由 i18n 的 lang 决定）
 async function loadSavingText(): Promise<string> {
     try {
@@ -86,9 +91,9 @@ function waitForDirtTexture(): Promise<PIXI.Texture> {
     });
 }
 
-function exitPageMain(): void {
+function main(): void {
     exitPagePixi.init();
 }
-exitPageMain();
+main();
 
 export { exitPagePixi };

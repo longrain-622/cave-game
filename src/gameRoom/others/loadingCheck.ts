@@ -2,7 +2,7 @@
 import { isDrawing } from "../rendering/rendering.js";
 import { can_drawPlayer } from "../rendering/actors/playerRender.js";
 import { can_drawEntity } from "../rendering/actors/animalRender.js";
-import { gui_isDrawing } from "../gui/gameGUI/guiTextures.js";
+import { gui_isDrawing } from "../rendering/gui/application.js";
 import { sky_isDrawing } from "../rendering/world/skyRender.js";
 import { item_isDrawing } from "../rendering/items/itemTextures.js";
 import { apioxTime } from "../../apiox/time.js";
