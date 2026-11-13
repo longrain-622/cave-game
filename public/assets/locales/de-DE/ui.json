@@ -16,7 +16,8 @@
     "clickToStart": "- Klicke auf eine leere Stelle, um zu starten -"
   },
   "starting": {
-    "pressEnter": "- Drücke [Enter], um die Welt zu erstellen -"
+    "singlePlayer": "Einzelspieler",
+    "multiPlayer": "Mehrspieler"
   },
   "featureUnavailable": {
     "title": "Diese Funktion ist nicht verfügbar!"

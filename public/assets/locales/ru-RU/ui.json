@@ -16,7 +16,8 @@
     "clickToStart": "- Нажмите на пустое место, чтобы начать -"
   },
   "starting": {
-    "pressEnter": "- Нажмите [Enter], чтобы создать мир -"
+    "singlePlayer": "Одиночная игра",
+    "multiPlayer": "Мультиплеер"
   },
   "featureUnavailable": {
     "title": "Эта функция недоступна!"

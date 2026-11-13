@@ -16,7 +16,8 @@
     "clickToStart": "- 空白をクリックして開始 -"
   },
   "starting": {
-    "pressEnter": "- [Enter] を押して世界を作成 -"
+    "singlePlayer": "シングルプレイ",
+    "multiPlayer": "マルチプレイ"
   },
   "featureUnavailable": {
     "title": "この機能は未開放です！"

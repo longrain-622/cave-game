@@ -1,7 +1,8 @@
 import { ApioxObject } from '../apiox/dom.js';
 import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
-import { worldwindow, create_btn, getSelectedWorldName } from './editWorld.js';
+import { create_btn, getSelectedWorldName, showWorldWindow } from './editWorld.js';
+import { initContentRenderer } from './contentRenderer.js';
 import { getRandomInt } from '../constants/utils.js';
 import { room } from '../constants/generic.js';
 
@@ -11,16 +12,16 @@ async function applyWorldName(val: string): Promise<void> {
     setWorldName(val);
 }
 
-export let _room_: number = 0; //当前房间
+export let _room_: number = 0; // 当前房间
 
 let start: number = 0;
-let choose: number = 0; //左边菜单所选的选项
+let choose: number = 0; // 左边菜单所选的选项
 let last_choose: number = choose - 1;
-let dotChoose: number = -1; //小黑点当前所在的菜单项，-1 表示没有显示
-let face: number = 0; //背景图片移动状态，0左1右-1静止
+let dotChoose: number = -1; // 小黑点当前所在的菜单项，-1 表示没有显示
+let face: number = 0; // 背景图片移动状态，0左1右-1静止
 let timer: number = 0;
 
-//获取元素
+// 获取元素
 export const gameRoom = new ApioxObject(null, 'GameRoom');
 export const content = new ApioxObject(null, 'content');
 
@@ -37,7 +38,8 @@ const viewText = new ApioxObject('viewText');
 const blockDot = new ApioxObject('blockDot');
 //const whiteBlock1 = new ApioxObject('whiteBlock1');
 const whiteBlock2 = new ApioxObject('whiteBlock2');
-const starting_steve = new ApioxObject('starting_steve');
+const singlePlayerHoverZone = new ApioxObject('singlePlayerHoverZone');
+const bgimg = new ApioxObject('bgimage');
 
 const menuTexts: ApioxObject[] = [startText, downloadText, setText, viewText]; //左边菜单的四个选项
 
@@ -49,24 +51,7 @@ export const toastSure = new ApioxObject('toast_sure');
 const worldNameInput = new ApioxObject('worldNameInput');
 const editWorldBtnGetin = new ApioxObject('editWorldBtnGetin');
 
-//初始化游戏窗口 大小和显示
-content.domstyle('width', String(room.width) + 'px'); content.domstyle('height', String(room.height) + 'px');
-gameRoom.domstyle('width', String(room.width) + 'px'); gameRoom.domstyle('height', String(room.height) + 'px');
-gameRoom.hide();
-content.domstyle('display', 'grid');
-disableGlobalContextMenu();
-
-//控制背景图片的位置
-const bgimg = new ApioxObject('bgimage');
-bgimg.domstyle('position', 'absolute');
-bgimg.domstyle('left', '-10px');
-bgimg.domstyle('top', '0');
-
-starting.hide();
-none.hide();
-setting.hide();
-
-//点击任意空白处开始
+// 点击任意空白处开始
 apioxEvent.listenGlobalOnce('click', (): void => {
     start = 1;
     lookTitle.hide();
@@ -74,16 +59,12 @@ apioxEvent.listenGlobalOnce('click', (): void => {
     text2.hide();
 });
 
-//创建世界选单
-apioxEvent.onKeyDown((e) => {
-    if (e.key !== 'Enter') {return;}
-    if (start === 1 && choose === 0) {worldwindow.show();}
-});
-starting_steve.on('click', (): void => {
-    if (start === 1 && choose === 0) {worldwindow.show();}
+// 创建世界选单
+singlePlayerHoverZone.on('click', (): void => {
+    if (start === 1 && choose === 0) {showWorldWindow();}
 });
 
-//进入游戏
+// 进入游戏
 function gotoGame(): void { _room_ = 1; gameRoom.show(); content.hide(); }
 create_btn.on('click', async (): Promise<void> => {
     const inputVal: string = worldNameInput.getProperty('value');
@@ -107,51 +88,47 @@ editWorldBtnGetin.on('click', async (): Promise<void> => {
     gotoGame();
 });
 
-//左边主菜单内容的选择
+// 左边主菜单内容的选择
 startText.on('click', (): void => { if (start === 1){choose = 0;} });
 downloadText.on('click', (): void => { if (start === 1){choose = 1;} });
 setText.on('click', (): void => { if (start === 1){choose = 2;} });
 viewText.on('click', (): void => { if (start === 1){choose = 3;} });
 
-function bgimageAnimation(delta: number): void { //背景图片的左右移动
-    //解析当前 left 值，若无效则默认为 0
+function bgimageAnimation(delta: number): void { // 背景图片的左右移动
     let currentLeft: number = parseFloat(bgimg.domstyle('left'));
     if (isNaN(currentLeft)) {currentLeft = 0;}
 
-    //边界常量（可根据需要调整）
     const LEFT_BOUNDARY: number = -(Number(bgimg.domProperty('clientWidth')) - room.width) / room.width * 100 + 4;
     const RIGHT_BOUNDARY: number = -4;
-    const PAUSE_FRAMES: number = 300; //停留时长(60fps 帧)
-    const SPEED: number = 0.0125; //移动速度(每 60fps 帧)
+    const PAUSE_FRAMES: number = 300;
+    const SPEED: number = 0.0125;
 
-    if (face === 0) { //向左移动
+    if (face === 0) {
         currentLeft -= SPEED * delta;
         if (currentLeft <= LEFT_BOUNDARY) {
-            face = -1; //切换为等待状态
+            face = -1;
         }
-    } else if (face === 1) { //向右移动
+    } else if (face === 1) {
         currentLeft += SPEED * delta;
         if (currentLeft >= RIGHT_BOUNDARY) {
-            face = -1; //切换为等待状态
+            face = -1;
         }
-    } else if (face === -1) { //等待状态
+    } else if (face === -1) {
         timer += delta;
         if (timer >= PAUSE_FRAMES) {
             timer = 0;
-            //根据当前 left 值决定下一步方向
             if (currentLeft <= LEFT_BOUNDARY) {
-                face = 1; //改为向右
+                face = 1;
             } else if (currentLeft >= RIGHT_BOUNDARY) {
-                face = 0; //改为向左
+                face = 0;
             }
         }
     }
 
-    // 更新图片位置
     bgimg.domstyle('left', String(currentLeft) + '%');
 }
 
-function ctrlShow(): void { //控制各种功能的显示和隐藏
+function ctrlShow(): void { // 控制各种功能的显示和隐藏
     if (start === 1) {
         if (last_choose === choose) {return;}
 
@@ -159,7 +136,7 @@ function ctrlShow(): void { //控制各种功能的显示和隐藏
         switch (choose) {
             case 0:
                 whiteBlock2.show('flex');
-                starting.show('flex');
+                starting.show('grid');
                 none.hide();
                 setting.hide();
                 break;
@@ -187,13 +164,13 @@ function ctrlShow(): void { //控制各种功能的显示和隐藏
     }
 }
 
-function dotUpdate(): void { //把小黑点挂到当前所选菜单项的左边
-    if (start !== 1) { //还没有选择任何选项
+function dotUpdate(): void { // 把小黑点挂到当前所选菜单项的左边
+    if (start !== 1) {
         if (dotChoose !== -1) {blockDot.hide(); dotChoose = -1;}
         return;
     }
 
-    //切换语言会重写菜单项的文本，可能把小黑点一起清掉，脱离时重新挂上
+    // 切换语言会重写菜单项的文本，可能把小黑点一起清掉，脱离时重新挂上
     if (dotChoose === choose && blockDot.getProperty('parentNode') !== null) {return;}
     dotChoose = choose;
 
@@ -201,14 +178,40 @@ function dotUpdate(): void { //把小黑点挂到当前所选菜单项的左边
     blockDot.show();
 }
 
-//页面主循环
+function main(): void {
+    // 初始化游戏窗口 大小和显示
+    content.domstyle('width', String(room.width) + 'px'); content.domstyle('height', String(room.height) + 'px');
+    gameRoom.domstyle('width', String(room.width) + 'px'); gameRoom.domstyle('height', String(room.height) + 'px');
+    gameRoom.hide();
+    content.domstyle('display', 'grid');
+    disableGlobalContextMenu();
+
+    // 控制背景图片的位置
+    bgimg.domstyle('position', 'absolute');
+    bgimg.domstyle('left', '-10px');
+    bgimg.domstyle('top', '0');
+
+    starting.hide();
+    none.hide();
+    setting.hide();
+
+    // 开始界面的人物由 PixiJS 渲染
+    try {
+        initContentRenderer();
+    } catch (e) {
+        console.warn('content.ts cannot init start screen renderer', e);
+    }
+}
+main();
+
+// 页面主循环
 export function contentLoop(delta: number): void {
     bgimageAnimation(delta);
     ctrlShow();
     dotUpdate();
 }
 
-//彩蛋
+// 彩蛋
 if (getRandomInt(0, 256) === 1) {
     const contentIcon = new ApioxObject('contentIcon');
     contentIcon.domProperty('src', 'assets/images/others/AllayPixel.png');

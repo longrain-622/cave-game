@@ -3,6 +3,7 @@ import { apiMethod } from '../apiox/method.js';
 import { room } from '../constants/generic.js';
 import { textStyle1 } from '../constants/pixiStyles.js';
 import { ensureAssetsInit } from '../constants/pixiAssets.js';
+import { getContentApp, showArchiveSurface, showStartSurface } from './contentRenderer.js';
 import * as PIXI from 'pixi.js';
 import localforage from 'localforage';
 
@@ -12,6 +13,8 @@ let gameDifficulty: number = 0;
 let gameDifficulties: string[] = [];
 let selectedKey: string | null = null;
 let archiveRefresh: (() => Promise<void>) | null = null;
+let archiveLayer: PIXI.Container | null = null;
+let archiveMount: (() => void) | null = null;
 
 const worldwindow = new ApioxObject('worldwindow');
 const editWorld = new ApioxObject('editWorld');
@@ -25,8 +28,21 @@ const back_btn = new ApioxObject(null, 'back-btn');
 worldwindow.hide();
 
 back_btn.on('click', (): void => { worldCreator.hide(); editWorld.show(); });
-editWorldBtnQuit.on('click', (): void => { worldwindow.hide(); });
+editWorldBtnQuit.on('click', (): void => { hideWorldWindow(); });
 editWorldBtnCreate.on('click', (): void => { editWorld.hide(); worldCreator.show(); });
+
+/** 打开选择世界窗口，把共享画布切换成存档列表 */
+export function showWorldWindow(): void {
+    worldwindow.show();
+    if (archiveMount !== null) {archiveMount();}
+}
+
+/** 关闭选择世界窗口，把共享画布切回开始界面 */
+export function hideWorldWindow(): void {
+    worldwindow.hide();
+    if (archiveLayer !== null) {archiveLayer.visible = false;}
+    showStartSurface();
+}
 
 function updateDifficultyTexts(): void {
     gameDifficulties = [
@@ -58,28 +74,19 @@ gameDifficulty_btn.on('click', (): void => {
 try {
     const BLACKBG_HEIGHT = Math.floor(room.height * 0.6);
 
-    const archiveApp = new PIXI.Application({
-        width: room.width,
-        height: BLACKBG_HEIGHT,
-        antialias: false,
-        backgroundAlpha: 0,
-    });
+    // 与开始界面共用同一个 Application，画布在打开/关闭窗口时切换挂载位置
+    const archiveApp = getContentApp();
 
-    archiveApp.stage.sortableChildren = true;
+    const layer = new PIXI.Container();
+    layer.zIndex = 20;
+    layer.visible = false;
+    archiveLayer = layer;
+    archiveApp.stage.addChild(layer);
 
     const blackbg = apiMethod.select('#editWorld-blackbg');
-    if (blackbg) {
-        const canvas = archiveApp.view as HTMLCanvasElement;
-        canvas.style.position = 'absolute';
-        canvas.style.left = '0';
-        canvas.style.top = '0';
-        canvas.style.width = '100%';
-        canvas.style.height = '100%';
-        blackbg.appendChild(canvas);
-    }
 
     const ctr = new PIXI.Container();
-    archiveApp.stage.addChild(ctr);
+    layer.addChild(ctr);
 
     archiveRefresh = async () => {
         try {
@@ -109,16 +116,24 @@ try {
     // 全屏透明背景用于捕获空白区域的鼠标事件
     const eventBg = new PIXI.Graphics();
     eventBg.beginFill(0x000000, 0.001);
-    eventBg.drawRect(0, 0, archiveApp.screen.width, archiveApp.screen.height);
+    eventBg.drawRect(0, 0, room.width, BLACKBG_HEIGHT);
     eventBg.endFill();
     eventBg.eventMode = 'static';
     eventBg.cursor = 'default';
-    archiveApp.stage.addChildAt(eventBg, 0);
+    layer.addChildAt(eventBg, 0);
 
     // 滚动条图形（保持在最上层）
     const scrollThumb = new PIXI.Graphics();
     scrollThumb.zIndex = 100;
-    archiveApp.stage.addChild(scrollThumb);
+    layer.addChild(scrollThumb);
+
+    archiveMount = (): void => {
+        if (blackbg) {
+            showArchiveSurface(blackbg, room.width, BLACKBG_HEIGHT);
+        }
+        layer.visible = true;
+        if (archiveRefresh) {void archiveRefresh();}
+    };
 
     // 拖拽状态
     let dragData: { startY: number; startScroll: number } | null = null;
@@ -316,4 +331,4 @@ export async function getSelectedWorldName(): Promise<string | null> {
     }
 }
 
-export { worldwindow, create_btn };
+export { create_btn };

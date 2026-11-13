@@ -16,7 +16,8 @@
     "clickToStart": "- 빈 곳을 클릭하면 시작할 수 있습니다 -"
   },
   "starting": {
-    "pressEnter": "- [Enter]를 눌러 세계를 생성하세요 -"
+    "singlePlayer": "싱글 플레이",
+    "multiPlayer": "멀티 플레이"
   },
   "featureUnavailable": {
     "title": "이 기능은 아직 사용할 수 없습니다!"

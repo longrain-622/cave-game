@@ -16,7 +16,8 @@
     "clickToStart": "- Cliquez sur un espace vide pour commencer -"
   },
   "starting": {
-    "pressEnter": "- Appuyez sur [Entrée] pour créer un monde -"
+    "singlePlayer": "Solo",
+    "multiPlayer": "Multijoueur"
   },
   "featureUnavailable": {
     "title": "Cette fonctionnalité n'est pas disponible !"

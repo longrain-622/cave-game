@@ -16,7 +16,8 @@
     "clickToStart": "- Klicka på tom yta för att börja -"
   },
   "starting": {
-    "pressEnter": "- Tryck [Enter] för att skapa världen -"
+    "singlePlayer": "En spelare",
+    "multiPlayer": "Flera spelare"
   },
   "featureUnavailable": {
     "title": "Den här funktionen är inte tillgänglig än!"

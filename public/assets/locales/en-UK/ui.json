@@ -16,7 +16,8 @@
     "clickToStart": "- Click anywhere to start -"
   },
   "starting": {
-    "pressEnter": "- Press [Enter] to create a world -"
+    "singlePlayer": "Singleplayer",
+    "multiPlayer": "Multiplayer"
   },
   "featureUnavailable": {
     "title": "Feature Not Available!"

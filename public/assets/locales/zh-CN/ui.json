@@ -16,7 +16,8 @@
     "clickToStart": "- 点击空白处可以开始 -"
   },
   "starting": {
-    "pressEnter": "- 按 [Enter] 创建世界吧 -"
+    "singlePlayer": "单人游戏",
+    "multiPlayer": "多人游戏"
   },
   "featureUnavailable": {
     "title": "此功能未开放！"
