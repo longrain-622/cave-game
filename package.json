@@ -2,17 +2,18 @@
   "name": "cavegame",
   "version": "1.1.0-alpha.1",
   "description": "A 2d pixel-style game.",
-  "main": "./electron/main.cjs",
+  "main": "./electron-build/electron/main.cjs",
   "scripts": {
     "test": "vitest run",
-    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json && tsc --noEmit -p tsconfig.electron.json",
     "dev": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
-    "electron:dev": "node scripts/electronDev.mjs",
-    "electron:start": "npm run build && electron .",
-    "electron:dir": "npm run build && electron-builder --dir",
-    "electron:build": "npm run build && electron-builder"
+    "electron:compile": "tsc -p tsconfig.electron.json",
+    "electron:dev": "npm run electron:compile && node electron-build/scripts/electronDev.mjs",
+    "electron:start": "npm run build && npm run electron:compile && electron .",
+    "electron:dir": "npm run build && npm run electron:compile && electron-builder --dir",
+    "electron:build": "npm run build && npm run electron:compile && electron-builder"
   },
   "repository": {
     "type": "git",
@@ -39,7 +40,7 @@
     },
     "files": [
       "dist/**/*",
-      "electron/**/*",
+      "electron-build/**/*",
       "package.json",
       "!node_modules/**/*"
     ],
@@ -85,6 +86,7 @@
   },
   "devDependencies": {
     "@types/localforage": "^0.0.33",
+    "@types/node": "^26.6.6",
     "electron": "^45.0.0",
     "electron-builder": "^26.18.0",
     "typescript": "^7.0.2",

@@ -1,34 +1,37 @@
 // Electron 主进程：加载 Vite 构建产物，并负责窗口与协议层。
-const { app, BrowserWindow, Menu, net, protocol, shell } = require('electron');
-const fs = require('node:fs');
-const path = require('node:path');
-const { pathToFileURL } = require('node:url');
+import { app, BrowserWindow, Menu, net, protocol, shell } from 'electron';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-const APP_ID = 'com.sinuxu.cavegame';
-const APP_SCHEME = 'app';
-const APP_HOST = 'cavegame';
-const DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL || '';
-const DIST_DIR = path.join(__dirname, '..', 'dist');
-const INDEX_FILE = 'index.html';
+const APP_ID: string = 'com.sinuxu.cavegame';
+const APP_SCHEME: string = 'app';
+const APP_HOST: string = 'cavegame';
+const DEV_SERVER_URL: string = process.env.VITE_DEV_SERVER_URL || '';
+const INDEX_FILE: string = 'index.html';
 
-let mainWindow = null;
+let mainWindow: BrowserWindow | null = null;
 
-function isPathInside(root, target) {
-    const relative = path.relative(root, target);
+function getDistDir(): string {
+    return path.join(app.getAppPath(), 'dist');
+}
+
+function isPathInside(root: string, target: string): boolean {
+    const relative: string = path.relative(root, target);
     return relative !== ''
         && relative !== '..'
         && !relative.startsWith('..' + path.sep)
         && !path.isAbsolute(relative);
 }
 
-function textResponse(status, message) {
+function textResponse(status: number, message: string): Response {
     return new Response(message, {
         status,
         headers: { 'content-type': 'text/plain; charset=utf-8' },
     });
 }
 
-function registerAppScheme() {
+function registerAppScheme(): void {
     protocol.registerSchemesAsPrivileged([
         {
             scheme: APP_SCHEME,
@@ -43,8 +46,8 @@ function registerAppScheme() {
     ]);
 }
 
-function handleAppRequest(request) {
-    let url;
+function handleAppRequest(request: Request): Response | Promise<Response> {
+    let url: URL;
     try {
         url = new URL(request.url);
     } catch {
@@ -55,7 +58,7 @@ function handleAppRequest(request) {
         return textResponse(404, 'Not Found');
     }
 
-    let pathname;
+    let pathname: string;
     try {
         pathname = decodeURIComponent(url.pathname);
     } catch {
@@ -65,8 +68,9 @@ function handleAppRequest(request) {
         pathname = '/' + INDEX_FILE;
     }
 
-    const filePath = path.resolve(DIST_DIR, '.' + pathname);
-    if (!isPathInside(DIST_DIR, filePath)) {
+    const distDir: string = getDistDir();
+    const filePath: string = path.resolve(distDir, '.' + pathname);
+    if (!isPathInside(distDir, filePath)) {
         return textResponse(403, 'Forbidden');
     }
     if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
@@ -78,32 +82,32 @@ function handleAppRequest(request) {
         .catch(() => textResponse(404, 'Not Found'));
 }
 
-function getWindowIcon() {
-    const iconPath = path.join(DIST_DIR, 'assets', 'images', 'icon.png');
+function getWindowIcon(): string | undefined {
+    const iconPath: string = path.join(getDistDir(), 'assets', 'images', 'icon.png');
     return fs.existsSync(iconPath) ? iconPath : undefined;
 }
 
-function getStartUrl() {
+function getStartUrl(): string {
     if (!app.isPackaged && DEV_SERVER_URL !== '') {
         return DEV_SERVER_URL;
     }
     return `${APP_SCHEME}://${APP_HOST}/${INDEX_FILE}`;
 }
 
-function isInternalUrl(url) {
+function isInternalUrl(url: string): boolean {
     if (url.startsWith(`${APP_SCHEME}://${APP_HOST}/`)) {
         return true;
     }
     return DEV_SERVER_URL !== '' && url.startsWith(DEV_SERVER_URL);
 }
 
-function openExternalUrl(url) {
+function openExternalUrl(url: string): void {
     if (/^https?:\/\//i.test(url)) {
         shell.openExternal(url);
     }
 }
 
-function attachWebContentsHandlers(win) {
+function attachWebContentsHandlers(win: BrowserWindow): void {
     win.webContents.setWindowOpenHandler(({ url }) => {
         openExternalUrl(url);
         return { action: 'deny' };
@@ -131,8 +135,8 @@ function attachWebContentsHandlers(win) {
     });
 }
 
-function createWindow() {
-    const win = new BrowserWindow({
+function createWindow(): BrowserWindow {
+    const win: BrowserWindow = new BrowserWindow({
         width: 1280,
         height: 720,
         minWidth: 640,
@@ -167,8 +171,8 @@ function createWindow() {
     return win;
 }
 
-function acquireSingleInstance() {
-    const hasLock = app.requestSingleInstanceLock();
+function acquireSingleInstance(): boolean {
+    const hasLock: boolean = app.requestSingleInstanceLock();
     if (!hasLock) {
         app.quit();
         return false;
@@ -188,7 +192,7 @@ function acquireSingleInstance() {
     return true;
 }
 
-function onReady() {
+function onReady(): void {
     protocol.handle(APP_SCHEME, handleAppRequest);
     createWindow();
 
@@ -199,7 +203,7 @@ function onReady() {
     });
 }
 
-function main() {
+function main(): void {
     if (!acquireSingleInstance()) {
         return;
     }
