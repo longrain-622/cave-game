@@ -166,6 +166,8 @@ function createWindow(): BrowserWindow {
         }
     });
 
+    win.setAspectRatio(16 / 9);
+
     win.loadURL(getStartUrl());
     mainWindow = win;
     return win;
