@@ -1,0 +1,180 @@
+/* 多人游戏 - 局域网世界列表 */
+#multiplayerWorld {
+    --multiplayer-btn-height: 50.4px;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+
+#multiplayerTitle {
+    color: white;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 black;
+
+    position: absolute;
+    left: 50%; top: 5%;
+    transform: translate(-50%, 0);
+    /* 与单人世界标题保持一致：<p> 默认的 1em 上边距参与绝对定位偏移 */
+    margin: 1em 0 0 0;
+}
+
+/* Pixi 列表画布宿主；黑色背景由 CSS 绘制 */
+#multiplayer-blackbg {
+    position: absolute;
+    left: 0; top: 15%;
+    width: 100%; height: 60%;
+    background-color: rgba(0, 0, 0, 0.5);
+
+    background-image: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.6) 0%,
+        transparent 5%,
+        transparent 95%,
+        rgba(0, 0, 0, 0.6) 100%
+    );
+}
+
+#multiplayerNoWorlds {
+    color: #aaaaaa;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 black;
+
+    position: absolute;
+    left: 50%; top: 38%;
+    transform: translate(-50%, 0);
+    z-index: 1;
+    pointer-events: none;
+    margin: 0;
+    white-space: nowrap;
+}
+
+#multiplayerHint {
+    color: #888888;
+    font-family: 'Unifont', monospace;
+    font-size: 16px;
+    text-shadow: 1px 1px 0 black;
+
+    position: absolute;
+    left: 50%; top: 48%;
+    transform: translate(-50%, 0);
+    z-index: 1;
+    pointer-events: none;
+    margin: 0;
+    width: 80%;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.multiplayer-btn {
+    background-image: url('assets/images/games/blocks/stone.png');
+    background-repeat: repeat;
+    background-position: 0 0;
+    background-size: 48px 48px;
+
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    width: 35%;
+    height: var(--multiplayer-btn-height);
+    padding: 0;
+    border-radius: 0;
+    position: absolute;
+    cursor: pointer;
+
+    color: white;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 rgb(68, 68, 68);
+}
+
+#multiplayerJoinBtn { left: 13%; top: 80%; }
+#multiplayerDirectBtn { left: 52%; top: 80%; }
+#multiplayerRefreshBtn { left: 13%; top: 90%; }
+#multiplayerExitBtn { left: 52%; top: 90%; }
+
+.multiplayer-btn:disabled {
+    filter: grayscale(1);
+    opacity: 0.55;
+    cursor: default;
+}
+
+#multiplayerStatus {
+    position: absolute;
+    left: 50%; top: 76%;
+    transform: translate(-50%, 0);
+    margin: 0;
+    width: 80%;
+    text-align: center;
+    color: #cccccc;
+    font-family: 'Unifont', monospace;
+    font-size: 16px;
+    text-shadow: 1px 1px 0 black;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 直接连接浮层 */
+#multiplayerDirectPanel {
+    position: absolute;
+    left: 15%; top: 18%;
+    width: 70%; height: 54%;
+    background-color: rgba(0, 0, 0, 0.88);
+    border: 2px solid #808080;
+    box-sizing: border-box;
+    display: none;
+    z-index: 5;
+}
+
+#multiplayerDirectTitle {
+    color: white;
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-shadow: 1px 1px 0 black;
+
+    position: absolute;
+    left: 50%; top: 12%;
+    transform: translate(-50%, 0);
+    margin: 0;
+}
+
+#multiplayerAddress {
+    position: absolute;
+    left: 10%; top: 32%;
+    width: 80%; height: 14%;
+    box-sizing: border-box;
+
+    font-family: 'Unifont', monospace;
+    font-size: 20px;
+    font-weight: 500;
+    text-indent: 6px;
+    color: white;
+
+    background-color: black;
+    border-radius: 0;
+    border: solid;
+    border-color: grey;
+    border-width: 2px;
+}
+#multiplayerAddress:focus { outline: none; }
+
+#multiplayerWorld #multiplayerConnectBtn {
+    left: 10%; top: 62%;
+    width: 38%;
+}
+
+#multiplayerWorld #multiplayerCancelBtn {
+    left: 52%; top: 62%;
+    width: 38%;
+}

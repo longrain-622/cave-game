@@ -47,6 +47,21 @@
     "createButton": "Neue Welt erstellen",
     "cancelButton": "Abbrechen"
   },
+  "multiplayer": {
+    "title": "Multiplayer",
+    "noWorlds": "- No LAN worlds found -",
+    "hint": "Ask the host to click “Open to LAN” in the pause menu, or use Direct Connect below.",
+    "join": "Join Selected World",
+    "directConnect": "Direct Connect",
+    "refresh": "Refresh",
+    "exit": "Exit",
+    "addressPlaceholder": "IP or IP:port (default 2567)",
+    "connect": "Connect",
+    "cancel": "Cancel",
+    "selected": "Selected",
+    "joinPending": "LAN connection will be added in the next step",
+    "invalidAddress": "Address must be an IP or IP:port"
+  },
   "loadPage": {
     "text": "Lädt",
     "ok": "Bereit"

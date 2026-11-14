@@ -47,6 +47,21 @@
     "createButton": "创建新的世界",
     "cancelButton": "取消"
   },
+  "multiplayer": {
+    "title": "多人游戏",
+    "noWorlds": "- 未发现局域网世界 -",
+    "hint": "让主机在暂停菜单中点击“向局域网开放”，或在下方使用“直接连接”。",
+    "join": "加入所选世界",
+    "directConnect": "直接连接",
+    "refresh": "刷新",
+    "exit": "退出",
+    "addressPlaceholder": "IP 或 IP:端口（默认 2567）",
+    "connect": "连接",
+    "cancel": "取消",
+    "selected": "已选择",
+    "joinPending": "联机连接将在下一步接入",
+    "invalidAddress": "地址格式应为 IP 或 IP:端口"
+  },
   "loadPage": {
     "text": "加载中",
     "ok": "准备就绪"

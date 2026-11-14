@@ -3,6 +3,7 @@ import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
 import { create_btn, getSelectedWorldName, showWorldWindow } from './editWorld.js';
 import { initContentRenderer } from './contentRenderer.js';
+import { showMultiplayerWorld } from './multiplayerWorld.js';
 import { getRandomInt } from '../constants/utils.js';
 import { room } from '../constants/generic.js';
 
@@ -39,6 +40,7 @@ const blockDot = new ApioxObject('blockDot');
 //const whiteBlock1 = new ApioxObject('whiteBlock1');
 const whiteBlock2 = new ApioxObject('whiteBlock2');
 const singlePlayerHoverZone = new ApioxObject('singlePlayerHoverZone');
+const multiPlayerHoverZone = new ApioxObject('multiPlayerHoverZone');
 const bgimg = new ApioxObject('bgimage');
 
 const menuTexts: ApioxObject[] = [startText, downloadText, setText, viewText]; //左边菜单的四个选项
@@ -62,6 +64,11 @@ apioxEvent.listenGlobalOnce('click', (): void => {
 // 创建世界选单
 singlePlayerHoverZone.on('click', (): void => {
     if (start === 1 && choose === 0) {showWorldWindow();}
+});
+
+// 多人游戏选单
+multiPlayerHoverZone.on('click', (): void => {
+    if (start === 1 && choose === 0) {showMultiplayerWorld();}
 });
 
 // 进入游戏

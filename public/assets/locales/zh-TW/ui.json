@@ -47,6 +47,21 @@
     "createButton": "建立新的世界",
     "cancelButton": "取消"
   },
+  "multiplayer": {
+    "title": "多人遊戲",
+    "noWorlds": "- 尚未發現區域網路世界 -",
+    "hint": "讓主機在暫停選單中點擊「向區域網路開放」，或在下方使用「直接連線」。",
+    "join": "加入所選世界",
+    "directConnect": "直接連線",
+    "refresh": "重新整理",
+    "exit": "退出",
+    "addressPlaceholder": "IP 或 IP:連接埠（預設 2567）",
+    "connect": "連線",
+    "cancel": "取消",
+    "selected": "已選擇",
+    "joinPending": "連線功能將在下一步接入",
+    "invalidAddress": "位址格式應為 IP 或 IP:連接埠"
+  },
   "loadPage": {
     "text": "載入中",
     "ok": "準備就緒"

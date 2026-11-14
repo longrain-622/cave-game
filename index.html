@@ -12,6 +12,7 @@
         @import url("/src/css/contentStyle/content.css");
         @import url("/src/css/contentStyle/worldEditor/createWorld.css");
         @import url("/src/css/contentStyle/worldEditor/editWorld.css");
+        @import url("/src/css/contentStyle/worldEditor/multiplayerWorld.css");
         @import url("/src/css/contentStyle/setting.css");
         @import url("/src/css/contentStyle/logo.css");
         @import url("/src/css/contentStyle/toast.css");
@@ -114,6 +115,24 @@
 
                 <button class="create-btn" data-i18n="worldCreation.createButton"></button>
                 <button class="back-btn" data-i18n="worldCreation.cancelButton"></button>
+            </div>
+            <div id="multiplayerWorld">
+                <p id="multiplayerTitle" data-i18n="multiplayer.title"></p>
+                <div id="multiplayer-blackbg">
+                    <p id="multiplayerNoWorlds" data-i18n="multiplayer.noWorlds"></p>
+                    <p id="multiplayerHint" data-i18n="multiplayer.hint"></p>
+                </div>
+                <div id="multiplayerDirectPanel">
+                    <p id="multiplayerDirectTitle" data-i18n="multiplayer.directConnect"></p>
+                    <input id="multiplayerAddress" type="text" data-i18n-placeholder="multiplayer.addressPlaceholder">
+                    <button class="multiplayer-btn" id="multiplayerConnectBtn" data-i18n="multiplayer.connect"></button>
+                    <button class="multiplayer-btn" id="multiplayerCancelBtn" data-i18n="multiplayer.cancel"></button>
+                </div>
+                <button class="multiplayer-btn" id="multiplayerJoinBtn" data-i18n="multiplayer.join"></button>
+                <button class="multiplayer-btn" id="multiplayerDirectBtn" data-i18n="multiplayer.directConnect"></button>
+                <button class="multiplayer-btn" id="multiplayerRefreshBtn" data-i18n="multiplayer.refresh"></button>
+                <button class="multiplayer-btn" id="multiplayerExitBtn" data-i18n="multiplayer.exit"></button>
+                <p id="multiplayerStatus"></p>
             </div>
         </div>
 
