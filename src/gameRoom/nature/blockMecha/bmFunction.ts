@@ -4,7 +4,6 @@ import { getRandomInt } from "../../../constants/utils.js";
 import { createParticles } from "../../particle.js";
 import { createDrop } from "../../dropped/droppedItem.js";
 import { idOfBlock, canOver, canWaterFlowInto, blocksWater, WATER_SOURCE, WATER_FLOW_MAX, WATER_FALLING } from "./blocks.js";
-import { mouse } from "../../mouse.js";
 import { lowest_point } from "../createWorld.js";
 import { idOfItem } from "../../dropped/itemIds.js";
 
@@ -144,26 +143,23 @@ export function door(looking_block: number, lookx: number, looky: number): numbe
     return looking_block;
 }
 
-export function door_openOrClose(): void { //run it when mouseup
-    const mouse_x: number = mouse.world_x;
-    const mouse_y: number = mouse.world_y;
-
-    switch (blockTypeAt(mouse_x, mouse_y)) {
+export function door_openOrClose(targetX: number, targetY: number): void {
+    switch (blockTypeAt(targetX, targetY)) {
         case idOfBlock.oak_door_bottom:
-            setWorldState({ x: mouse_x, y: mouse_y }, stateWithType(mouse_x, mouse_y, idOfBlock.oak_door_bottom_open));
-            setWorldState({ x: mouse_x, y: mouse_y - 1 }, stateWithType(mouse_x, mouse_y - 1, idOfBlock.oak_door_top_open));
+            setWorldState({ x: targetX, y: targetY }, stateWithType(targetX, targetY, idOfBlock.oak_door_bottom_open));
+            setWorldState({ x: targetX, y: targetY - 1 }, stateWithType(targetX, targetY - 1, idOfBlock.oak_door_top_open));
             break;
         case idOfBlock.oak_door_top:
-            setWorldState({ x: mouse_x, y: mouse_y }, stateWithType(mouse_x, mouse_y, idOfBlock.oak_door_top_open));
-            setWorldState({ x: mouse_x, y: mouse_y + 1 }, stateWithType(mouse_x, mouse_y + 1, idOfBlock.oak_door_bottom_open));
+            setWorldState({ x: targetX, y: targetY }, stateWithType(targetX, targetY, idOfBlock.oak_door_top_open));
+            setWorldState({ x: targetX, y: targetY + 1 }, stateWithType(targetX, targetY + 1, idOfBlock.oak_door_bottom_open));
             break;
         case idOfBlock.oak_door_bottom_open:
-            setWorldState({ x: mouse_x, y: mouse_y }, stateWithType(mouse_x, mouse_y, idOfBlock.oak_door_bottom));
-            setWorldState({ x: mouse_x, y: mouse_y - 1 }, stateWithType(mouse_x, mouse_y - 1, idOfBlock.oak_door_top));
+            setWorldState({ x: targetX, y: targetY }, stateWithType(targetX, targetY, idOfBlock.oak_door_bottom));
+            setWorldState({ x: targetX, y: targetY - 1 }, stateWithType(targetX, targetY - 1, idOfBlock.oak_door_top));
             break;
         case idOfBlock.oak_door_top_open:
-            setWorldState({ x: mouse_x, y: mouse_y }, stateWithType(mouse_x, mouse_y, idOfBlock.oak_door_top));
-            setWorldState({ x: mouse_x, y: mouse_y + 1 }, stateWithType(mouse_x, mouse_y + 1, idOfBlock.oak_door_bottom));
+            setWorldState({ x: targetX, y: targetY }, stateWithType(targetX, targetY, idOfBlock.oak_door_top));
+            setWorldState({ x: targetX, y: targetY + 1 }, stateWithType(targetX, targetY + 1, idOfBlock.oak_door_bottom));
             break;
     }
 }

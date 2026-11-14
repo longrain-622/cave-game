@@ -1,7 +1,7 @@
 // main.ts
 import { contentLoop, _room_ } from './contentRoom/content.js';
 import { loadScripts } from './LoadScripts.js';
-import { isClient } from './gameRoom/net/session.js';
+import { isClient } from './gameRoom/session.js';
 import { Ticker } from 'pixi.js';
 
 let gameLoopFn: ((delta: number) => void) | null = null;

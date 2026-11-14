@@ -1,4 +1,4 @@
-import type { NetRole } from '../../../shared/netProtocol.js';
+import type { NetRole } from '../../shared/netProtocol.js';
 
 let role: NetRole = 'single';
 let sessionId: string | null = null;

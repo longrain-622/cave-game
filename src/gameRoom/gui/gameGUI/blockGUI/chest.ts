@@ -1,6 +1,6 @@
 import { Slots } from '../inventoryConfig.js';
 import { world, blockTypeAt } from '../../../world.js';
-import { getRandomInt } from '../../../const.js';
+import { getRandomInt } from '../../../../constants/utils.js';
 import { idOfBlock } from '../../../nature/blockMecha/blocks.js';
 import { createDrop } from '../../../dropped/droppedItem.js';
 import { coverWhenSave, readingWorld } from '../../../gameState.js';

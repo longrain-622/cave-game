@@ -10,7 +10,7 @@ import { handleWorkbenchClick, handleWorkbenchContextMenu, selectedWbType } from
 import { toggleDebugScreen } from '../gui/contentGUI/debugScreen.js';
 import { blockTypeAt } from '../world.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
-import { isClient } from '../net/session.js';
+import { isClient } from '../session.js';
 
 // 右键点击方块打开对应的 GUI 界面（箱子/熔炉/工作台）
 function registerBlockGuiOpen(): void {

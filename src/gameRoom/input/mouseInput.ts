@@ -1,6 +1,7 @@
-import { player } from '../player.js';
+import { player, playerState } from '../player.js';
 import { setWorldState, isOutOfBounds, isBlockFold, newBlockState, blockTypeAt, blockStateAt, BlockState } from '../world.js';
-import { distance, getRandomInt } from '../const.js';
+import { distance } from '../math.js';
+import { getRandomInt } from '../../constants/utils.js';
 import { room } from '../../constants/generic.js';
 import { inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { uistate } from '../gui/uiState.js';
@@ -16,11 +17,10 @@ import { lowest_point } from '../nature/createWorld.js';
 import { idOfBlock, canBehind } from '../nature/blockMecha/blocks.js';
 import { breakChest } from '../gui/gameGUI/blockGUI/chest.js';
 import { breakFurnace } from '../gui/gameGUI/blockGUI/furnace.js';
-import '../others/audioManager.js';
 import { apioxEvent, ApioxMouseEvent } from '../../apiox/event.js';
 import { ApioxObject } from '../../apiox/dom.js';
 import { mouse, Mouse } from '../mouse.js';
-import { isClient } from '../net/session.js';
+import { isClient } from '../session.js';
 
 export { mouse };
 export type { Mouse };
@@ -73,7 +73,7 @@ function onMouseUp(event: ApioxMouseEvent): void { // 放置方块
     if (!uistate.invenUI_isOpening()
     && mouse.can_use
     && player.hp > 0) { // 方块互动
-        door_openOrClose();
+        door_openOrClose(mouse.world_x, mouse.world_y);
     }
 
     if (!uistate.invenUI_isOpening()
@@ -106,10 +106,15 @@ function putBlock(item: number, behind: boolean): boolean {
     }
 
     // 火把贴背景层放置时四周可以没有实心方块，不走 can_put 的“四邻至少一个非空气”判定
-    if (item === idOfItem.torch) {return putTorch(mouse.world_x, mouse.world_y);}
+    if (item === idOfItem.torch) {
+        return putTorch(mouse.world_x, mouse.world_y, mouse.can_use, player.rightOnMouse);
+    }
 
     if (!mouse.can_put) {return false;}
-    if (item === idOfItem.oak_door) {putDoor(item); return true;}
+    if (item === idOfItem.oak_door) {
+        putDoor(item, mouse.world_x, mouse.world_y);
+        return true;
+    }
 
     const keep: number = state.type === idOfBlock.stone_dark ? idOfBlock.stone_dark : state.behind;
     setWorldState({ x: mouse.world_x, y: mouse.world_y }, newBlockState(item, keep));
@@ -162,7 +167,12 @@ export function mouseAct(delta: number): void {
             mouse.last_targetBlock = mineType;
 
             // 更新硬度
-            mouse.blockhardness = calculateHardness(mineType);
+            mouse.blockhardness = calculateHardness(
+                mineType,
+                inventory.items[widgets.select].item,
+                inventory.items[widgets.select].mine_speed,
+                player.state === playerState.swimming
+            );
         }
 
         if (mouse.blockhardness !== -1) {

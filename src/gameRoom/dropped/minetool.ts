@@ -1,7 +1,5 @@
 import { Blocks, blocksArray, idOfBlock } from "../nature/blockMecha/blocks.js";
-import { inventory, widgets } from "../gui/gameGUI/inventory.js";
-import { idOfItem } from "./items.js";
-import { player, playerState } from "../player.js";
+import { idOfItem } from "./itemIds.js";
 
 // 输入 ID 返回硬度
 function getBlockHardnessById(blockId: number): number {
@@ -22,18 +20,23 @@ function getBlockHardnessById(blockId: number): number {
 }
 
 // 根据工具等计算方块硬度
-export function calculateHardness(id: number): number {
+export function calculateHardness(
+    id: number,
+    selectedItem: number,
+    mineSpeed: number,
+    swimming: boolean
+): number {
     if (getBlockHardnessById(id) < 0) {return -1;}
-    const swimFactor: number = player.state === playerState.swimming ? 5 : 1;
+    const swimFactor: number = swimming ? 5 : 1;
 
     switch (id) {
         case idOfBlock.stone: case idOfBlock.cobblestone: case idOfBlock.sandstone:
         case idOfBlock.iron_ore: case idOfBlock.coal_ore:
         case idOfBlock.furnace:
         case idOfBlock.andesite: case idOfBlock.diorite: case idOfBlock.granite:
-            switch (inventory.items[widgets.select].item) {
+            switch (selectedItem) {
                 case idOfItem.wooden_pickaxe: case idOfItem.stone_pickaxe: case idOfItem.iron_pickaxe:
-                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed * swimFactor;
+                    return getBlockHardnessById(id) * mineSpeed * swimFactor;
             }
             break;
 
@@ -41,17 +44,17 @@ export function calculateHardness(id: number): number {
         case idOfBlock.oak_door_bottom: case idOfBlock.oak_door_top: case idOfBlock.oak_door_bottom_open: case idOfBlock.oak_door_top_open:
         case idOfBlock.oak: case idOfBlock.planks:
         case idOfBlock.crafting_table:
-            switch (inventory.items[widgets.select].item) {
+            switch (selectedItem) {
                 case idOfItem.wooden_axe: case idOfItem.stone_axe: case idOfItem.iron_axe:
-                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed * swimFactor;
+                    return getBlockHardnessById(id) * mineSpeed * swimFactor;
             }
             break;
 
         case idOfBlock.grass: case idOfBlock.dirt:
         case idOfBlock.sand: case idOfBlock.snowGrass:
-            switch (inventory.items[widgets.select].item) {
+            switch (selectedItem) {
                 case idOfItem.wooden_shovel: case idOfItem.stone_shovel: case idOfItem.iron_shovel:
-                    return getBlockHardnessById(id) * inventory.items[widgets.select].mine_speed * swimFactor;
+                    return getBlockHardnessById(id) * mineSpeed * swimFactor;
             }
             break;
 

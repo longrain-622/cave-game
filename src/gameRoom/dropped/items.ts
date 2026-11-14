@@ -4,7 +4,6 @@ export { idOfItem };
 import { Slots } from "../gui/gameGUI/inventoryConfig.js";
 import { idOfBlock } from "../nature/blockMecha/blocks.js";
 import { isOutOfBounds, isBlockFold, setWorldState, newBlockState, blockTypeAt, blockStateAt, BlockState } from "../world.js";
-import { mouse } from "../mouse.js";
 import { createDrop } from "./droppedItem.js";
 
 export function flipDraw(id: number): boolean {
@@ -29,7 +28,7 @@ function doorState(x: number, y: number, doorBlockId: number): BlockState {
     return newBlockState(doorBlockId, keepBehind(x, y));
 }
 
-export function putDoor(doorId: number): void {
+export function putDoor(doorId: number, x: number, y: number): void {
     let doorBlockId_b: number;
     let doorBlockId_t: number;
 
@@ -38,11 +37,11 @@ export function putDoor(doorId: number): void {
         default: doorBlockId_b = idOfBlock.oak_door_bottom; doorBlockId_t = idOfBlock.oak_door_top; break;
     }
 
-    if (!isOutOfBounds(mouse.world_y - 1, mouse.world_x) && blockTypeAt(mouse.world_x, mouse.world_y - 1) === idOfBlock.air) {
-        setWorldState({ x: mouse.world_x, y: mouse.world_y }, doorState(mouse.world_x, mouse.world_y, doorBlockId_b));
-        setWorldState({ x: mouse.world_x, y: mouse.world_y - 1 }, doorState(mouse.world_x, mouse.world_y - 1, doorBlockId_t));
+    if (!isOutOfBounds(y - 1, x) && blockTypeAt(x, y - 1) === idOfBlock.air) {
+        setWorldState({ x: x, y: y }, doorState(x, y, doorBlockId_b));
+        setWorldState({ x: x, y: y - 1 }, doorState(x, y - 1, doorBlockId_t));
     } else {
-        createDrop(doorId, mouse.world_x * 64, mouse.world_y * 64);
+        createDrop(doorId, x * 64, y * 64);
     }
 }
 
@@ -52,8 +51,8 @@ function placeTorch(x: number, y: number, direction: number): boolean {
     return true;
 }
 
-export function putTorch(x: number, y: number): boolean {
-    if (!mouse.can_use || isOutOfBounds(y, x) || isBlockFold({ x: x, y: y })) {return false;}
+export function putTorch(x: number, y: number, canUse: boolean, rightOnMouse: boolean): boolean {
+    if (!canUse || isOutOfBounds(y, x) || isBlockFold({ x: x, y: y })) {return false;}
     if (blockTypeAt(x, y) > idOfBlock.air) {return false;}
 
     if (blockTypeAt(x, y + 1) > idOfBlock.air) {
@@ -63,7 +62,7 @@ export function putTorch(x: number, y: number): boolean {
     const leftSolid: boolean = blockTypeAt(x - 1, y) > idOfBlock.air;
     const rightSolid: boolean = blockTypeAt(x + 1, y) > idOfBlock.air;
     if (leftSolid && rightSolid) {
-        return placeTorch(x, y, player.rightOnMouse ? 0 : 1);
+        return placeTorch(x, y, rightOnMouse ? 0 : 1);
     }
     if (leftSolid) {return placeTorch(x, y, 1);}
     if (rightSolid) {return placeTorch(x, y, 0);}

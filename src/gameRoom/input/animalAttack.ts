@@ -1,11 +1,11 @@
 import { apioxEvent } from '../../apiox/event.js';
-import { point_coll_rect } from '../const.js';
+import { point_coll_rect } from '../math.js';
 import { player } from '../player.js';
 import { mouse } from '../mouse.js';
 import { animalArray } from '../animals/animalIds.js';
 import { animalInjured } from '../animals/instance/generic.js';
 import { eventBus } from '../others/eventBus.js';
-import { isClient } from '../net/session.js';
+import { isClient } from '../session.js';
 
 function onClick(): void {
     if (mouse.can_use) { // 攻击动物

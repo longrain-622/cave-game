@@ -4,7 +4,7 @@ export async function loadScripts() {
   try {
     const modules = [
       await import('./gameRoom/others/loadingPage.js'),
-      await import('./gameRoom/const.js'),
+      await import('./gameRoom/others/const.js'),
       await import('./gameRoom/world.js'),
       await import('./gameRoom/nature/createWorld.js'),
       await import('./gameRoom/others/soundManager.js'),
@@ -14,6 +14,8 @@ export async function loadScripts() {
       await import('./gameRoom/rendering/gui/contentGUI/gameContent.js'),
       await import('./gameRoom/nature/sky.js'),
       await import('./gameRoom/player.js'),
+      await import('./gameRoom/input/keyboardInput.js'),
+      await import('./others/eventFunctionUser.js'),
       await import('./gameRoom/input/guiInput.js'),
       await import('./gameRoom/nature/blockMecha/blockMechanism.js'),
       await import('./gameRoom/animals/animals.js'),

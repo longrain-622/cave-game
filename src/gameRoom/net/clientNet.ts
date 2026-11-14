@@ -6,7 +6,7 @@ import { inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
 import { clock } from '../nature/sky.js';
 import { chunk, isOutOfBounds, lightPos, loadPalette, pushChunkToWorld, world } from '../world.js';
-import { eventBus } from '../others/eventBus.js';
+import { offsetElements } from '../nature/offsetElements.js';
 import type {
     InventoryStateMessage,
     LanEvent,
@@ -92,7 +92,7 @@ function applyWorldChunk(message: WorldChunkMessage): void {
         targetX += chunk.width * 64;
     }
 
-    eventBus.emit('chunk:create', message.behind);
+    offsetElements(message.behind);
 }
 
 function handleEvent(event: LanEvent): void {

@@ -1,14 +1,12 @@
 import { place_meeting } from '../world.js';
-import { getRandomInt, point_coll_rect, distance } from '../const.js';
+import { getRandomInt } from '../../constants/utils.js';
+import { point_coll_rect, distance } from '../math.js';
 import { player } from '../player.js';
 import { pickupObj, inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
-import { eventBus } from '../others/eventBus.js';
-import { idOfItem } from './items.js';
+import { idOfItem } from './itemIds.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
-import '../others/audioManager.js';
-import { apioxEvent } from '../../apiox/event.js';
-import { isClient } from '../net/session.js';
+import { eventBusSwitch } from '../gameState.js';
 
 export interface Droppeds {
     type: number;
@@ -183,7 +181,7 @@ export function dropsX(delta: number) {
                 pickupObj(drop.type);
                 dropArray.splice(i, 1);
                 i--; // 调整索引，因为数组长度改变
-                eventBus.emit('item:pickup');
+                eventBusSwitch.itemPickup++;
                 continue;
             }
 
@@ -196,9 +194,7 @@ export function dropsX(delta: number) {
     }
 }
 
-apioxEvent.onKeyDown((e) => { // 丢弃物品
-    if (isClient()) {return;}
-    if (e.key !== 'q') {return;}
+export function loseItem(): void { // 丢弃物品
     if (inventory.items[widgets.select].num >= 1) {
         inventory.items[widgets.select].num -= 1;
         createDrop(inventory.items[widgets.select].item, player.x + player.width/2 + player.face*32, player.y);
@@ -206,4 +202,4 @@ apioxEvent.onKeyDown((e) => { // 丢弃物品
             inventory.items[widgets.select] = new Slots(-1, 0);
         }
     }
-});
+}

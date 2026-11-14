@@ -1,12 +1,11 @@
 import { world_height, pushChunkToWorld, chunk, loadWorld, sealevel, loadPalette, resetPalette, migrateWorldToPalette, getBlockState, registerBlockState, newBlockState } from "../world.js";
-import { getRandomInt } from "../const.js";
+import { getRandomInt } from "../../constants/utils.js";
 import { initPlayerPosition, player } from "../player.js";
-import { eventBus } from "../others/eventBus.js";
 import { idOfBlock } from "./blockMecha/blocks.js";
 import { readingWorld, coverWhenSave } from "../gameState.js";
 import { notNullUndefined } from "../../constants/utils.js";
 import { resumeWaterFlow } from "./blockMecha/bmFunction.js";
-import { isClient } from "../net/session.js";
+import { isClient } from "../session.js";
 
 // 温度类型常量
 const TEMP = {
@@ -351,7 +350,6 @@ function createChunk(startX: number, behind: boolean): void { // startX:当前�
     chunk.num++;
     if (!behind) {chunk.left_number++;}
     chunk.start_x = chunk.num * chunk.width;
-    eventBus.emit('chunk:create', behind);
 }
 
 // 生成树
@@ -428,12 +426,15 @@ function generateCacti(worlding: number[][], toIndex: (id: number) => number): v
     }
 }
 
-function createChunkAnyTime(): void {
+function createChunkAnyTime(): boolean | null {
     if (player.x - chunk.lookRange * 64 <= 0) {
         createChunk(-chunk.width * (chunk.left_number + 1), false);
+        return false;
     } else if (player.x + chunk.lookRange * 64 >= chunk.num * chunk.width * 64) {
         createChunk(chunk.start_x, true);
+        return true;
     }
+    return null;
 }
 
 function createWorldMain(): void {

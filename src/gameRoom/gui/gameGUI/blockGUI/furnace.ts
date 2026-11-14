@@ -2,13 +2,13 @@
 // 熔炉容器状态与熔炉界面的纯逻辑（槽位点击/破坏处理）。
 import { Slots } from '../inventoryConfig.js';
 import { world, blockTypeAt } from '../../../world.js';
-import { getRandomInt, point_coll_rect } from '../../../const.js';
+import { point_coll_rect } from '../../../math.js';
 import { readingWorld, coverWhenSave } from '../../../gameState.js';
 import { WorldArchive, FurnaceArchive } from '../../../../types/worldArchive.js';
 import { player } from '../../../player.js';
 import { idOfBlock } from '../../../nature/blockMecha/blocks.js';
 import { createDrop } from '../../../dropped/droppedItem.js';
-import { notNullUndefined } from '../../../../constants/utils.js';
+import { getRandomInt, notNullUndefined } from '../../../../constants/utils.js';
 import { uistate } from '../../uiState.js';
 import { getFurnaceRecipe, FurnaceRecipe, fuels } from './furnaceRecipe.js';
 import { handleBackpackClick, handleBackpackContextMenu, setSelectedIndex } from '../inventory.js';

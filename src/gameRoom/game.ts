@@ -1,6 +1,6 @@
 import { player, playerLoop, updatePlayerState } from './player.js';
 import { room } from '../constants/generic.js';
-import { mouseAct } from './input/mouseInput.js';
+import { mouse, mouseAct } from './input/mouseInput.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
 import { blockFrameLoop } from './nature/blockFrameState.js';
 import { updatePlayerRender } from './rendering/actors/playerRender.js';
@@ -28,14 +28,17 @@ import { drawParticles } from './rendering/items/particleRender.js';
 import { skyLogicLoop } from './nature/sky.js';
 import { skyRendering } from './rendering/world/skyRender.js';
 import { createChunkAnyTime } from './nature/createWorld.js';
+import { offsetElements } from './nature/offsetElements.js';
 import { entityBlock_array, entityBlockLogic } from './nature/entityBlock.js';
 import { renderingEntityBlock } from './rendering/world/entityBlockRender.js';
 import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
 
 import { ApioxObject } from '../apiox/dom.js';
 import { notEventAudio } from './others/audioManager.js';
-import { isClient } from './net/session.js';
+import { eventBus } from './others/eventBus.js';
+import { isClient } from './session.js';
 import { clientNetTick } from './net/clientNet.js';
+import { checkEventBus } from '../others/eventFunctionUser.js';
 
 export const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
 
@@ -46,10 +49,14 @@ function main(): void {
 main();
 
 function logicLoop(delta: number): void {
-    createChunkAnyTime();
+    const newChunkBehind: boolean | null = createChunkAnyTime();
+    if (newChunkBehind !== null) {
+        offsetElements(newChunkBehind);
+        eventBus.emit('chunk:create', newChunkBehind);
+    }
     blockFrameLoop(delta);
     updatePlayerState();
-    playerLoop(delta);
+    playerLoop(delta, uistate.invenUI_isOpening(), mouse.x);
     mouseAct(delta);
     natureSpawnAnimals(delta);
     if (animalArray.length > 0) {animalsLoop(delta);}
@@ -82,19 +89,21 @@ function renderingLoop(): void {
         drawFurnace();
     }
 
-    // 死亡后仍需每帧同步暂停菜单可见性，否则打开中的暂停菜单无法关闭
     updatePauseMenu();
-
     drawDeadPage();
     updateDebugScreen();
 }
 
-// 客户端只做“从主机状态渲染”：不跑任何权威模拟，只更新插值和纯视觉计数。
+// 客户端只做从主机状态渲染
 function clientLogicLoop(delta: number): void {
     clientNetTick(delta);
     blockFrameLoop(delta);
     if (player.hp > 0) {heartsAct(delta);}
     notEventAudio();
+}
+
+function interactionLoop(): void {
+    checkEventBus();
 }
 
 export function gameLoop(delta: number): void {
@@ -103,5 +112,6 @@ export function gameLoop(delta: number): void {
     } else {
         logicLoop(delta);
     }
+    interactionLoop();
     renderingLoop();
 }

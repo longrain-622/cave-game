@@ -1,5 +1,5 @@
 import { player } from '../../player.js';
-import { isOnScreen } from '../../const.js';
+import { isOnScreen } from '../../others/const.js';
 import { idOfAnimal, animalArray, Animal } from '../../animals/animalIds.js';
 import { app } from '../rendering.js';
 import { AnimalParts } from './animalParts.js';

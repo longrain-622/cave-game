@@ -4,7 +4,7 @@ import { genericTextStyle } from "../../rendering.js";
 import { room } from "../../../../constants/generic.js";
 import { apiObjects } from "../../../../apiox/dom.js";
 import * as PIXI from 'pixi.js';
-import { quitGame } from "../../../gui/contentGUI/gameContent.js";
+import { quitGame } from "../../../others/gameContent.js";
 import { respawnPlayer } from "../../../gui/gameGUI/death.js";
 import { uistate } from "../../../gui/uiState.js";
 import { ensureGuiMounted, deathContainer } from "../application.js";

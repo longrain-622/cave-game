@@ -1,8 +1,8 @@
-import { saveGameToLocal } from '../../../user/saveWorld.js';
-import { coverWhenSave } from '../../gameState.js';
-import { reloadPage } from '../../../apiox/method.js';
-import { apioxNet } from '../../../apiox/net.js';
-import { isClient, isHost } from '../../net/session.js';
+import { saveGameToLocal } from '../../user/saveWorld.js';
+import { coverWhenSave } from '../gameState.js';
+import { reloadPage } from '../../apiox/method.js';
+import { apioxNet } from '../../apiox/net.js';
+import { isClient, isHost } from '../session.js';
 
 export async function quitGame(): Promise<void> {
     if (isClient()) {
@@ -17,7 +17,7 @@ export async function quitGame(): Promise<void> {
 
     if (isHost()) {
         try {
-            const { stopHosting } = await import('../../net/hostNet.js');
+            const { stopHosting } = await import('../net/hostNet.js');
             stopHosting();
             await apioxNet.stopHost();
         } catch (error) {

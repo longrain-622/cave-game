@@ -3,13 +3,13 @@ import { getLang } from '../../../../others/i18nLang.js';
 import { room } from "../../../../constants/generic.js";
 import { textStyle2 } from "../../../../constants/pixiStyles.js";
 import { uistate } from "../../../gui/uiState.js";
-import { quitGame } from "../../../gui/contentGUI/gameContent.js";
+import { quitGame } from "../../../others/gameContent.js";
 import { guiApp, buttonTextures } from "../application.js";
 import { showExitPage } from "./exitingPage.js";
 import * as PIXI from 'pixi.js';
 import { version } from '../../../../constants/generic.js';
 import { apioxNet } from '../../../../apiox/net.js';
-import { isClient } from '../../../net/session.js';
+import { isClient } from '../../../session.js';
 import { worldName } from '../../../world.js';
 
 // 按钮尺寸

@@ -7,7 +7,7 @@ import { clock } from '../nature/sky.js';
 import { chunk, palette, setWorldStateListener, world } from '../world.js';
 import type { BlockPos } from '../world.js';
 import { eventBus } from '../others/eventBus.js';
-import { setNetRole } from './session.js';
+import { setNetRole } from '../session.js';
 import type {
     HostToServerMessage,
     InventoryStateMessage,

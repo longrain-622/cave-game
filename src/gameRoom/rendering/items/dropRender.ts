@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js';
 
 import { player } from '../../player.js';
-import { isOnScreen } from '../../const.js';
+import { isOnScreen } from '../../others/const.js';
 import { app, blockTextures, isDrawing } from '../rendering.js';
 import { applyLightTint } from '../light.js';
 import { itemTextures } from './itemTextures.js';

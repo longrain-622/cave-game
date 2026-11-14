@@ -1,4 +1,3 @@
-import { eventBus } from "../others/eventBus.js";
 import { chunk } from "../world.js"
 import { player } from "../player.js";
 import { animalArray } from "../animals/animalIds.js";
@@ -8,7 +7,7 @@ import { furnaceArray } from "../gui/gameGUI/blockGUI/furnace.js";
 import { chests } from "../gui/gameGUI/blockGUI/chest.js";
 import { entityBlock_array } from "./entityBlock.js";
 
-eventBus.on('chunk:create', (behind) => {
+export function offsetElements(behind: boolean): void {
     if (!behind) {
         const offset: number = chunk.width * 64;
 
@@ -39,4 +38,4 @@ eventBus.on('chunk:create', (behind) => {
             chests[k].world_x += chunk.width;
         }
     }
-});
+}

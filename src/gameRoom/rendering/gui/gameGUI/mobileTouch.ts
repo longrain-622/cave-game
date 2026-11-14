@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js';
 import { genericTextStyle } from '../../rendering.js';
 import { getSetting } from '../../../../constants/settingConfig.js';
 import { apioxEvent } from '../../../../apiox/event.js';
-import { isClient } from '../../../net/session.js';
+import { isClient } from '../../../session.js';
 
 interface TouchButton {
     anchor_x: number; anchor_y: number;

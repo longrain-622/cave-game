@@ -1,15 +1,9 @@
 import { world_height, world, chunk, place_meeting, blockTypeAt } from './world.js';
-import { enableKeyDoubleClickDetection } from './const.js';
 import { room } from '../constants/generic.js';
-import { uistate } from './gui/uiState.js';
-import { mouse } from './mouse.js';
-import { eventBus } from './others/eventBus.js';
 import { WorldArchive } from '../types/worldArchive.js';
-import { readingWorld, coverWhenSave } from './gameState.js';
-import { apioxEvent } from '../apiox/event.js';
+import { readingWorld, coverWhenSave, eventBusSwitch } from './gameState.js';
 import { notNullUndefined } from '../constants/utils.js';
 import { idOfBlock } from './nature/blockMecha/blocks.js';
-import { isClient } from './net/session.js';
 
 export enum playerState {
     normal, swimming
@@ -104,53 +98,10 @@ export function initPlayerPosition(player: Players): void { // 初始化玩家�
 
 export function playerHurt(player: Players, howmany: number): void {
     player.hp -= howmany;
-    eventBus.emit('player:hurt');
+    eventBusSwitch.playerHurt++;
 }
 
 const player: Players = newPlayers();
-
-function registerPlayerInput(): void {
-    apioxEvent.onKeyDoubleClick((detail): void => {
-        if (!(detail.key === 'a' || detail.key === 'd')) {return;}
-        if (!(player.state === playerState.normal && player.can_jump)) {return;}
-        player.acc = 2;
-    });
-
-    apioxEvent.onKeyDown((e): void => {
-        if (uistate.invenUI_isOpening()) {return;}
-        switch (e.key) {
-            case 'a': player.face = -1; player.left = 1; break;
-            case 'd': player.face = 1; player.right = 1; break;
-            case 'w': case ' ':
-                player.jumpHeld = true;
-                if (player.state === playerState.swimming) {break;} // 水中上浮由 playerJump 处理
-                if (player.can_jump && !uistate.invenUI_isOpening()) {
-                    player.vsp = player.jumpspeed;
-                    player.can_jump = false;
-                }
-                break;
-        }
-    });
-
-    apioxEvent.onKeyUp((e): void => {
-        switch (e.key) {
-            case 'a': case 'd':
-                player.left = 0;
-                player.right = 0;
-                player.acc = 0;
-                break;
-            case 'w': case ' ':
-                player.jumpHeld = false;
-                break;
-        }
-    });
-
-    apioxEvent.listenGlobal('mousedown', (): void => {
-        if (!uistate.invenUI_isOpening() && mouse.can_use) { // 玩家手部旋转触发
-            player.needRotateHand = true;
-        }
-    });
-}
 
 // 某个像素点是否处于水方块中
 function isWaterAt(x: number, y: number): boolean {
@@ -166,7 +117,7 @@ export function updatePlayerState(): void {
     player.state = (headInWater || bodyInWater || feetInWater) ? playerState.swimming : playerState.normal;
 
     if (lastState !== player.state && player.state === playerState.swimming) {
-        eventBus.emit('player:fallInWater');
+        eventBusSwitch.playerFallinWater++;
     }
 }
 
@@ -274,15 +225,14 @@ function playerJump(delta: number): void { // 玩家跳跃（水中为划水与�
 
 function main(): void {
     initPlayer(player, readingWorld);
-    enableKeyDoubleClickDetection();
-    if (!isClient()) {registerPlayerInput();}
 }
 main();
 
-function playerLoop(delta: number): void {
-    player.rightOnMouse = mouse.x > player.screen_x + player.width / 2;
+// uiBlocked / pointerScreenX 由输入适配层传入；逻辑层不再 import 输入或 UI。
+function playerLoop(delta: number, uiBlocked: boolean, pointerScreenX: number): void {
+    player.rightOnMouse = pointerScreenX > player.screen_x + player.width / 2;
 
-    if (!uistate.invenUI_isOpening() && player.hp > 0) { // 打开背包无法移动
+    if (!uiBlocked && player.hp > 0) {
         playerMove(delta);
     }
 

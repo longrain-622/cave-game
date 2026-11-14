@@ -223,16 +223,16 @@ describe('门开关 door_openOrClose', () => {
         setWorldState({ x: 5, y: 4 }, newBlockState(idOfBlock.oak_door_top));
         mouse.world_x = 5;
         mouse.world_y = 5;
-        door_openOrClose();
+        door_openOrClose(mouse.world_x, mouse.world_y);
         expect(world[5][5]).toBe(idOfBlock.oak_door_bottom_open); // 开门
         expect(world[4][5]).toBe(idOfBlock.oak_door_top_open); // 上门同步开启
 
-        door_openOrClose(); // 再点一次，关门
+        door_openOrClose(mouse.world_x, mouse.world_y); // 再点一次，关门
         expect(world[5][5]).toBe(idOfBlock.oak_door_bottom);
         expect(world[4][5]).toBe(idOfBlock.oak_door_top);
 
         mouse.world_y = 4; // 对准上门
-        door_openOrClose();
+        door_openOrClose(mouse.world_x, mouse.world_y);
         expect(world[5][5]).toBe(idOfBlock.oak_door_bottom_open); // 点击上门也能开门
     });
 
@@ -240,7 +240,7 @@ describe('门开关 door_openOrClose', () => {
         setWorldState({ x: 6, y: 5 }, newBlockState(idOfBlock.stone));
         mouse.world_x = 6;
         mouse.world_y = 5;
-        door_openOrClose();
+        door_openOrClose(mouse.world_x, mouse.world_y);
         expect(world[5][6]).toBe(idOfBlock.stone); // world[y][x]
     });
 });

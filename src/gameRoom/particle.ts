@@ -1,7 +1,6 @@
 import { place_meeting, blockTypeAt } from "./world.js";
 import { getRandomInt } from "../constants/utils.js";
 import { player } from "./player.js";
-import { eventBus } from "./others/eventBus.js";
 import { idOfBlock } from "./nature/blockMecha/blocks.js";
 
 // Other than the idOfBlock, some special particle type
@@ -64,18 +63,15 @@ export function createParticles(type: number, x: number, y: number): void {
     particleArray.push(newParticles(type, x, y));
 }
 
-function main(): void {
-    eventBus.on('player:fallInWater', (): void => {
-        for (let i = 0; i < getRandomInt(16, 32); i++) {
-            createParticles(
-                particleType.splash,
-                player.x + getRandomInt(-32, 32),
-                player.y + player.height,
-            );
-        }
-    });
+export function playerFallinWater(): void { // 玩家落水时触发的函数
+    for (let i = 0; i < getRandomInt(16, 32); i++) {
+        createParticles(
+            particleType.splash,
+            player.x + getRandomInt(-32, 32),
+            player.y + player.height,
+        );
+    }
 }
-main();
 
 function normalBehavior(particle: Particles, delta: number): void {
     const GRAVITY: number = 0.5;

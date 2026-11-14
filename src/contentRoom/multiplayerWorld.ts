@@ -7,7 +7,7 @@ import { textStyle1 } from '../constants/pixiStyles.js';
 import { getContentApp, showArchiveSurface, showStartSurface } from './contentRenderer.js';
 import { apioxNet } from '../apiox/net.js';
 import { setReadingWorld } from '../gameRoom/gameState.js';
-import { setNetRole } from '../gameRoom/net/session.js';
+import { setNetRole } from '../gameRoom/session.js';
 import { version } from '../constants/generic.js';
 import type { WorldArchive } from '../types/worldArchive.js';
 import type { LanEvent, LanSnapshot, LanWorldEntry } from '../../shared/netProtocol.js';

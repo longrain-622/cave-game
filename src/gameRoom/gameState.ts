@@ -9,3 +9,15 @@ export function setReadingWorld(val: WorldArchive) {
         coverWhenSave = true;
     }
 }
+
+interface EventBusSwitch {
+    itemPickup: number;
+    playerHurt: number;
+    playerFallinWater: number;
+}
+
+export const eventBusSwitch: EventBusSwitch = { // 所有需要使用 EventBus 的逻辑层，不需要导入 eventBus.ts，只需要修改这个对象的属性即可
+    itemPickup: 0,
+    playerHurt: 0,
+    playerFallinWater: 0,
+};

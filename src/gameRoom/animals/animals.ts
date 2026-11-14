@@ -2,13 +2,11 @@ import { getRandomInt } from '../../constants/utils.js';
 import { room } from '../../constants/generic.js';
 import { player } from '../player.js';
 
-import '../others/audioManager.js';
 import { WorldArchive } from '../../types/worldArchive.js';
 import { readingWorld, coverWhenSave } from '../gameState.js';
 import { natureAnimals, newAnimal, Animal, animalArray } from './animalIds.js';
 import { setAnimalList } from './boids.js';
-import { animalActions } from './instance/generic.js';
-import { initAnimalY } from './instance/generic.js';
+import { animalActions, initAnimalY } from './instance/generic.js';
 import { blockTypeAt, world_height } from '../world.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
 

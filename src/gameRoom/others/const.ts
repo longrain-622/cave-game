@@ -1,22 +1,6 @@
-import { apioxTime } from "../apiox/time.js";
-import { apioxEvent, ApioxKeyboardEvent, apioxEventBus } from "../apiox/event.js";
-import { room } from "../constants/generic.js";
-
-// 生成随机数
-function getRandomInt(min: number, max: number): number {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// 检测点和矩形的碰撞
-function point_coll_rect(x: number, y: number, rect_x: number, rect_y: number, width: number, height: number): boolean {
-    if (x >= rect_x && x <= rect_x + width && y >= rect_y && y <= rect_y + height) {
-        return true;
-    } else {
-        return false;
-    }
-}
+import { apioxTime } from "../../apiox/time.js";
+import { apioxEvent, ApioxKeyboardEvent, apioxEventBus } from "../../apiox/event.js";
+import { room } from "../../constants/generic.js";
 
 /**
  * 启用按键双击检测 apiox.js
@@ -78,12 +62,6 @@ function enableKeyDoubleClickDetection(delay = 300): () => void {
     };
 }
 
-function distance(x1: number, y1: number, x2: number, y2: number): number { // 获得两点间距离
-    const dx: number = x1 - x2;
-    const dy: number = y1 - y2;
-    return Math.hypot(dx, dy);
-}
-
 function isOnScreen(x: number, y: number, width: number, height: number): boolean {
     if (x >= -width && y >= -height && x <= room.width + width && y <= room.height + height) {
         return true;
@@ -92,4 +70,4 @@ function isOnScreen(x: number, y: number, width: number, height: number): boolea
     }
 }
 
-export { getRandomInt, point_coll_rect, enableKeyDoubleClickDetection, distance, isOnScreen };
+export { enableKeyDoubleClickDetection, isOnScreen };
