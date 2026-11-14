@@ -1,5 +1,5 @@
 import { chunk } from "../world.js"
-import { player } from "../player.js";
+import { player, remotePlayers } from "../player.js";
 import { animalArray } from "../animals/animalIds.js";
 import { dropArray } from "../dropped/droppedItem.js";
 import { particleArray } from "../particle.js";
@@ -12,6 +12,10 @@ export function offsetElements(behind: boolean): void {
         const offset: number = chunk.width * 64;
 
         player.x += offset;
+
+        for (const remote of remotePlayers.values()) {
+            remote.x += offset;
+        }
 
         for (let i = 0; i < animalArray.length; i++) {
             animalArray[i].x += offset;

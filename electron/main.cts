@@ -7,6 +7,7 @@ import {
     joinRoom,
     leaveRoom,
     refreshLanDiscovery,
+    sendClientMessage,
     sendHostMessage,
     setLanEventSender,
     shutdownLan,
@@ -15,7 +16,7 @@ import {
     stopHost,
     stopLanDiscovery,
 } from './net/server.cjs';
-import type { HostStartOptions, HostToServerMessage, JoinOptions } from '../shared/netProtocol.js';
+import type { ClientToServerMessage, HostStartOptions, HostToServerMessage, JoinOptions } from '../shared/netProtocol.js';
 
 const APP_ID: string = 'com.sinuxu.cavegame';
 const APP_SCHEME: string = 'app';
@@ -380,6 +381,11 @@ function registerLanIpc(): void {
     ipcMain.on('lan:hostMessage', (event, message: HostToServerMessage) => {
         if (!isTrustedIpcSender(event)) {return;}
         sendHostMessage(message);
+    });
+
+    ipcMain.on('lan:clientMessage', (event, message: ClientToServerMessage) => {
+        if (!isTrustedIpcSender(event)) {return;}
+        sendClientMessage(message);
     });
 
     setLanEventSender((event) => {

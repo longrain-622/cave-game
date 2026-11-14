@@ -60,7 +60,7 @@
     "cancel": "Annuler",
     "selected": "Sélectionné",
     "joinPending": "La connexion LAN sera ajoutée à l’étape suivante",
-    "spectator": "Spectateur",
+    "spectator": "Joueur",
     "connecting": "Connexion…",
     "connectFailed": "Échec de la connexion",
     "invalidAddress": "L’adresse doit être une IP ou IP:port",

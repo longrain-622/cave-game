@@ -1,16 +1,27 @@
-import type { NetRole } from '../../shared/netProtocol.js';
+import type { LanPlayerState, NetRole } from '../../shared/netProtocol.js';
 
 let role: NetRole = 'single';
 let sessionId: string | null = null;
+let lanPlayers: LanPlayerState[] = [];
 
 export function setNetRole(nextRole: NetRole, nextSessionId: string | null = null): void {
     role = nextRole;
     sessionId = nextSessionId;
+    if (nextRole !== 'client') {lanPlayers = [];}
 }
 
 export function resetNetRole(): void {
     role = 'single';
     sessionId = null;
+    lanPlayers = [];
+}
+
+export function setLanPlayers(players: LanPlayerState[]): void {
+    lanPlayers = players;
+}
+
+export function getLanPlayers(): LanPlayerState[] {
+    return lanPlayers;
 }
 
 export function getNetRole(): NetRole {

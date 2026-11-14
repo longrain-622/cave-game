@@ -6,6 +6,7 @@ export type NetRole = 'single' | 'host' | 'client';
 export const NET_PROTOCOL_VERSION: number = 1;
 export const DEFAULT_LAN_PORT: number = 2567;
 export const MAX_LAN_CLIENTS: number = 4;
+export const HOST_PLAYER_ID: string = 'host';
 
 export interface LanWorldEntry {
     id: string;
@@ -32,6 +33,46 @@ export interface LanSlot {
     durability: number;
 }
 
+/** 单个玩家在网络上的权威状态。 */
+export interface LanPlayerState {
+    playerId: string;
+    hp: number;
+    x: number;
+    y: number;
+    face: number;
+    acc: number;
+    legRad: number;
+    handRad: number;
+    needRotateHand: boolean;
+    isRotateRighthand: boolean;
+    rightOnMouse: boolean;
+    state: number;
+    selectedSlot: number;
+}
+
+/** 客户端移动/跳跃输入；由服务端注入 sessionId 后转给主机。 */
+export interface PlayerInputState {
+    left: number;
+    right: number;
+    jumpHeld: boolean;
+    jumpPressed: boolean;
+    acc: number;
+    face: number;
+    uiBlocked: boolean;
+}
+
+export interface PlayerInputMessage extends PlayerInputState {
+    type: 'player:input';
+    seq: number;
+}
+
+export interface PlayerRespawnMessage {
+    type: 'player:respawn';
+    seq: number;
+}
+
+export type ClientToServerMessage = PlayerInputMessage | PlayerRespawnMessage;
+
 /** 客户端进入主机世界所需的最小快照，形状与 WorldArchive 兼容。 */
 export interface LanSnapshot {
     name: string;
@@ -47,25 +88,29 @@ export interface LanSnapshot {
         x: number;
         y: number;
     };
+    players: LanPlayerState[];
     inventory: {
         items: LanSlot[];
     };
 }
 
-export interface PlayerStateMessage {
-    type: 'player:state';
-    hp: number;
-    x: number;
-    y: number;
-    face: number;
-    acc: number;
-    legRad: number;
-    handRad: number;
-    needRotateHand: boolean;
-    isRotateRighthand: boolean;
-    rightOnMouse: boolean;
-    state: number;
-    selectedSlot: number;
+/**
+ * 一帧内所有玩家的权威状态。
+ * 合并成一条消息发送，避免每个玩家各自占用一次 IPC / WebSocket 往返。
+ */
+export interface PlayerStatesMessage {
+    type: 'players:state';
+    players: LanPlayerState[];
+}
+
+export interface PlayerJoinMessage {
+    type: 'player:join';
+    player: LanPlayerState;
+}
+
+export interface PlayerLeaveMessage {
+    type: 'player:leave';
+    playerId: string;
 }
 
 export interface InventoryStateMessage {
@@ -88,14 +133,16 @@ export interface WorldDiffCell {
 export interface WorldDiffMessage {
     type: 'world:diff';
     cells: WorldDiffCell[];
-    palette: LanPaletteState[];
+    /** 调色板只在增长时下发；未携带时客户端沿用自己的调色板。 */
+    palette?: LanPaletteState[];
 }
 
 export interface WorldChunkMessage {
     type: 'world:chunk';
     behind: boolean;
     chunkData: number[][];
-    palette: LanPaletteState[];
+    /** 调色板只在增长时下发；未携带时客户端沿用自己的调色板。 */
+    palette?: LanPaletteState[];
     chunkNum: number;
     chunkStartX: number;
     chunkLeftNumber: number;
@@ -115,7 +162,9 @@ export type HostToServerMessage =
     | SnapshotMessage
     | WorldDiffMessage
     | WorldChunkMessage
-    | PlayerStateMessage
+    | PlayerStatesMessage
+    | PlayerJoinMessage
+    | PlayerLeaveMessage
     | InventoryStateMessage
     | TimeMessage
     | HostStopMessage;
@@ -138,6 +187,8 @@ export interface JoinOptions {
     port: number;
     gameVersion: string;
     playerName: string;
+    /** 局域网列表里的房间 id；有值时用 joinById，避免客户端意外创建新房间。 */
+    roomId?: string;
 }
 
 export interface JoinResult {
@@ -149,7 +200,11 @@ export interface JoinResult {
 export type LanEvent =
     | { type: 'peer:join'; sessionId: string; name: string }
     | { type: 'peer:leave'; sessionId: string }
-    | { type: 'player:state'; data: PlayerStateMessage }
+    | { type: 'players:state'; players: LanPlayerState[] }
+    | { type: 'player:join'; player: LanPlayerState }
+    | { type: 'player:leave'; playerId: string }
+    | { type: 'player:input'; sessionId: string; input: PlayerInputState }
+    | { type: 'player:respawn'; sessionId: string }
     | { type: 'inventory:state'; data: InventoryStateMessage }
     | { type: 'world:diff'; data: WorldDiffMessage }
     | { type: 'world:chunk'; data: WorldChunkMessage }
@@ -165,7 +220,8 @@ export interface CavegameLanApi {
     join(options: JoinOptions): Promise<JoinResult>;
     leave(): Promise<void>;
     sendHostMessage(message: HostToServerMessage): void;
-    onEvent(callback: (event: LanEvent) => void): void;
+    sendClientMessage(message: ClientToServerMessage): void;
+    onEvent(callback: (event: LanEvent) => void, replayQueued?: boolean): void;
     startDiscovery(): Promise<void>;
     stopDiscovery(): Promise<void>;
     refreshDiscovery(): Promise<LanWorldEntry[]>;

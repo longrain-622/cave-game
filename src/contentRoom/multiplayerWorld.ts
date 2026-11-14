@@ -7,7 +7,7 @@ import { textStyle1 } from '../constants/pixiStyles.js';
 import { getContentApp, showArchiveSurface, showStartSurface } from './contentRenderer.js';
 import { apioxNet } from '../apiox/net.js';
 import { setReadingWorld } from '../gameRoom/gameState.js';
-import { setNetRole } from '../gameRoom/session.js';
+import { setLanPlayers, setNetRole } from '../gameRoom/session.js';
 import { version } from '../constants/generic.js';
 import type { WorldArchive } from '../types/worldArchive.js';
 import type { LanEvent, LanSnapshot, LanWorldEntry } from '../../shared/netProtocol.js';
@@ -335,12 +335,13 @@ async function enterWorldFromSnapshot(snapshot: LanSnapshot, sessionId: string):
     const { setWorldName } = await import('../gameRoom/world.js');
     setWorldName(snapshot.name);
     setReadingWorld(toWorldArchive(snapshot));
+    setLanPlayers(snapshot.players ?? []);
     setNetRole('client', sessionId);
     enteredGame = true;
     enterGameCallback();
 }
 
-async function joinLanTarget(address: string, port: number): Promise<void> {
+async function joinLanTarget(address: string, port: number, roomId?: string): Promise<void> {
     if (joining || enteredGame) {return;}
 
     const u = getUi();
@@ -350,11 +351,14 @@ async function joinLanTarget(address: string, port: number): Promise<void> {
     setStatus(getText('multiplayer.connecting') + ' ' + address + ':' + String(port));
 
     try {
+        // 上一局的网络事件不能带进新会话（尤其 host:stop / player:leave）
+        apioxNet.clearEventLog();
         const result = await apioxNet.join({
             address: address,
             port: port,
             gameVersion: version,
-            playerName: 'Spectator',
+            playerName: 'Player',
+            roomId: roomId,
         });
         await enterWorldFromSnapshot(result.snapshot, result.sessionId);
     } catch (error) {
@@ -378,7 +382,7 @@ async function joinSelected(): Promise<void> {
     if (selectedId === null) {return;}
     const entry: LanWorldEntry | undefined = currentWorlds.find((world: LanWorldEntry): boolean => world.id === selectedId);
     if (entry === undefined) {return;}
-    await joinLanTarget(entry.address, entry.port);
+    await joinLanTarget(entry.address, entry.port, entry.roomId);
 }
 
 function openDirectPanel(): void {

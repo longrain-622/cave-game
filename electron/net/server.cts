@@ -16,6 +16,7 @@ import {
     updateHostBroadcastPlayers,
 } from './discovery.cjs';
 import type {
+    ClientToServerMessage,
     HostStartOptions,
     HostStartResult,
     HostToServerMessage,
@@ -138,7 +139,7 @@ export async function startHost(options: HostStartOptions): Promise<HostStartRes
             emitEvent({
                 type: 'peer:join',
                 sessionId: String(message?.sessionId ?? ''),
-                name: String(message?.name ?? 'Spectator'),
+                name: String(message?.name ?? 'Player'),
             });
         });
         room.onMessage('peer:leave', (message: any): void => {
@@ -148,6 +149,29 @@ export async function startHost(options: HostStartOptions): Promise<HostStartRes
                 type: 'peer:leave',
                 sessionId: String(message?.sessionId ?? ''),
             });
+        });
+        room.onMessage('player:input', (message: any): void => {
+            const sessionId: string = String(message?.sessionId ?? '');
+            const input: any = message?.input;
+            if (sessionId === '' || input === null || typeof input !== 'object') {return;}
+            emitEvent({
+                type: 'player:input',
+                sessionId: sessionId,
+                input: {
+                    left: Number(input.left) || 0,
+                    right: Number(input.right) || 0,
+                    jumpHeld: Boolean(input.jumpHeld),
+                    jumpPressed: Boolean(input.jumpPressed),
+                    acc: Number(input.acc) || 0,
+                    face: Number(input.face) || -1,
+                    uiBlocked: Boolean(input.uiBlocked),
+                },
+            });
+        });
+        room.onMessage('player:respawn', (message: any): void => {
+            const sessionId: string = String(message?.sessionId ?? '');
+            if (sessionId === '') {return;}
+            emitEvent({ type: 'player:respawn', sessionId: sessionId });
         });
         room.onError((code: number, message?: string): void => {
             emitEvent({ type: 'net:error', message: 'Host room error ' + code + ': ' + (message ?? '') });
@@ -230,17 +254,46 @@ export function sendHostMessage(message: HostToServerMessage): void {
     }
 }
 
+export function sendClientMessage(message: ClientToServerMessage): void {
+    if (clientRoom === null) {
+        console.warn('lan client message ignored: not connected');
+        return;
+    }
+
+    try {
+        clientRoom.send(message.type, message);
+    } catch (error) {
+        console.warn('lan client cannot send message', error);
+    }
+}
+
 export async function joinRoom(options: JoinOptions): Promise<JoinResult> {
     if (clientRoom !== null) {
         throw new Error('Already connected to a LAN room.');
     }
 
     const client = new Client('ws://' + options.address + ':' + options.port);
-    const room: ClientRoom = await client.joinOrCreate('cavegame', {
+    const joinPayload = {
         version: options.gameVersion,
         name: options.playerName,
-    });
+    };
+    // 只有主机可以创建房间；客户端必须加入已有房间，否则会触发 onCreate 的 hostToken 校验。
+    const room: ClientRoom = options.roomId
+        ? await client.joinById(options.roomId, joinPayload)
+        : await client.join('cavegame', joinPayload);
     clientRoom = room;
+
+    // 先挂玩家生命周期，避免等待 snapshot 期间错过其他玩家的加入/离开。
+    room.onMessage('player:join', (message: any): void => {
+        const player = message?.player;
+        if (player === null || typeof player !== 'object') {return;}
+        emitEvent({ type: 'player:join', player: player });
+    });
+    room.onMessage('player:leave', (message: any): void => {
+        const playerId: string = String(message?.playerId ?? '');
+        if (playerId === '') {return;}
+        emitEvent({ type: 'player:leave', playerId: playerId });
+    });
 
     try {
         const snapshot = await new Promise<LanSnapshot>((resolve, reject): void => {
@@ -263,8 +316,10 @@ export async function joinRoom(options: JoinOptions): Promise<JoinResult> {
             });
         });
 
-        room.onMessage('player:state', (message: any): void => {
-            emitEvent({ type: 'player:state', data: message });
+        room.onMessage('players:state', (message: any): void => {
+            const players = message?.players;
+            if (!Array.isArray(players)) {return;}
+            emitEvent({ type: 'players:state', players: players });
         });
         room.onMessage('inventory:state', (message: any): void => {
             emitEvent({ type: 'inventory:state', data: message });

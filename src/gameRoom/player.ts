@@ -4,6 +4,8 @@ import { WorldArchive } from '../types/worldArchive.js';
 import { readingWorld, coverWhenSave, eventBusSwitch } from './gameState.js';
 import { notNullUndefined } from '../constants/utils.js';
 import { idOfBlock } from './nature/blockMecha/blocks.js';
+import { HOST_PLAYER_ID } from '../../shared/netProtocol.js';
+import type { PlayerInputState } from '../../shared/netProtocol.js';
 
 export enum playerState {
     normal, swimming
@@ -17,7 +19,8 @@ const swimSpeedRatio: number = 0.4; // 水中水平移动速度比例
 const minRiseVsp: number = 3; // 按住跳跃时的最小上浮速度（像素/帧），决定振幅下限
 const airAccel: number = 0.5; // // 空中按住方向键时水平方向上的加速度
 
-interface Players {
+export interface Players {
+    id: string;
     hp: number;
     face: number;
     x: number;
@@ -47,8 +50,9 @@ interface Players {
     jumpHeld: boolean;
 }
 
-function newPlayers(): Players {
+export function createPlayer(id: string): Players {
     const newPlayer: Players = {
+        id: id,
         hp: 20,
         face: -1,
         x: (world[0].length / 2) * 64,
@@ -96,12 +100,26 @@ export function initPlayerPosition(player: Players): void { // 初始化玩家�
     player.y = i * 64 - 256;
 }
 
-export function playerHurt(player: Players, howmany: number): void {
-    player.hp -= howmany;
-    eventBusSwitch.playerHurt++;
+export function playerHurt(p: Players, howmany: number): void {
+    p.hp -= howmany;
+    if (p === player) {eventBusSwitch.playerHurt++;}
 }
 
-const player: Players = newPlayers();
+const player: Players = createPlayer(HOST_PLAYER_ID);
+export const remotePlayers: Map<string, Players> = new Map();
+export const remoteInputs: Map<string, PlayerInputState> = new Map();
+
+export function createEmptyPlayerInput(): PlayerInputState {
+    return {
+        left: 0,
+        right: 0,
+        jumpHeld: false,
+        jumpPressed: false,
+        acc: 0,
+        face: -1,
+        uiBlocked: false,
+    };
+}
 
 // 某个像素点是否处于水方块中
 function isWaterAt(x: number, y: number): boolean {
@@ -109,117 +127,117 @@ function isWaterAt(x: number, y: number): boolean {
 }
 
 // 刷新玩家状态
-export function updatePlayerState(): void {
-    const headInWater: boolean = isWaterAt(player.x + 32, player.y + 8); // 头顶
-    const bodyInWater: boolean = isWaterAt(player.x + 32, player.y + 64); // 身体中部
-    const feetInWater: boolean = isWaterAt(player.x + 32, player.y + 120); // 脚底
-    const lastState: number = player.state;
-    player.state = (headInWater || bodyInWater || feetInWater) ? playerState.swimming : playerState.normal;
+export function updatePlayerState(p: Players): void {
+    const headInWater: boolean = isWaterAt(p.x + 32, p.y + 8); // 头顶
+    const bodyInWater: boolean = isWaterAt(p.x + 32, p.y + 64); // 身体中部
+    const feetInWater: boolean = isWaterAt(p.x + 32, p.y + 120); // 脚底
+    const lastState: number = p.state;
+    p.state = (headInWater || bodyInWater || feetInWater) ? playerState.swimming : playerState.normal;
 
-    if (lastState !== player.state && player.state === playerState.swimming) {
+    if (p === player && lastState !== p.state && p.state === playerState.swimming) {
         eventBusSwitch.playerFallinWater++;
     }
 }
 
-function playerMove(delta: number): void { // 玩家移动
-    let dir = player.right - player.left;
+function playerMove(p: Players, delta: number): void { // 玩家移动
+    let dir = p.right - p.left;
 
-    if (player.state === playerState.swimming) {
-        player.hsp = dir * (player.move_speed + player.acc) * swimSpeedRatio;
-    } else if (player.can_jump) {
-        player.hsp = dir * (player.move_speed + player.acc);
+    if (p.state === playerState.swimming) {
+        p.hsp = dir * (p.move_speed + p.acc) * swimSpeedRatio;
+    } else if (p.can_jump) {
+        p.hsp = dir * (p.move_speed + p.acc);
     } else if (dir !== 0) {
-        const target: number = dir * (player.move_speed + player.acc);
-        if (player.hsp < target) {
-            player.hsp = Math.min(player.hsp + airAccel * delta, target);
-        } else if (player.hsp > target) {
-            player.hsp = Math.max(player.hsp - airAccel * delta, target);
+        const target: number = dir * (p.move_speed + p.acc);
+        if (p.hsp < target) {
+            p.hsp = Math.min(p.hsp + airAccel * delta, target);
+        } else if (p.hsp > target) {
+            p.hsp = Math.max(p.hsp - airAccel * delta, target);
         }
     } else {
-        if (player.hsp >= 0.3) {player.hsp -= 0.3 * delta;}
-        else if (player.hsp <= -0.3) {player.hsp += 0.3 * delta;}
-        else {player.hsp = 0;}
+        if (p.hsp >= 0.3) {p.hsp -= 0.3 * delta;}
+        else if (p.hsp <= -0.3) {p.hsp += 0.3 * delta;}
+        else {p.hsp = 0;}
     }
 
-    if (player.hsp !== 0) {
-        const edgeX: number = player.x + (player.hsp > 0 ? 64 : 0);
-        if (!place_meeting(edgeX, player.y + 120)
-        && !place_meeting(edgeX, player.y + 20)) {
-            player.x += player.hsp * delta;
+    if (p.hsp !== 0) {
+        const edgeX: number = p.x + (p.hsp > 0 ? 64 : 0);
+        if (!place_meeting(edgeX, p.y + 120)
+        && !place_meeting(edgeX, p.y + 20)) {
+            p.x += p.hsp * delta;
         }
     }
 
     // 改变玩家腿部旋转方向
-    if (player.state === playerState.swimming) {
-        const kicking: boolean = player.left === 1 || player.right === 1 || player.jumpHeld;
-        if (kicking || (player.leg_rad !== 0 && player.leg_rad < 2 * Math.PI)) {
-            player.leg_rad += 0.4 * delta;
-            if (player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
+    if (p.state === playerState.swimming) {
+        const kicking: boolean = p.left === 1 || p.right === 1 || p.jumpHeld;
+        if (kicking || (p.leg_rad !== 0 && p.leg_rad < 2 * Math.PI)) {
+            p.leg_rad += 0.4 * delta;
+            if (p.leg_rad >= 2 * Math.PI){p.leg_rad = 0;}
         }
-    } else if (player.left === 1 || player.right === 1) {
-        player.leg_rad += (0.3 + player.acc / 48) * delta;
-        if (player.leg_rad >= 2 * Math.PI){player.leg_rad = 0;}
+    } else if (p.left === 1 || p.right === 1) {
+        p.leg_rad += (0.3 + p.acc / 48) * delta;
+        if (p.leg_rad >= 2 * Math.PI){p.leg_rad = 0;}
     } else {
-        if (player.leg_rad !== 0 && player.leg_rad < 2 * Math.PI) {
-            player.leg_rad += 0.3 * delta;
-            if (player.leg_rad >= 2 * Math.PI) {player.leg_rad = 0;}
+        if (p.leg_rad !== 0 && p.leg_rad < 2 * Math.PI) {
+            p.leg_rad += 0.3 * delta;
+            if (p.leg_rad >= 2 * Math.PI) {p.leg_rad = 0;}
         }
     }
 
     // 改变玩家手旋转方向
-    if (player.needRotateHand) {
-        if (player.rightOnMouse) {player.isRotateRighthand = true;}
-        else {player.isRotateRighthand = false;}
+    if (p.needRotateHand) {
+        if (p.rightOnMouse) {p.isRotateRighthand = true;}
+        else {p.isRotateRighthand = false;}
 
-        player.hand_rad += 0.3 * delta;
-        if (player.hand_rad >= Math.PI) {
-            player.needRotateHand = false;
-            player.hand_rad = 0;
+        p.hand_rad += 0.3 * delta;
+        if (p.hand_rad >= Math.PI) {
+            p.needRotateHand = false;
+            p.hand_rad = 0;
         }
     } else {
-        player.hand_rad = 0;
+        p.hand_rad = 0;
     }
 }
 
-function playerJump(delta: number): void { // 玩家跳跃（水中为划水与水的阻力）
-    if (isWaterAt(player.x + 32, player.y + 120)) {
-        player.vsp += player.grav * waterGravRatio * delta;
-        if (player.jumpHeld) {player.vsp -= swimThrust * delta;}
-        player.vsp -= player.vsp * waterDrag * delta;
+function playerJump(p: Players, delta: number): void { // 玩家跳跃（水中为划水与水的阻力）
+    if (isWaterAt(p.x + 32, p.y + 120)) {
+        p.vsp += p.grav * waterGravRatio * delta;
+        if (p.jumpHeld) {p.vsp -= swimThrust * delta;}
+        p.vsp -= p.vsp * waterDrag * delta;
 
-        if (player.jumpHeld && player.vsp < 0 && player.vsp > -minRiseVsp) {
-            player.vsp = -minRiseVsp;
+        if (p.jumpHeld && p.vsp < 0 && p.vsp > -minRiseVsp) {
+            p.vsp = -minRiseVsp;
         }
     } else {
-        player.vsp += player.grav * delta;
+        p.vsp += p.grav * delta;
     }
-    if (player.vsp != 0) {
-        for (let i = 0; i < Math.abs(player.vsp); i++) {
-            if (player.vsp > 0) {
-                if (!(place_meeting(player.x+8, player.y+128) || place_meeting(player.x + 56, player.y + 128))) {
-                    player.y++;
+    if (p.vsp != 0) {
+        for (let i = 0; i < Math.abs(p.vsp); i++) {
+            if (p.vsp > 0) {
+                if (!(place_meeting(p.x+8, p.y+128) || place_meeting(p.x + 56, p.y + 128))) {
+                    p.y++;
                 } else {
-                    const fallSpeed = player.vsp;
+                    const fallSpeed = p.vsp;
                     if (fallSpeed > 16) {
-                        playerHurt(player, Math.floor((fallSpeed - 16) / 2)); // 计算摔落伤害
+                        playerHurt(p, Math.floor((fallSpeed - 16) / 2)); // 计算摔落伤害
                     }
 
-                    player.vsp = 0;
-                    player.can_jump = true;
+                    p.vsp = 0;
+                    p.can_jump = true;
                     break;
                 }
             } else {
-                if (!place_meeting(player.x+32, player.y)) {
-                    player.y--;
+                if (!place_meeting(p.x+32, p.y)) {
+                    p.y--;
                 } else {
-                    player.vsp = 0;
+                    p.vsp = 0;
                     break;
                 }
             }
         }
     }
-    if (!(place_meeting(player.x + 8, player.y + 128) || place_meeting(player.x + 56, player.y + 128))){
-        player.can_jump = false;
+    if (!(place_meeting(p.x + 8, p.y + 128) || place_meeting(p.x + 56, p.y + 128))){
+        p.can_jump = false;
     }
 }
 
@@ -233,10 +251,39 @@ function playerLoop(delta: number, uiBlocked: boolean, pointerScreenX: number): 
     player.rightOnMouse = pointerScreenX > player.screen_x + player.width / 2;
 
     if (!uiBlocked && player.hp > 0) {
-        playerMove(delta);
+        playerMove(player, delta);
     }
 
-    if (player.hp > 0) {playerJump(delta);}
+    if (player.hp > 0) {playerJump(player, delta);}
+}
+
+// 主机侧推进一个客户端玩家；输入来自网络，位置/HP 仍由主机权威计算。
+export function stepRemotePlayer(p: Players, delta: number, input: PlayerInputState): void {
+    p.left = input.left;
+    p.right = input.right;
+    p.jumpHeld = input.jumpHeld;
+    p.face = input.face;
+    p.acc = input.acc;
+    p.rightOnMouse = false;
+
+    if (!input.uiBlocked && input.jumpPressed && p.hp > 0 && p.can_jump && p.state !== playerState.swimming) {
+        p.vsp = p.jumpspeed;
+        p.can_jump = false;
+    }
+
+    if (!input.uiBlocked && p.hp > 0) {
+        playerMove(p, delta);
+    }
+
+    if (p.hp > 0) {playerJump(p, delta);}
+    input.jumpPressed = false;
+}
+
+// 客户端本地预测：输入立即推进自己的角色，主机状态随后做软校正。
+// 与主机共用同一套物理，正常网络延迟下两边位置基本一致。
+export function applyClientPrediction(p: Players, delta: number, input: PlayerInputState): void {
+    updatePlayerState(p);
+    stepRemotePlayer(p, delta, input);
 }
 
 export { player, playerLoop };

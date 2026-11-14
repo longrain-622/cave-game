@@ -21,6 +21,9 @@ This is a [2D pixel game] project.
 - File names: `camelCase`.
 - Variables/functions: `camelCase`.
 
+### 4. Game Room Pure Logic Boundary
+- In `./src/gameRoom`, all code outside `game.ts` and the `rendering/`, `net/`, `others/`, and `input/` directories must be pure logic only. It must be fully independent, must not depend on any non-pure-logic modules (rendering, networking, interaction, etc.), must be able to run independently in Node, and must not contain any rendering, interaction, or other non-pure-logic code.
+
 ## Notes
 - [ ] Absolutely prohibited to run any tests (including browser automation, dev server verification, or `npm test`/`vitest`) without explicit user permission.
 - [ ] Do not directly modify files in the `dist/` or `build/` directories.

@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type {
     CavegameLanApi,
+    ClientToServerMessage,
     HostStartOptions,
     HostToServerMessage,
     JoinOptions,
@@ -15,6 +16,9 @@ function main(): void {
         leave: () => ipcRenderer.invoke('lan:leave'),
         sendHostMessage: (message: HostToServerMessage): void => {
             ipcRenderer.send('lan:hostMessage', message);
+        },
+        sendClientMessage: (message: ClientToServerMessage): void => {
+            ipcRenderer.send('lan:clientMessage', message);
         },
         onEvent: (callback: (event: LanEvent) => void): void => {
             ipcRenderer.on('lan:event', (_event, payload: LanEvent): void => {

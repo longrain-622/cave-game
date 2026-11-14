@@ -60,7 +60,7 @@
     "cancel": "취소",
     "selected": "선택됨",
     "joinPending": "LAN 연결은 다음 단계에서 추가됩니다",
-    "spectator": "관전자",
+    "spectator": "플레이어",
     "connecting": "연결 중",
     "connectFailed": "연결 실패",
     "invalidAddress": "주소는 IP 또는 IP:포트 형식이어야 합니다",

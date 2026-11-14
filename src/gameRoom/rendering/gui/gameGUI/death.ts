@@ -6,6 +6,8 @@ import { apiObjects } from "../../../../apiox/dom.js";
 import * as PIXI from 'pixi.js';
 import { quitGame } from "../../../others/gameContent.js";
 import { respawnPlayer } from "../../../gui/gameGUI/death.js";
+import { requestRespawn } from "../../../net/clientNet.js";
+import { isClient } from "../../../session.js";
 import { uistate } from "../../../gui/uiState.js";
 import { ensureGuiMounted, deathContainer } from "../application.js";
 import { showExitPage } from "../contentGUI/exitingPage.js";
@@ -118,6 +120,10 @@ function initDeathUI(): void {
 
     // 点击复活
     deathPixi.buttonSprite_continue.on('click', (): void => {
+        if (isClient()) {
+            requestRespawn();
+            return;
+        }
         respawnPlayer();
     });
 

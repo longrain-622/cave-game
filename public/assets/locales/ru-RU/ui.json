@@ -60,7 +60,7 @@
     "cancel": "Отмена",
     "selected": "Выбрано",
     "joinPending": "Подключение по LAN будет добавлено на следующем этапе",
-    "spectator": "Наблюдатель",
+    "spectator": "Игрок",
     "connecting": "Подключение…",
     "connectFailed": "Не удалось подключиться",
     "invalidAddress": "Адрес должен быть IP или IP:порт",

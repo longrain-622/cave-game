@@ -60,7 +60,7 @@
     "cancel": "Avbryt",
     "selected": "Vald",
     "joinPending": "LAN-anslutning läggs till i nästa steg",
-    "spectator": "Åskådare",
+    "spectator": "Spelare",
     "connecting": "Ansluter…",
     "connectFailed": "Anslutningen misslyckades",
     "invalidAddress": "Adressen måste vara en IP eller IP:port",

@@ -2,7 +2,11 @@ import { Room, ServerError } from '@colyseus/core';
 import type { Client } from '@colyseus/core';
 import type {
     InventoryStateMessage,
-    PlayerStateMessage,
+    PlayerInputMessage,
+    PlayerJoinMessage,
+    PlayerLeaveMessage,
+    PlayerRespawnMessage,
+    PlayerStatesMessage,
     SnapshotMessage,
     TimeMessage,
     WorldChunkMessage,
@@ -69,9 +73,36 @@ export class CaveRoom extends Room {
             this.broadcastToSpectators('world:chunk', message);
         });
 
-        this.onMessage('player:state', (client: Client, message: PlayerStateMessage): void => {
+        this.onMessage('players:state', (client: Client, message: PlayerStatesMessage): void => {
             if (!this.isHost(client)) {return;}
-            this.broadcastToSpectators('player:state', message);
+            this.broadcastToSpectators('players:state', message);
+        });
+
+        this.onMessage('player:join', (client: Client, message: PlayerJoinMessage): void => {
+            if (!this.isHost(client)) {return;}
+            this.broadcastToSpectators('player:join', message);
+        });
+
+        this.onMessage('player:leave', (client: Client, message: PlayerLeaveMessage): void => {
+            if (!this.isHost(client)) {return;}
+            this.broadcastToSpectators('player:leave', message);
+        });
+
+        this.onMessage('player:input', (client: Client, message: PlayerInputMessage): void => {
+            if (this.isHost(client)) {return;}
+            if (message === null || typeof message !== 'object' || message.type !== 'player:input') {return;}
+            this.sendToHost('player:input', {
+                sessionId: client.sessionId,
+                input: message,
+            });
+        });
+
+        this.onMessage('player:respawn', (client: Client, message: PlayerRespawnMessage): void => {
+            if (this.isHost(client)) {return;}
+            if (message === null || typeof message !== 'object' || message.type !== 'player:respawn') {return;}
+            this.sendToHost('player:respawn', {
+                sessionId: client.sessionId,
+            });
         });
 
         this.onMessage('inventory:state', (client: Client, message: InventoryStateMessage): void => {
@@ -123,7 +154,7 @@ export class CaveRoom extends Room {
             return;
         }
 
-        const name: string = options && typeof options.name === 'string' ? options.name : 'Spectator';
+        const name: string = options && typeof options.name === 'string' ? options.name : 'Player';
         this.sendToHost('peer:join', { sessionId: client.sessionId, name: name });
     }
 

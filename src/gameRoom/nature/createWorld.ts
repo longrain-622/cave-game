@@ -1,6 +1,6 @@
 import { world_height, pushChunkToWorld, chunk, loadWorld, sealevel, loadPalette, resetPalette, migrateWorldToPalette, getBlockState, registerBlockState, newBlockState } from "../world.js";
 import { getRandomInt } from "../../constants/utils.js";
-import { initPlayerPosition, player } from "../player.js";
+import { initPlayerPosition, player, remotePlayers } from "../player.js";
 import { idOfBlock } from "./blockMecha/blocks.js";
 import { readingWorld, coverWhenSave } from "../gameState.js";
 import { notNullUndefined } from "../../constants/utils.js";
@@ -427,10 +427,17 @@ function generateCacti(worlding: number[][], toIndex: (id: number) => number): v
 }
 
 function createChunkAnyTime(): boolean | null {
-    if (player.x - chunk.lookRange * 64 <= 0) {
+    let minX: number = player.x;
+    let maxX: number = player.x;
+    for (const remote of remotePlayers.values()) {
+        if (remote.x < minX) {minX = remote.x;}
+        if (remote.x > maxX) {maxX = remote.x;}
+    }
+
+    if (minX - chunk.lookRange * 64 <= 0) {
         createChunk(-chunk.width * (chunk.left_number + 1), false);
         return false;
-    } else if (player.x + chunk.lookRange * 64 >= chunk.num * chunk.width * 64) {
+    } else if (maxX + chunk.lookRange * 64 >= chunk.num * chunk.width * 64) {
         createChunk(chunk.start_x, true);
         return true;
     }

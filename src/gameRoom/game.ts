@@ -1,4 +1,4 @@
-import { player, playerLoop, updatePlayerState } from './player.js';
+import { player, playerLoop, updatePlayerState, remotePlayers, remoteInputs, stepRemotePlayer, createEmptyPlayerInput, applyClientPrediction } from './player.js';
 import { room } from '../constants/generic.js';
 import { mouse, mouseAct } from './input/mouseInput.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
@@ -39,6 +39,7 @@ import { eventBus } from './others/eventBus.js';
 import { isClient } from './session.js';
 import { clientNetTick } from './net/clientNet.js';
 import { checkEventBus } from '../others/eventFunctionUser.js';
+import { clientInputTick } from './input/keyboardInput.js';
 
 export const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
 
@@ -55,8 +56,12 @@ function logicLoop(delta: number): void {
         eventBus.emit('chunk:create', newChunkBehind);
     }
     blockFrameLoop(delta);
-    updatePlayerState();
+    updatePlayerState(player);
     playerLoop(delta, uistate.invenUI_isOpening(), mouse.x);
+    for (const remote of remotePlayers.values()) {
+        updatePlayerState(remote);
+        stepRemotePlayer(remote, delta, remoteInputs.get(remote.id) ?? createEmptyPlayerInput());
+    }
     mouseAct(delta);
     natureSpawnAnimals(delta);
     if (animalArray.length > 0) {animalsLoop(delta);}
@@ -94,8 +99,10 @@ function renderingLoop(): void {
     updateDebugScreen();
 }
 
-// 客户端只做从主机状态渲染
+// 客户端：本地预测自己的移动，远端玩家与主机状态由网络层驱动
 function clientLogicLoop(delta: number): void {
+    const input = clientInputTick();
+    applyClientPrediction(player, delta, input);
     clientNetTick(delta);
     blockFrameLoop(delta);
     if (player.hp > 0) {heartsAct(delta);}

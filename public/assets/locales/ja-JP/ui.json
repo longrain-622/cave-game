@@ -60,7 +60,7 @@
     "cancel": "キャンセル",
     "selected": "選択中",
     "joinPending": "LAN接続は次のステップで追加されます",
-    "spectator": "観戦者",
+    "spectator": "プレイヤー",
     "connecting": "接続中",
     "connectFailed": "接続に失敗しました",
     "invalidAddress": "アドレスは IP または IP:ポートで指定してください",

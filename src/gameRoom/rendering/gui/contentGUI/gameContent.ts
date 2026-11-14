@@ -125,8 +125,8 @@ function updateLanStatus(count: number): void {
         return;
     }
 
-    const spectatorLabel: string = window.t ? window.t('multiplayer.spectator') : 'spectator';
-    hostStatusText.text = 'LAN ' + hostingAddress + ' · ' + String(count) + ' ' + spectatorLabel;
+    const playerLabel: string = window.t ? window.t('multiplayer.spectator') : 'player';
+    hostStatusText.text = 'LAN ' + hostingAddress + ' · ' + String(count) + ' ' + playerLabel;
 }
 
 async function toggleLanHost(): Promise<void> {
@@ -160,6 +160,8 @@ async function toggleLanHost(): Promise<void> {
     openLanBtn.sprite.eventMode = 'none';
 
     try {
+        // 重新开房前清掉上一局的 peer/世界事件，避免回放出幽灵玩家
+        apioxNet.clearEventLog();
         const result = await apioxNet.startHost({
             worldName: worldName,
             gameVersion: version,
@@ -247,7 +249,7 @@ function setupPauseMenu(): void {
     });
 
     if (clientRole) {
-        hostStatusText.text = window.t ? window.t('multiplayer.spectator') : 'Spectator';
+        hostStatusText.text = window.t ? window.t('multiplayer.spectator') : 'Player';
     }
 
     void loadGameContentTexts();
