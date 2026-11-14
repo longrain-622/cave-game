@@ -2,10 +2,15 @@ import * as PIXI from 'pixi.js';
 import { ApioxObject, apiObjects } from '../apiox/dom.js';
 import { ApioxKeyboardEvent } from '../apiox/event.js';
 import { apiMethod } from '../apiox/method.js';
-import { win } from '../apiox/global.js';
 import { room } from '../constants/generic.js';
 import { textStyle1 } from '../constants/pixiStyles.js';
 import { getContentApp, showArchiveSurface, showStartSurface } from './contentRenderer.js';
+import { apioxNet } from '../apiox/net.js';
+import { setReadingWorld } from '../gameRoom/gameState.js';
+import { setNetRole } from '../gameRoom/net/session.js';
+import { version } from '../constants/generic.js';
+import type { WorldArchive } from '../types/worldArchive.js';
+import type { LanEvent, LanSnapshot, LanWorldEntry } from '../../shared/netProtocol.js';
 
 // 与单人世界列表保持一致的行布局参数
 const BLACKBG_HEIGHT: number = Math.floor(room.height * 0.6);
@@ -20,17 +25,6 @@ const SUB_Y: number = ROW_HEIGHT - SUB_FONT_SIZE - 2;
 const SCROLLBAR_WIDTH: number = 16;
 const SCROLLBAR_MARGIN: number = 0;
 const DEFAULT_PORT: number = 2567;
-const LAN_MOCK_KEY: string = 'cavegame_lan_mock';
-
-export interface LanWorldEntry {
-    id: string;
-    worldName: string;
-    hostName: string;
-    players: number;
-    maxPlayers: number;
-    address: string;
-    port: number;
-}
 
 interface WorldRow {
     container: PIXI.Container;
@@ -61,24 +55,23 @@ interface UiRefs {
     addressInput: ApioxObject;
 }
 
-// 开发预览数据：仅在 dev 且 localStorage.cavegame_lan_mock = '1' 时显示
-const MOCK_LAN_WORLDS: LanWorldEntry[] = [
-    { id: 'lan-mock-1', worldName: 'Cave World', hostName: 'Steve', players: 1, maxPlayers: 4, address: '192.168.1.10', port: 2567 },
-    { id: 'lan-mock-2', worldName: 'The Long Night', hostName: 'Alex', players: 2, maxPlayers: 4, address: '192.168.1.11', port: 2567 },
-    { id: 'lan-mock-3', worldName: '挖矿基地', hostName: 'LongRain', players: 1, maxPlayers: 4, address: '192.168.1.12', port: 2567 },
-    { id: 'lan-mock-4', worldName: 'Snow Peak', hostName: 'Huang', players: 3, maxPlayers: 4, address: '192.168.1.13', port: 2567 },
-    { id: 'lan-mock-5', worldName: 'Desert Cave', hostName: 'Notch', players: 1, maxPlayers: 4, address: '192.168.1.14', port: 2567 },
-    { id: 'lan-mock-6', worldName: 'Test World', hostName: 'Player', players: 2, maxPlayers: 4, address: '192.168.1.15', port: 2567 },
-    { id: 'lan-mock-7', worldName: '像素冒险', hostName: 'Kai', players: 4, maxPlayers: 4, address: '192.168.1.16', port: 2567 },
-];
-
 let ui: UiRefs | null = null;
 let rows: WorldRow[] = [];
 let currentWorlds: LanWorldEntry[] = [];
+let discoveredWorlds: LanWorldEntry[] = [];
+let discoverySignature: string = '';
+let multiplayerVisible: boolean = false;
 let selectedId: string | null = null;
 let scrollY: number = 0;
 let maxScroll: number = 0;
 let dragData: { startY: number; startScroll: number } | null = null;
+let joining: boolean = false;
+let enteredGame: boolean = false;
+let enterGameCallback: (() => void) | null = null;
+
+export function setEnterGameCallback(callback: () => void): void {
+    enterGameCallback = callback;
+}
 
 function getUi(): UiRefs {
     if (ui === null) {
@@ -97,10 +90,37 @@ function setStatus(text: string): void {
 }
 
 function readLanWorlds(): LanWorldEntry[] {
-    if (import.meta.env.DEV && win.storage.get(LAN_MOCK_KEY) === '1') {
-        return MOCK_LAN_WORLDS;
+    return discoveredWorlds;
+}
+
+function worldsSignature(worlds: LanWorldEntry[]): string {
+    return worlds
+        .map((world: LanWorldEntry): string => (
+            world.id + ':' + world.worldName + ':' + world.hostName + ':' +
+            world.players + ':' + world.maxPlayers + ':' + world.address + ':' + world.port
+        ))
+        .join('|');
+}
+
+function handleNetEvent(event: LanEvent): void {
+    if (event.type !== 'discovered:worlds') {return;}
+
+    const nextSignature: string = worldsSignature(event.worlds);
+    if (nextSignature === discoverySignature) {return;}
+
+    discoverySignature = nextSignature;
+    discoveredWorlds = event.worlds;
+    if (multiplayerVisible) {refreshWorldList();}
+}
+
+async function refreshDiscoveryList(): Promise<void> {
+    try {
+        await apioxNet.refreshDiscovery();
+        discoveredWorlds = await apioxNet.getDiscoveredWorlds();
+    } catch (error) {
+        console.warn('cannot refresh LAN discovery', error);
     }
-    return [];
+    refreshWorldList();
 }
 
 function formatAddress(entry: LanWorldEntry): string {
@@ -282,11 +302,83 @@ function selectWorld(entry: LanWorldEntry): void {
     setStatus(getText('multiplayer.selected') + ': ' + entry.worldName);
 }
 
-function joinSelected(): void {
+function toWorldArchive(snapshot: LanSnapshot): WorldArchive {
+    return {
+        version: snapshot.version,
+        name: snapshot.name,
+        lastTime: '',
+        world: snapshot.world,
+        palette: snapshot.palette,
+        lowest_point: snapshot.lowestPoint,
+        left_number: snapshot.leftNumber,
+        player: snapshot.player,
+        animals: [],
+        inventory: snapshot.inventory,
+        chests: [],
+        furnaces: [],
+        entityBlocks: [],
+        skyTimer: snapshot.skyTimer,
+        seed: snapshot.seed,
+    };
+}
+
+async function enterWorldFromSnapshot(snapshot: LanSnapshot, sessionId: string): Promise<void> {
+    if (enterGameCallback === null) {
+        throw new Error('The game entry callback is not ready.');
+    }
+
+    multiplayerVisible = false;
+    void apioxNet.stopDiscovery().catch((error) => {
+        console.warn('cannot stop LAN discovery', error);
+    });
+
+    const { setWorldName } = await import('../gameRoom/world.js');
+    setWorldName(snapshot.name);
+    setReadingWorld(toWorldArchive(snapshot));
+    setNetRole('client', sessionId);
+    enteredGame = true;
+    enterGameCallback();
+}
+
+async function joinLanTarget(address: string, port: number): Promise<void> {
+    if (joining || enteredGame) {return;}
+
+    const u = getUi();
+    joining = true;
+    u.joinBtn.domProperty('disabled', true);
+    u.directBtn.domProperty('disabled', true);
+    setStatus(getText('multiplayer.connecting') + ' ' + address + ':' + String(port));
+
+    try {
+        const result = await apioxNet.join({
+            address: address,
+            port: port,
+            gameVersion: version,
+            playerName: 'Spectator',
+        });
+        await enterWorldFromSnapshot(result.snapshot, result.sessionId);
+    } catch (error) {
+        try {
+            await apioxNet.leave();
+        } catch (leaveError) {
+            console.warn('cannot clean up failed LAN join', leaveError);
+        }
+        const message: string = error instanceof Error ? error.message : String(error);
+        setStatus(getText('multiplayer.connectFailed') + ': ' + message);
+    } finally {
+        joining = false;
+        if (!enteredGame) {
+            u.joinBtn.domProperty('disabled', selectedId === null);
+            u.directBtn.domProperty('disabled', false);
+        }
+    }
+}
+
+async function joinSelected(): Promise<void> {
+    if (selectedId === null) {return;}
     const entry: LanWorldEntry | undefined = currentWorlds.find((world: LanWorldEntry): boolean => world.id === selectedId);
     if (entry === undefined) {return;}
-
-    setStatus(getText('multiplayer.selected') + ': ' + entry.worldName + ' — ' + getText('multiplayer.joinPending'));
+    await joinLanTarget(entry.address, entry.port);
 }
 
 function openDirectPanel(): void {
@@ -301,7 +393,7 @@ function closeDirectPanel(): void {
     setStatus('');
 }
 
-function connectManual(): void {
+async function connectManual(): Promise<void> {
     const u = getUi();
     const raw: string = String(u.addressInput.getProperty('value') ?? '');
     const target: { address: string; port: number } | null = parseManualAddress(raw);
@@ -312,7 +404,7 @@ function connectManual(): void {
     }
 
     u.directPanel.hide();
-    setStatus(getText('multiplayer.directConnect') + ': ' + target.address + ':' + target.port + ' — ' + getText('multiplayer.joinPending'));
+    await joinLanTarget(target.address, target.port);
 }
 
 export function showMultiplayerWorld(): void {
@@ -330,12 +422,22 @@ export function showMultiplayerWorld(): void {
         showArchiveSurface(blackbg, room.width, BLACKBG_HEIGHT);
     }
 
+    multiplayerVisible = true;
+    void apioxNet.startDiscovery().catch((error) => {
+        console.warn('cannot start LAN discovery', error);
+    });
+
     setStatus('');
     refreshWorldList();
 }
 
 export function hideMultiplayerWorld(): void {
     const u = getUi();
+
+    multiplayerVisible = false;
+    void apioxNet.stopDiscovery().catch((error) => {
+        console.warn('cannot stop LAN discovery', error);
+    });
 
     u.directPanel.hide();
     u.multiplayerWorld.hide();
@@ -401,17 +503,18 @@ function main(): void {
         addressInput: new ApioxObject('multiplayerAddress'),
     };
     ui = refs;
+    apioxNet.onEvent(handleNetEvent);
 
-    refs.joinBtn.on('click', (): void => { joinSelected(); });
+    refs.joinBtn.on('click', (): void => { void joinSelected(); });
     refs.directBtn.on('click', (): void => { openDirectPanel(); });
-    refs.refreshBtn.on('click', (): void => { refreshWorldList(); });
+    refs.refreshBtn.on('click', (): void => { void refreshDiscoveryList(); });
     refs.exitBtn.on('click', (): void => { hideMultiplayerWorld(); });
-    refs.connectBtn.on('click', (): void => { connectManual(); });
+    refs.connectBtn.on('click', (): void => { void connectManual(); });
     refs.cancelBtn.on('click', (): void => { closeDirectPanel(); });
     refs.addressInput.on('keydown', (event): void => {
         const keyEvent = event as ApioxKeyboardEvent;
         if (keyEvent.key === 'Enter') {
-            connectManual();
+            void connectManual();
         } else if (keyEvent.key === 'Escape') {
             closeDirectPanel();
         }

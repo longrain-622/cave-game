@@ -5,6 +5,7 @@ import { mouse } from '../mouse.js';
 import { animalArray } from '../animals/animalIds.js';
 import { animalInjured } from '../animals/instance/generic.js';
 import { eventBus } from '../others/eventBus.js';
+import { isClient } from '../net/session.js';
 
 function onClick(): void {
     if (mouse.can_use) { // 攻击动物
@@ -24,6 +25,7 @@ function onClick(): void {
 }
 
 function main(): void {
+    if (isClient()) {return;}
     apioxEvent.listenGlobal('click', onClick);
 }
 main();

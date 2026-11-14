@@ -8,6 +8,7 @@
     "title": "ゲームメニュー",
     "backToGame": "ゲームに戻る",
     "openLAN": "LANに公開",
+    "stopLAN": "LAN公開を停止",
     "exitToContent": "保存してタイトル画面に戻る"
   },
   "exitingPage": {

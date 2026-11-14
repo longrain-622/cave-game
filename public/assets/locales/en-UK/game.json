@@ -8,6 +8,7 @@
     "title": "Game Menu",
     "backToGame": "Return to Game",
     "openLAN": "Open to LAN",
+    "stopLAN": "Stop LAN",
     "exitToContent": "Back to Title Screen"
   },
   "exitingPage": {

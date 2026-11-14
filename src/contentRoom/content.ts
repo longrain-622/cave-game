@@ -3,7 +3,7 @@ import { disableGlobalContextMenu } from '../apiox/method.js';
 import { apioxEvent } from '../apiox/event.js';
 import { create_btn, getSelectedWorldName, showWorldWindow } from './editWorld.js';
 import { initContentRenderer } from './contentRenderer.js';
-import { showMultiplayerWorld } from './multiplayerWorld.js';
+import { setEnterGameCallback, showMultiplayerWorld } from './multiplayerWorld.js';
 import { getRandomInt } from '../constants/utils.js';
 import { room } from '../constants/generic.js';
 
@@ -73,6 +73,7 @@ multiPlayerHoverZone.on('click', (): void => {
 
 // 进入游戏
 function gotoGame(): void { _room_ = 1; gameRoom.show(); content.hide(); }
+setEnterGameCallback(gotoGame);
 create_btn.on('click', async (): Promise<void> => {
     const inputVal: string = worldNameInput.getProperty('value');
     if (inputVal !== '') { await applyWorldName(inputVal); }

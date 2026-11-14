@@ -7,6 +7,10 @@ import { quitGame } from "../../../gui/contentGUI/gameContent.js";
 import { guiApp, buttonTextures } from "../application.js";
 import { showExitPage } from "./exitingPage.js";
 import * as PIXI from 'pixi.js';
+import { version } from '../../../../constants/generic.js';
+import { apioxNet } from '../../../../apiox/net.js';
+import { isClient } from '../../../net/session.js';
+import { worldName } from '../../../world.js';
 
 // 按钮尺寸
 const btnW = 200;
@@ -33,6 +37,7 @@ interface GameContentTexts {
     backToGame: string;
     exitToContent: string;
     openLAN: string;
+    stopLAN: string;
 }
 
 const gameContent = new PIXI.Container();
@@ -43,6 +48,11 @@ let topBtn: ContentButton;
 let openLanBtn: ContentButton;
 let bottomBtn: ContentButton;
 let contentButtons: ContentButton[] = [];
+let hostStatusText: PIXI.Text | null = null;
+let isHosting: boolean = false;
+let openLanLabelStart: string = '';
+let openLanLabelStop: string = '';
+let hostingAddress: string = '';
 
 function initContentButton(
     cx: number,
@@ -94,15 +104,89 @@ function layoutContentButtons(buttons: ContentButton[]): void {
 async function loadGameContentTexts(): Promise<void> {
     try {
         const data = await apioxHttp.get<{ gameContent: GameContentTexts }>(`assets/locales/${getLang()}/game.json`);
-        const specificOrder = ['title', 'backToGame', 'exitToContent', 'openLAN'] as const;
-        const [titleText, backText, exitText, lanText] = specificOrder.map(key => data.gameContent[key]);
+        const specificOrder = ['title', 'backToGame', 'exitToContent', 'openLAN', 'stopLAN'] as const;
+        const [titleText, backText, exitText, lanText, stopLanText] = specificOrder.map(key => data.gameContent[key]);
 
         txt.title.text = titleText;
         topBtn.label.text = backText;
         bottomBtn.label.text = exitText;
-        openLanBtn.label.text = lanText;
+        openLanLabelStart = lanText;
+        openLanLabelStop = stopLanText;
+        openLanBtn.label.text = isHosting ? stopLanText : lanText;
     } catch (error) {
         console.error('load game text error', error);
+    }
+}
+
+function updateLanStatus(count: number): void {
+    if (hostStatusText === null) {return;}
+    if (!isHosting) {
+        hostStatusText.text = '';
+        return;
+    }
+
+    const spectatorLabel: string = window.t ? window.t('multiplayer.spectator') : 'spectator';
+    hostStatusText.text = 'LAN ' + hostingAddress + ' · ' + String(count) + ' ' + spectatorLabel;
+}
+
+async function toggleLanHost(): Promise<void> {
+    if (isClient() || hostStatusText === null) {return;}
+
+    if (!apioxNet.isAvailable()) {
+        console.error('LAN bridge unavailable: window.cavegameLan is undefined');
+        hostStatusText.text = window.t
+            ? window.t('multiplayer.desktopOnly')
+            : 'LAN is only available in the Electron desktop app.';
+        return;
+    }
+
+    if (isHosting) {
+        try {
+            const { stopHosting } = await import('../../../net/hostNet.js');
+            stopHosting();
+            await apioxNet.stopHost();
+        } catch (error) {
+            console.warn('cannot stop LAN hosting', error);
+        }
+
+        isHosting = false;
+        hostingAddress = '';
+        if (openLanLabelStart !== '') {openLanBtn.label.text = openLanLabelStart;}
+        updateLanStatus(0);
+        return;
+    }
+
+    hostStatusText.text = window.t ? window.t('multiplayer.connecting') : 'Starting LAN...';
+    openLanBtn.sprite.eventMode = 'none';
+
+    try {
+        const result = await apioxNet.startHost({
+            worldName: worldName,
+            gameVersion: version,
+            hostName: 'Host',
+        });
+        isHosting = true;
+        hostingAddress = (result.addresses[0] ?? '127.0.0.1') + ':' + String(result.port);
+        if (openLanLabelStop !== '') {openLanBtn.label.text = openLanLabelStop;}
+
+        const { startHosting } = await import('../../../net/hostNet.js');
+        startHosting((count: number): void => { updateLanStatus(count); });
+        console.log('LAN host addresses', result.addresses, 'port', result.port);
+        updateLanStatus(0);
+    } catch (error) {
+        console.error('LAN host failed', error);
+        try {
+            await apioxNet.stopHost();
+        } catch (stopError) {
+            console.warn('cannot clean up failed LAN host', stopError);
+        }
+        isHosting = false;
+        hostingAddress = '';
+        const failedLabel: string = window.t ? window.t('multiplayer.connectFailed') : 'LAN failed';
+        hostStatusText.text = failedLabel + ': ' + (error instanceof Error ? error.message : String(error));
+        if (openLanLabelStart !== '') {openLanBtn.label.text = openLanLabelStart;}
+    } finally {
+        openLanBtn.sprite.eventMode = 'static';
     }
 }
 
@@ -122,7 +206,13 @@ function setupPauseMenu(): void {
     topBtn = initContentButton(centerX, centerY);
     openLanBtn = initContentButton(centerX, centerY);
     bottomBtn = initContentButton(centerX, centerY);
-    contentButtons = [topBtn, openLanBtn, bottomBtn];
+
+    const clientRole: boolean = isClient();
+    contentButtons = clientRole ? [topBtn, bottomBtn] : [topBtn, openLanBtn, bottomBtn];
+    if (clientRole) {
+        openLanBtn.sprite.visible = false;
+        openLanBtn.label.visible = false;
+    }
     layoutContentButtons(contentButtons);
 
     for (const button of contentButtons) {gameContent.addChild(button.sprite);}
@@ -135,6 +225,16 @@ function setupPauseMenu(): void {
     }
     gameContent.addChild(txt.title);
 
+    hostStatusText = new PIXI.Text('', textStyle2());
+    hostStatusText.style.fontSize = 16;
+    hostStatusText.style.fill = '#cccccc';
+    hostStatusText.style.wordWrap = true;
+    hostStatusText.style.wordWrapWidth = 1000;
+    hostStatusText.style.align = 'center';
+    hostStatusText.anchor.set(0.5);
+    hostStatusText.position.set(centerX, 540);
+    gameContent.addChild(hostStatusText);
+
     topBtn.sprite.on('pointerdown', () => {
         uistate.gameContent_isOpening = false;
     });
@@ -142,6 +242,13 @@ function setupPauseMenu(): void {
         showExitPage();
         await quitGame();
     });
+    openLanBtn.sprite.on('pointerdown', (): void => {
+        void toggleLanHost();
+    });
+
+    if (clientRole) {
+        hostStatusText.text = window.t ? window.t('multiplayer.spectator') : 'Spectator';
+    }
 
     void loadGameContentTexts();
 }

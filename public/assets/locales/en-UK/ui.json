@@ -60,6 +60,10 @@
     "cancel": "Cancel",
     "selected": "Selected",
     "joinPending": "LAN connection will be added in the next step",
+    "spectator": "Spectator",
+    "connecting": "Connecting",
+    "connectFailed": "Connection failed",
+    "desktopOnly": "LAN is only available in the Electron desktop app.",
     "invalidAddress": "Address must be an IP or IP:port"
   },
   "loadPage": {

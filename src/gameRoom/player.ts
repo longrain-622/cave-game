@@ -9,6 +9,7 @@ import { readingWorld, coverWhenSave } from './gameState.js';
 import { apioxEvent } from '../apiox/event.js';
 import { notNullUndefined } from '../constants/utils.js';
 import { idOfBlock } from './nature/blockMecha/blocks.js';
+import { isClient } from './net/session.js';
 
 export enum playerState {
     normal, swimming
@@ -274,7 +275,7 @@ function playerJump(delta: number): void { // 玩家跳跃（水中为划水与�
 function main(): void {
     initPlayer(player, readingWorld);
     enableKeyDoubleClickDetection();
-    registerPlayerInput();
+    if (!isClient()) {registerPlayerInput();}
 }
 main();
 

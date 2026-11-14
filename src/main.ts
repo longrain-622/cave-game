@@ -1,6 +1,7 @@
 // main.ts
 import { contentLoop, _room_ } from './contentRoom/content.js';
 import { loadScripts } from './LoadScripts.js';
+import { isClient } from './gameRoom/net/session.js';
 import { Ticker } from 'pixi.js';
 
 let gameLoopFn: ((delta: number) => void) | null = null;
@@ -13,6 +14,13 @@ async function ensureGameLoaded(): Promise<void> {
     await loadScripts(); // Load all modules
     const gameModule = await import('./gameRoom/game.js');
     gameLoopFn = gameModule.gameLoop;
+
+    // 客户端必须在全部游戏模块（尤其 offsetElements）加载完成后再开始消费网络事件。
+    if (isClient()) {
+        const netModule = await import('./gameRoom/net/clientNet.js');
+        netModule.startClientNet();
+    }
+
     gameLoaded = true;
     loading = false;
     console.log('Game ready');

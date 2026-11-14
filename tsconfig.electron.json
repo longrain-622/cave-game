@@ -22,6 +22,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["electron/**/*.cts", "scripts/**/*.mts"],
+  "include": ["electron/**/*.cts", "scripts/**/*.mts", "shared/**/*.ts"],
   "exclude": ["node_modules", "electron-build", "dist", "release"]
 }

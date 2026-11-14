@@ -20,6 +20,7 @@ import '../others/audioManager.js';
 import { apioxEvent, ApioxMouseEvent } from '../../apiox/event.js';
 import { ApioxObject } from '../../apiox/dom.js';
 import { mouse, Mouse } from '../mouse.js';
+import { isClient } from '../net/session.js';
 
 export { mouse };
 export type { Mouse };
@@ -216,6 +217,7 @@ export function mouseAct(delta: number): void {
 }
 
 function main(): void {
+    if (isClient()) {return;}
     apioxEvent.onMouseMove(onMouseMove);
     apioxEvent.onMouseDown(onMouseDown);
     apioxEvent.onMouseUp(onMouseUp);

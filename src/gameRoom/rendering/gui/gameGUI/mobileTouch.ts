@@ -2,12 +2,13 @@ import * as PIXI from 'pixi.js';
 import { genericTextStyle } from '../../rendering.js';
 import { getSetting } from '../../../../constants/settingConfig.js';
 import { apioxEvent } from '../../../../apiox/event.js';
+import { isClient } from '../../../net/session.js';
 
 interface TouchButton {
     anchor_x: number; anchor_y: number;
-    key: string; //按下时触发的键盘或鼠标
+    key: string; // 按下时触发的键盘或鼠标
     visible: boolean;
-    size: number; //大小 = size * 32
+    size: number; // 大小 = size * 32
 }
 
 const defaultTouchButton: TouchButton = {
@@ -24,6 +25,7 @@ function newTouchButton(overrides: Partial<TouchButton>): TouchButton {
 let TouchButton_added: TouchButton[] = [];
 
 export function initTouchButtons(app: PIXI.Application) {
+    if (isClient()) {return;}
     const { width, height } = app.screen;
 
     TouchButton_added.forEach(btn => {
@@ -44,7 +46,7 @@ export function initTouchButtons(app: PIXI.Application) {
         container.eventMode = 'static';
         container.cursor = 'pointer';
 
-        //背景
+        // 背景
         const bg: PIXI.Graphics = new PIXI.Graphics();
         bg.beginFill(0x000000, 0.5);
         bg.lineStyle(2, 0xffffff, 1);
@@ -52,15 +54,15 @@ export function initTouchButtons(app: PIXI.Application) {
         bg.endFill();
         container.addChild(bg);
 
-        //添加遮罩层（按下时显示，以改变背景外观）
+        // 添加遮罩层（按下时显示，以改变背景外观）
         const overlay: PIXI.Graphics = new PIXI.Graphics();
         overlay.beginFill(0x000000, 0.3);
         overlay.drawRect(0, 0, sizePx, sizePx);
         overlay.endFill();
-        overlay.visible = false; //默认隐藏
-        container.addChild(overlay); //放在文字之前
+        overlay.visible = false; // 默认隐藏
+        container.addChild(overlay); // 放在文字之前
 
-        //文字
+        // 文字
         const text: PIXI.Text = new PIXI.Text(btn.key.toUpperCase(), genericTextStyle());
         text.style.fontSize = 40;
         text.anchor.set(0.5);
@@ -68,7 +70,7 @@ export function initTouchButtons(app: PIXI.Application) {
         text.y = sizePx / 2;
         container.addChild(text);
 
-        //事件绑定（使用 Event 类型）
+        // 事件绑定（使用 Event 类型）
         const eventOptions = {
             key: btn.key,
             code: 'Key' + btn.key.toUpperCase(),

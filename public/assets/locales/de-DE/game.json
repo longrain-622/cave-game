@@ -8,6 +8,7 @@
     "title": "Spielmenü",
     "backToGame": "Zurück zum Spiel",
     "openLAN": "Für LAN öffnen",
+    "stopLAN": "LAN beenden",
     "exitToContent": "Speichern und zum Titelbildschirm zurückkehren"
   },
   "exitingPage": {

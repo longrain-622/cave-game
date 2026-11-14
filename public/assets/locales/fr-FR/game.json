@@ -8,6 +8,7 @@
     "title": "Menu du jeu",
     "backToGame": "Retour au jeu",
     "openLAN": "Ouvrir au réseau local",
+    "stopLAN": "Arrêter le réseau local",
     "exitToContent": "Sauvegarder et revenir à l'écran titre"
   },
   "exitingPage": {

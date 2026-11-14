@@ -7,5 +7,6 @@ declare global {
     webkitAudioContext: typeof AudioContext;
     applyI18nToElement?: (element: Element) => void;
     t?: (path: string) => string;
+    cavegameLan?: import('../../shared/netProtocol.js').CavegameLanApi;
   }
 }

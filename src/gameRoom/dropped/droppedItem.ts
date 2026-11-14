@@ -8,6 +8,7 @@ import { idOfItem } from './items.js';
 import { idOfBlock } from '../nature/blockMecha/blocks.js';
 import '../others/audioManager.js';
 import { apioxEvent } from '../../apiox/event.js';
+import { isClient } from '../net/session.js';
 
 export interface Droppeds {
     type: number;
@@ -196,6 +197,7 @@ export function dropsX(delta: number) {
 }
 
 apioxEvent.onKeyDown((e) => { // 丢弃物品
+    if (isClient()) {return;}
     if (e.key !== 'q') {return;}
     if (inventory.items[widgets.select].num >= 1) {
         inventory.items[widgets.select].num -= 1;

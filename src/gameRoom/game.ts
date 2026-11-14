@@ -34,6 +34,8 @@ import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
 
 import { ApioxObject } from '../apiox/dom.js';
 import { notEventAudio } from './others/audioManager.js';
+import { isClient } from './net/session.js';
+import { clientNetTick } from './net/clientNet.js';
 
 export const gameRoom: ApioxObject = new ApioxObject(null, 'GameRoom');
 
@@ -87,7 +89,19 @@ function renderingLoop(): void {
     updateDebugScreen();
 }
 
+// 客户端只做“从主机状态渲染”：不跑任何权威模拟，只更新插值和纯视觉计数。
+function clientLogicLoop(delta: number): void {
+    clientNetTick(delta);
+    blockFrameLoop(delta);
+    if (player.hp > 0) {heartsAct(delta);}
+    notEventAudio();
+}
+
 export function gameLoop(delta: number): void {
-    logicLoop(delta);
+    if (isClient()) {
+        clientLogicLoop(delta);
+    } else {
+        logicLoop(delta);
+    }
     renderingLoop();
 }

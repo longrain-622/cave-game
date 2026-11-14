@@ -41,8 +41,7 @@
     "files": [
       "dist/**/*",
       "electron-build/**/*",
-      "package.json",
-      "!node_modules/**/*"
+      "package.json"
     ],
     "win": {
       "icon": "public/assets/images/icon.png",
@@ -81,6 +80,11 @@
     }
   },
   "dependencies": {
+    "@colyseus/core": "^0.18.28",
+    "@colyseus/schema": "^5.0.48",
+    "@colyseus/sdk": "^0.18.10",
+    "@colyseus/ws-transport": "^0.18.5",
+    "express": "^5.3.0",
     "localforage": "^1.10.0",
     "pixi.js": "^7.4.2"
   },

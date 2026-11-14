@@ -161,6 +161,11 @@ function saveWorld(cover: boolean, existingNames?: Set<string>): WorldArchive {
     return targetWorld;
 }
 
+/** 只构建存档对象，不写入 localforage；供局域网快照复用。 */
+export function buildWorldArchive(cover: boolean = true, existingNames?: Set<string>): WorldArchive {
+    return saveWorld(cover, existingNames);
+}
+
 export async function saveGameToLocal(cover: boolean=false) {
     try {
         // 读取已存在的存档索引，收集所有已用的名字（用于防重名检测）

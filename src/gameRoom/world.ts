@@ -49,6 +49,12 @@ export function newBlockState(type: number, behind: number = idOfBlock.air, dire
 export const changePos: BlockPos[] = []; // 待处理的方块坐标
 export const lightPos: BlockPos[] = []; // 需要计算光照的
 
+// 主机联网时用于收集方块变化；单机/客户端保持 null。
+export let onWorldStateChanged: ((pos: BlockPos, index: number) => void) | null = null;
+export function setWorldStateListener(listener: ((pos: BlockPos, index: number) => void) | null): void {
+    onWorldStateChanged = listener;
+}
+
 // stone_dark 被别的方块占用时退到背景层，格子再变回空气时又从背景层回到前景
 function keepStoneDark(old: BlockState | undefined, next: BlockState): BlockState {
     if (old && old.type === idOfBlock.stone_dark && next.type !== idOfBlock.stone_dark) {
@@ -67,6 +73,10 @@ export function setWorldState(pos: BlockPos, state: BlockState): void {
     const idx: number = registerBlockState(next);
     if (world[pos.y][pos.x] === idx) {return;}
     world[pos.y][pos.x] = idx;
+
+    if (onWorldStateChanged !== null) {
+        onWorldStateChanged(pos, idx);
+    }
 
     // 因为世界改变，所以加入待处理的方块
     changePos.push(pos);

@@ -6,6 +6,7 @@ import { idOfBlock } from "./blockMecha/blocks.js";
 import { readingWorld, coverWhenSave } from "../gameState.js";
 import { notNullUndefined } from "../../constants/utils.js";
 import { resumeWaterFlow } from "./blockMecha/bmFunction.js";
+import { isClient } from "../net/session.js";
 
 // 温度类型常量
 const TEMP = {
@@ -470,7 +471,7 @@ function createWorldMain(): void {
         } else {
             chunk.left_number = 0; // 旧存档没有该字段时回退为 0
         }
-        resumeWaterFlow();
+        if (!isClient()) {resumeWaterFlow();}
     }
 }
 createWorldMain();

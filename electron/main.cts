@@ -1,7 +1,21 @@
-import { app, BrowserWindow, Menu, net, protocol, shell, type Rectangle } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, net, protocol, shell, type IpcMainEvent, type IpcMainInvokeEvent, type Rectangle } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import {
+    getLanDiscoveredWorlds,
+    joinRoom,
+    leaveRoom,
+    refreshLanDiscovery,
+    sendHostMessage,
+    setLanEventSender,
+    shutdownLan,
+    startHost,
+    startLanDiscovery,
+    stopHost,
+    stopLanDiscovery,
+} from './net/server.cjs';
+import type { HostStartOptions, HostToServerMessage, JoinOptions } from '../shared/netProtocol.js';
 
 const APP_ID: string = 'com.sinuxu.cavegame';
 const APP_SCHEME: string = 'app';
@@ -12,6 +26,33 @@ const CONTENT_ASPECT_WIDTH: number = 16;
 const CONTENT_ASPECT_HEIGHT: number = 9;
 
 let mainWindow: BrowserWindow | null = null;
+
+function getInstanceId(): string {
+    const envId: string | undefined = process.env.CAVEGAME_INSTANCE;
+    if (envId !== undefined && envId !== '') {
+        return envId;
+    }
+    const args: string[] = process.argv;
+    for (let i = 0; i < args.length; i++) {
+        if (args[i] === '--instance' && i + 1 < args.length) {
+            return args[i + 1];
+        }
+        if (args[i].startsWith('--instance=')) {
+            return args[i].slice('--instance='.length);
+        }
+    }
+    return '';
+}
+
+function applyUserDataOverride(): void {
+    const instanceId: string = getInstanceId();
+    if (instanceId === '') {
+        return;
+    }
+    // 与默认目录同级：.../User Data-A、.../User Data-B，互不干扰
+    const base: string = app.getPath('userData');
+    app.setPath('userData', `${base}-${instanceId}`);
+}
 
 function getDistDir(): string {
     return path.join(app.getAppPath(), 'dist');
@@ -185,6 +226,9 @@ function fitContentAspect(win: BrowserWindow): void {
 }
 
 function createWindow(): BrowserWindow {
+    const preloadPath: string = path.join(__dirname, 'preload.cjs');
+    console.log('LAN preload path:', preloadPath, 'exists:', fs.existsSync(preloadPath));
+
     const win: BrowserWindow = new BrowserWindow({
         width: 1280,
         height: 720,
@@ -201,7 +245,12 @@ function createWindow(): BrowserWindow {
             sandbox: true,
             spellcheck: false,
             backgroundThrottling: false,
+            preload: preloadPath,
         },
+    });
+
+    win.webContents.on('preload-error', (_event, failedPath, error) => {
+        console.error('LAN preload failed:', failedPath, error);
     });
 
     attachWebContentsHandlers(win);
@@ -233,6 +282,10 @@ function createWindow(): BrowserWindow {
 }
 
 function acquireSingleInstance(): boolean {
+    if (getInstanceId() !== '') { // 多实例调试模式：跳过单例锁
+        return true;
+    }
+
     const hasLock: boolean = app.requestSingleInstanceLock();
     if (!hasLock) {
         app.quit();
@@ -253,8 +306,92 @@ function acquireSingleInstance(): boolean {
     return true;
 }
 
+function isTrustedIpcSender(event: IpcMainInvokeEvent | IpcMainEvent): boolean {
+    return mainWindow !== null && !mainWindow.isDestroyed() && event.sender === mainWindow.webContents;
+}
+
+function registerLanIpc(): void {
+    ipcMain.handle('lan:startHost', async (event, options: HostStartOptions) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        try {
+            return await startHost(options);
+        } catch (error) {
+            console.error('lan:startHost failed', error);
+            throw error;
+        }
+    });
+
+    ipcMain.handle('lan:stopHost', async (event) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        await stopHost();
+    });
+
+    ipcMain.handle('lan:join', async (event, options: JoinOptions) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        try {
+            return await joinRoom(options);
+        } catch (error) {
+            console.error('lan:join failed', error);
+            throw error;
+        }
+    });
+
+    ipcMain.handle('lan:leave', async (event) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        await leaveRoom();
+    });
+
+    ipcMain.handle('lan:startDiscovery', async (event) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        startLanDiscovery();
+    });
+
+    ipcMain.handle('lan:stopDiscovery', async (event) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        stopLanDiscovery();
+    });
+
+    ipcMain.handle('lan:refreshDiscovery', async (event) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        return refreshLanDiscovery();
+    });
+
+    ipcMain.handle('lan:getDiscoveredWorlds', async (event) => {
+        if (!isTrustedIpcSender(event)) {
+            throw new Error('Unauthorized LAN request.');
+        }
+        return getLanDiscoveredWorlds();
+    });
+
+    ipcMain.on('lan:hostMessage', (event, message: HostToServerMessage) => {
+        if (!isTrustedIpcSender(event)) {return;}
+        sendHostMessage(message);
+    });
+
+    setLanEventSender((event) => {
+        if (mainWindow !== null && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('lan:event', event);
+        }
+    });
+}
+
 function onReady(): void {
     protocol.handle(APP_SCHEME, handleAppRequest);
+    registerLanIpc();
     createWindow();
 
     app.on('activate', () => {
@@ -265,6 +402,7 @@ function onReady(): void {
 }
 
 function main(): void {
+    applyUserDataOverride();
     if (!acquireSingleInstance()) {
         return;
     }
@@ -274,6 +412,10 @@ function main(): void {
     registerAppScheme();
 
     app.whenReady().then(onReady);
+
+    app.on('before-quit', () => {
+        void shutdownLan();
+    });
 
     app.on('window-all-closed', () => {
         if (process.platform !== 'darwin') {

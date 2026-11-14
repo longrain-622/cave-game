@@ -60,6 +60,10 @@
     "cancel": "取消",
     "selected": "已選擇",
     "joinPending": "連線功能將在下一步接入",
+    "spectator": "旁觀者",
+    "connecting": "正在連線",
+    "connectFailed": "連線失敗",
+    "desktopOnly": "連線功能只能在 Electron 桌面版中使用。",
     "invalidAddress": "位址格式應為 IP 或 IP:連接埠"
   },
   "loadPage": {
