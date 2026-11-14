@@ -34,7 +34,8 @@
     "btn_getin": "Ausgewählte Welt betreten",
     "btn_createone": "Neue Welt erstellen",
     "btn_delete": "Löschen",
-    "btn_quit": "Abbrechen"
+    "btn_quit": "Abbrechen",
+    "noWorldTip": "- Noch keine Welt erstellt -"
   },
   "worldCreation": {
     "title": "Neue Welt erstellen",

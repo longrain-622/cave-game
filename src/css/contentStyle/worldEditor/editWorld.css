@@ -7,15 +7,24 @@
     height: 100%;
 }
 
-#editWorldTitle {
-    color: white;
+#editWorldTitle, #noWorldTipText {
     font-family: 'Unifont', monospace;
     font-size: 20px;
     font-weight: 500;
     text-shadow: 1px 1px 0 black;
+}
 
+#editWorldTitle {
+    color: white;
     position: absolute;
     left: 50%; top: 5%;
+    transform: translate(-50%, 0);
+}
+
+#noWorldTipText {
+    color: #aaaaaa;
+    position: absolute;
+    left: 50%; top: 45%;
     transform: translate(-50%, 0);
 }
 

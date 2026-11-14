@@ -34,7 +34,8 @@
     "btn_getin": "選択したワールドに入る",
     "btn_createone": "新しいワールドを作成",
     "btn_delete": "削除",
-    "btn_quit": "キャンセル"
+    "btn_quit": "キャンセル",
+    "noWorldTip": "- まだワールドが作成されていません -"
   },
   "worldCreation": {
     "title": "新しいワールドを作成",

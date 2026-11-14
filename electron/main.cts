@@ -1,5 +1,4 @@
-// Electron 主进程：加载 Vite 构建产物，并负责窗口与协议层。
-import { app, BrowserWindow, Menu, net, protocol, shell } from 'electron';
+import { app, BrowserWindow, Menu, net, protocol, shell, type Rectangle } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -9,6 +8,8 @@ const APP_SCHEME: string = 'app';
 const APP_HOST: string = 'cavegame';
 const DEV_SERVER_URL: string = process.env.VITE_DEV_SERVER_URL || '';
 const INDEX_FILE: string = 'index.html';
+const CONTENT_ASPECT_WIDTH: number = 16;
+const CONTENT_ASPECT_HEIGHT: number = 9;
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -135,6 +136,54 @@ function attachWebContentsHandlers(win: BrowserWindow): void {
     });
 }
 
+// Windows：setAspectRatio 只锁外框且忽略 extraSize，改为在手动缩放时按内容区 16:9 反算
+// 用 setContentBounds 让 Electron 自己完成内容区↔窗口外框的换算，避免手工扣边框厚度
+function resizeToContentAspect(win: BrowserWindow, newBounds: Rectangle, edge: string): void {
+    const windowBounds: Rectangle = win.getBounds();
+    const contentBounds: Rectangle = win.getContentBounds();
+    const deltaWidth: number = newBounds.width - windowBounds.width;
+    const deltaHeight: number = newBounds.height - windowBounds.height;
+    // 左右边以宽度为准、上下边以高度为准，四角取变化更大的一侧
+    const widthDrives: boolean = Math.abs(deltaWidth) >= Math.abs(deltaHeight);
+
+    const contentWidth: number = Math.max(1, widthDrives
+        ? contentBounds.width + deltaWidth
+        : Math.round((contentBounds.height + deltaHeight) * CONTENT_ASPECT_WIDTH / CONTENT_ASPECT_HEIGHT));
+    const contentHeight: number = Math.max(1, widthDrives
+        ? Math.round((contentBounds.width + deltaWidth) * CONTENT_ASPECT_HEIGHT / CONTENT_ASPECT_WIDTH)
+        : contentBounds.height + deltaHeight);
+
+    win.setContentBounds({
+        x: edge.includes('left') ? contentBounds.x + contentBounds.width - contentWidth : contentBounds.x,
+        y: edge.includes('top') ? contentBounds.y + contentBounds.height - contentHeight : contentBounds.y,
+        width: contentWidth,
+        height: contentHeight,
+    });
+}
+
+// 启动时按内容区 16:9 自校正一次
+function fitContentAspect(win: BrowserWindow): void {
+    const contentBounds: Rectangle = win.getContentBounds();
+    if (contentBounds.width <= 0 || contentBounds.height <= 0) {
+        return;
+    }
+
+    let width: number = contentBounds.width;
+    let height: number = contentBounds.height;
+    if (width * CONTENT_ASPECT_HEIGHT > height * CONTENT_ASPECT_WIDTH) {
+        width = Math.round(height * CONTENT_ASPECT_WIDTH / CONTENT_ASPECT_HEIGHT);
+    } else {
+        height = Math.round(width * CONTENT_ASPECT_HEIGHT / CONTENT_ASPECT_WIDTH);
+    }
+
+    win.setContentBounds({
+        x: contentBounds.x,
+        y: contentBounds.y,
+        width: Math.max(1, width),
+        height: Math.max(1, height),
+    });
+}
+
 function createWindow(): BrowserWindow {
     const win: BrowserWindow = new BrowserWindow({
         width: 1280,
@@ -158,6 +207,7 @@ function createWindow(): BrowserWindow {
     attachWebContentsHandlers(win);
 
     win.once('ready-to-show', () => {
+        fitContentAspect(win);
         win.show();
     });
     win.on('closed', () => {
@@ -166,7 +216,16 @@ function createWindow(): BrowserWindow {
         }
     });
 
-    win.setAspectRatio(16 / 9);
+    if (process.platform === 'win32') {
+        win.on('will-resize', (event, newBounds, details) => {
+            event.preventDefault();
+            resizeToContentAspect(win, newBounds, details.edge);
+        });
+    } else if (process.platform === 'darwin') {
+        // macOS 原生 setAspectRatio 锁的就是内容区，直接使用。
+        win.setAspectRatio(CONTENT_ASPECT_WIDTH / CONTENT_ASPECT_HEIGHT);
+    }
+    // Linux：will-resize 不会触发，无法约束内容区比例，保留系统默认行为。
 
     win.loadURL(getStartUrl());
     mainWindow = win;

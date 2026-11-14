@@ -3,16 +3,15 @@ import { contentLoop, _room_ } from './contentRoom/content.js';
 import { loadScripts } from './LoadScripts.js';
 import { Ticker } from 'pixi.js';
 
-// 游戏链按需懒加载(与 LoadScripts 一致):字面量动态导入供 Vite 静态分析并分割为异步 chunk,进房间才加载。
 let gameLoopFn: ((delta: number) => void) | null = null;
 let gameLoaded: boolean = false;
-let loading: boolean = false; // 加载中
+let loading: boolean = false;
 
 async function ensureGameLoaded(): Promise<void> {
     if (gameLoaded || loading) {return;}
     loading = true;
-    await loadScripts(); // 加载所有附加模块
-    const gameModule = await import('./gameRoom/game.js'); // 动态导入
+    await loadScripts(); // Load all modules
+    const gameModule = await import('./gameRoom/game.js');
     gameLoopFn = gameModule.gameLoop;
     gameLoaded = true;
     loading = false;

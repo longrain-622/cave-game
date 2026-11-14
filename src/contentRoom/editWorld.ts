@@ -24,6 +24,7 @@ const editWorldBtnDelete = new ApioxObject('editWorldBtnDelete');
 export const worldCreator = new ApioxObject('worldCreator');
 const create_btn = new ApioxObject(null, 'create-btn');
 const back_btn = new ApioxObject(null, 'back-btn');
+const noWorldTipText = new ApioxObject('noWorldTipText');
 
 worldwindow.hide();
 
@@ -226,6 +227,12 @@ try {
     }
 
     function renderArchiveList(entries: Array<{ key: string; name: string; lastTime: string }>): void {
+        if (entries.length > 0) {
+            noWorldTipText.hide();
+        } else {
+            noWorldTipText.show();
+        }
+
         ctr.removeChildren();
         const rowWidth = archiveApp.screen.width - ROW_MARGIN * 2;
         let y = 8;

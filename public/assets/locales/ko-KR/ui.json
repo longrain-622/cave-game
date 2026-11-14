@@ -34,7 +34,8 @@
     "btn_getin": "선택한 세계에 들어가기",
     "btn_createone": "새 세계 만들기",
     "btn_delete": "삭제",
-    "btn_quit": "취소"
+    "btn_quit": "취소",
+    "noWorldTip": "- 아직 생성된 세계가 없습니다 -"
   },
   "worldCreation": {
     "title": "새 세계 만들기",

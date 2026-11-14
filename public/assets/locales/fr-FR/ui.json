@@ -34,7 +34,8 @@
     "btn_getin": "Entrer dans le monde sélectionné",
     "btn_createone": "Créer un nouveau monde",
     "btn_delete": "Supprimer",
-    "btn_quit": "Annuler"
+    "btn_quit": "Annuler",
+    "noWorldTip": "- Aucun monde créé pour l'instant -"
   },
   "worldCreation": {
     "title": "Créer un nouveau monde",

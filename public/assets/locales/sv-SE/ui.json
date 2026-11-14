@@ -34,7 +34,8 @@
     "btn_getin": "Gå in i vald värld",
     "btn_createone": "Skapa ny värld",
     "btn_delete": "Ta bort",
-    "btn_quit": "Avbryt"
+    "btn_quit": "Avbryt",
+    "noWorldTip": "- Inga världar skapade ännu -"
   },
   "worldCreation": {
     "title": "Skapa ny värld",

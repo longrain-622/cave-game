@@ -34,7 +34,8 @@
     "btn_getin": "进入选中的世界",
     "btn_createone": "创建新的世界",
     "btn_delete": "删除",
-    "btn_quit": "取消"
+    "btn_quit": "取消",
+    "noWorldTip": "- 还没有创建任何世界 -"
   },
   "worldCreation": {
     "title": "创建新的世界",

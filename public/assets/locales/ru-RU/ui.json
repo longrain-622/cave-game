@@ -34,7 +34,8 @@
     "btn_getin": "Войти в выбранный мир",
     "btn_createone": "Создать новый мир",
     "btn_delete": "Удалить",
-    "btn_quit": "Отмена"
+    "btn_quit": "Отмена",
+    "noWorldTip": "- Миры ещё не созданы -"
   },
   "worldCreation": {
     "title": "Создание нового мира",
