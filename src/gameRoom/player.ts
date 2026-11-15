@@ -48,6 +48,13 @@ export interface Players {
 
     state: playerState;
     jumpHeld: boolean;
+
+    /** 最近一次被网络输入消费的 tick，以及消费后那一帧结束时的位置（回滚对齐基准）。 */
+    ackTick: number;
+    ackX: number;
+    ackY: number;
+    /** 垂直逐像素步进累计的小数余量，让下落距离不随帧率变化。 */
+    vyCarry: number;
 }
 
 export function createPlayer(id: string): Players {
@@ -80,6 +87,11 @@ export function createPlayer(id: string): Players {
 
         state: playerState.normal,
         jumpHeld: false,
+
+        ackTick: 0,
+        ackX: 0,
+        ackY: 0,
+        vyCarry: 0,
     };
 
     return newPlayer;
@@ -100,9 +112,16 @@ export function initPlayerPosition(player: Players): void { // 初始化玩家�
     player.y = i * 64 - 256;
 }
 
+// 回滚重放期间不触发受击事件：重放只是重算历史，不该再放一次音效/抖屏
+let replaying: boolean = false;
+
+export function setPlayerReplayMode(on: boolean): void {
+    replaying = on;
+}
+
 export function playerHurt(p: Players, howmany: number): void {
     p.hp -= howmany;
-    if (p === player) {eventBusSwitch.playerHurt++;}
+    if (p === player && !replaying) {eventBusSwitch.playerHurt++;}
 }
 
 const player: Players = createPlayer(HOST_PLAYER_ID);
@@ -118,16 +137,23 @@ export function createEmptyPlayerInput(): PlayerInputState {
         acc: 0,
         face: -1,
         uiBlocked: false,
+        tick: 0,
     };
 }
 
-// 某个像素点是否处于水方块中
-function isWaterAt(x: number, y: number): boolean {
+export function capturePlayerState(p: Players): Players {
+    return { ...p };
+}
+
+export function restorePlayerState(p: Players, snap: Players): void {
+    Object.assign(p, snap);
+}
+
+function isWaterAt(x: number, y: number): boolean { // 某个像素点是否处于水方块中
     return blockTypeAt(Math.floor(x / 64), Math.floor(y / 64)) === idOfBlock.water;
 }
 
-// 刷新玩家状态
-export function updatePlayerState(p: Players): void {
+export function updatePlayerState(p: Players): void { // 刷新玩家状态
     const headInWater: boolean = isWaterAt(p.x + 32, p.y + 8); // 头顶
     const bodyInWater: boolean = isWaterAt(p.x + 32, p.y + 64); // 身体中部
     const feetInWater: boolean = isWaterAt(p.x + 32, p.y + 120); // 脚底
@@ -211,9 +237,14 @@ function playerJump(p: Players, delta: number): void { // 玩家跳跃（水中�
     } else {
         p.vsp += p.grav * delta;
     }
-    if (p.vsp != 0) {
-        for (let i = 0; i < Math.abs(p.vsp); i++) {
-            if (p.vsp > 0) {
+    // 逐像素步进是为了不穿墙；步数必须按 delta 缩放，否则 60Hz 和 144Hz 的下落速度会差一倍多
+    const movePx: number = p.vsp * delta + p.vyCarry;
+    const steps: number = Math.round(movePx);
+    p.vyCarry = movePx - steps;
+
+    if (steps !== 0) {
+        for (let i = 0; i < Math.abs(steps); i++) {
+            if (steps > 0) {
                 if (!(place_meeting(p.x+8, p.y+128) || place_meeting(p.x + 56, p.y + 128))) {
                     p.y++;
                 } else {
@@ -224,6 +255,7 @@ function playerJump(p: Players, delta: number): void { // 玩家跳跃（水中�
 
                     p.vsp = 0;
                     p.can_jump = true;
+                    p.vyCarry = 0;
                     break;
                 }
             } else {
@@ -231,6 +263,7 @@ function playerJump(p: Players, delta: number): void { // 玩家跳跃（水中�
                     p.y--;
                 } else {
                     p.vsp = 0;
+                    p.vyCarry = 0;
                     break;
                 }
             }
@@ -259,12 +292,13 @@ function playerLoop(delta: number, uiBlocked: boolean, pointerScreenX: number): 
 
 // 主机侧推进一个客户端玩家；输入来自网络，位置/HP 仍由主机权威计算。
 export function stepRemotePlayer(p: Players, delta: number, input: PlayerInputState): void {
+    const newInputTick: boolean = input.tick !== p.ackTick;
+
     p.left = input.left;
     p.right = input.right;
     p.jumpHeld = input.jumpHeld;
     p.face = input.face;
     p.acc = input.acc;
-    p.rightOnMouse = false;
 
     if (!input.uiBlocked && input.jumpPressed && p.hp > 0 && p.can_jump && p.state !== playerState.swimming) {
         p.vsp = p.jumpspeed;
@@ -277,9 +311,17 @@ export function stepRemotePlayer(p: Players, delta: number, input: PlayerInputSt
 
     if (p.hp > 0) {playerJump(p, delta);}
     input.jumpPressed = false;
+
+    // 记录"这个 tick 被模拟完一帧之后"的位置：客户端历史里的同一 tick 就是这个语义，
+    // 拿它做回滚基准才不会把主机多走的几帧当成误差。
+    if (newInputTick) {
+        p.ackTick = input.tick;
+        p.ackX = p.x;
+        p.ackY = p.y;
+    }
 }
 
-// 客户端本地预测：输入立即推进自己的角色，主机状态随后做软校正。
+// 客户端本地预测：输入立即推进自己的角色；主机状态不一致时由网络层回滚到该 tick 再重放。
 // 与主机共用同一套物理，正常网络延迟下两边位置基本一致。
 export function applyClientPrediction(p: Players, delta: number, input: PlayerInputState): void {
     updatePlayerState(p);

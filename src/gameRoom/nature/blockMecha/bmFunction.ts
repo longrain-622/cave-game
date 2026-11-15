@@ -62,7 +62,11 @@ export function setGrassDirt(): void { // 每帧调用：草/泥土延迟倒计�
     }
 }
 
-export function grass_and_dirt(looking_block: number, look_x: number, look_y: number): number {
+export function grass_and_dirt(
+    looking_block: number,
+    look_x: number,
+    look_y: number
+): number {
     const index: number = grassDirtDelay.findIndex((pos) => pos.x === look_x && pos.y === look_y);
 
     if (shouldChangeGrassDirt(look_x, look_y)) {
@@ -78,20 +82,31 @@ export function grass_and_dirt(looking_block: number, look_x: number, look_y: nu
     return looking_block;
 }
 
-export function inviconGrass(looking_block: number, lookx: number, looky: number): number {
+export function inviconGrass(
+    looking_block: number,
+    lookx: number,
+    looky: number
+): number {
     if (looking_block === idOfBlock.invicon_grass) {
-        if (blockTypeAt(lookx, looky + 1) !== idOfBlock.glass && blockTypeAt(lookx, looky + 1) !== idOfBlock.dirt) {
+        if (
+            blockTypeAt(lookx, looky + 1) !== idOfBlock.grass &&
+            blockTypeAt(lookx, looky + 1) !== idOfBlock.dirt
+        ) {
             for (let c = 0; c < getRandomInt(16, 32); c++) {
                 createParticles(idOfBlock.invicon_grass, lookx * 64 + getRandomInt(0, 64), looky * 64 + getRandomInt(0, 64));
             }
-            return -1;
+            return idOfBlock.air;
         }
     }
 
     return looking_block;
 }
 
-export function sand_gravity(looking_block: number, look_x: number, look_y: number): number {
+export function sand_gravity(
+    looking_block: number,
+    look_x: number,
+    look_y: number
+): number {
     if (looking_block === idOfBlock.sand && canOver(blockTypeAt(look_x, look_y + 1))) {
         entityBlock_array.push(newEntityBlock(idOfBlock.sand, look_x, look_y));
         if (look_y > lowest_point) {return idOfBlock.stone_dark;}
@@ -100,7 +115,11 @@ export function sand_gravity(looking_block: number, look_x: number, look_y: numb
     return looking_block;
 }
 
-export function cactus_and_deadBush(looking_block: number, lookx: number, looky: number): number {
+export function cactus_and_deadBush(
+    looking_block: number,
+    lookx: number,
+    looky: number
+): number {
     if (looking_block === idOfBlock.cactus) {
         if (blockTypeAt(lookx, looky + 1) !== idOfBlock.cactus && blockTypeAt(lookx, looky + 1) !== idOfBlock.sand) {
             const createX: number = lookx * 64;
@@ -122,21 +141,35 @@ export function cactus_and_deadBush(looking_block: number, lookx: number, looky:
     return looking_block;
 }
 
-export function door(looking_block: number, lookx: number, looky: number): number {
-    if (isOutOfBounds(looky - 1, lookx) || isOutOfBounds(looky + 1, lookx)) {return looking_block;}
+export function door(
+    looking_block: number,
+    lookx: number,
+    looky: number
+): number {
+    if (isOutOfBounds(looky - 1, lookx) || isOutOfBounds(looky + 1, lookx)) {
+        return looking_block;
+    }
 
     switch (looking_block) {
         case idOfBlock.oak_door_bottom:
-            if (blockTypeAt(lookx, looky - 1) !== idOfBlock.oak_door_top) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky - 1) !== idOfBlock.oak_door_top) {
+                return idOfBlock.air;
+            }
             break;
         case idOfBlock.oak_door_top:
-            if (blockTypeAt(lookx, looky + 1) !== idOfBlock.oak_door_bottom) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky + 1) !== idOfBlock.oak_door_bottom) {
+                return idOfBlock.air;
+            }
             break;
         case idOfBlock.oak_door_bottom_open:
-            if (blockTypeAt(lookx, looky - 1) !== idOfBlock.oak_door_top_open) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky - 1) !== idOfBlock.oak_door_top_open) {
+                return idOfBlock.air;
+            }
             break;
         case idOfBlock.oak_door_top_open:
-            if (blockTypeAt(lookx, looky + 1) !== idOfBlock.oak_door_bottom_open) {return idOfBlock.air;}
+            if (blockTypeAt(lookx, looky + 1) !== idOfBlock.oak_door_bottom_open) {
+                return idOfBlock.air;
+            }
             break;
     }
 
@@ -164,7 +197,11 @@ export function door_openOrClose(targetX: number, targetY: number): void {
     }
 }
 
-export function snowGrass(lookingBlock: number, lookx: number, looky: number): number {
+export function snowGrass(
+    lookingBlock: number,
+    lookx: number,
+    looky: number
+): number {
     if (lookingBlock === idOfBlock.snowGrass) {
         if (blockTypeAt(lookx, looky - 1) !== idOfBlock.air) {
             return idOfBlock.dirt;
@@ -175,7 +212,11 @@ export function snowGrass(lookingBlock: number, lookx: number, looky: number): n
     return lookingBlock;
 }
 
-export function torchDrop(looking: number, lookx: number, looky: number): number {
+export function torchDrop(
+    looking: number,
+    lookx: number,
+    looky: number
+): number {
     if (looking === idOfBlock.torch) {
         const tch: BlockState = blockStateAt(lookx, looky);
         switch (tch.direction) {
@@ -215,7 +256,9 @@ interface WaterResult {
 
 // 水向下游扩散时用的强度
 function flowStrength(condition: number): number {
-    if (condition === WATER_SOURCE || condition === WATER_FALLING) {return WATER_FLOW_MAX;}
+    if (condition === WATER_SOURCE || condition === WATER_FALLING) {
+        return WATER_FLOW_MAX;
+    }
     return condition - 1;
 }
 
@@ -225,12 +268,19 @@ function isWaterSource(x: number, y: number): boolean {
 }
 
 // 写回水格，保留背景层
-function writeWater(x: number, y: number, condition: number, direction: number): void {
+function writeWater(x: number,
+    y: number,
+    condition: number,
+    direction: number
+): void {
     setWorldState({ x: x, y: y }, newBlockState(idOfBlock.water, blockStateAt(x, y).behind, direction, condition));
 }
 
 // 侧向来源的强度
-function sideFeedStrength(x: number, y: number, from_x: number): number {
+function sideFeedStrength(x: number,
+    y: number,
+    from_x: number
+): number {
     const state: BlockState = blockStateAt(from_x, y);
     if (state.type !== idOfBlock.water) {return 0;}
     if (state.condition === WATER_SOURCE || state.condition === WATER_FALLING) {return WATER_FLOW_MAX;}
@@ -242,7 +292,11 @@ function sideFeedStrength(x: number, y: number, from_x: number): number {
 }
 
 // 按邻居重算水格自己的状态
-function evaluateWater(x: number, y: number, state: BlockState): WaterResult {
+function evaluateWater(
+    x: number,
+    y: number,
+    state: BlockState
+): WaterResult {
     let sources: number = 0;
     if (isWaterSource(x, y - 1)) {sources++;}
     if (isWaterSource(x - 1, y)) {sources++;}
@@ -284,7 +338,12 @@ function hasSupport(x: number, y: number): boolean {
 }
 
 // 向外扩散
-function spreadWater(x: number, y: number, condition: number, direction: number): void {
+function spreadWater(
+    x: number,
+    y: number,
+    condition: number,
+    direction: number
+): void {
     const below: number = blockTypeAt(x, y + 1);
     if (canWaterFlowInto(below)) {
         writeWater(x, y + 1, WATER_FALLING, 0);
@@ -355,7 +414,9 @@ export function setWaterFlow(delta: number): void { // 每帧调用：积累到�
     }
 
     // 超出上限的部分留到下一轮
-    for (let i: number = head; i < positions.length; i++) {waterPending.push(positions[i]);}
+    for (let i: number = head; i < positions.length; i++) {
+        waterPending.push(positions[i]);
+    }
 }
 
 // 读档后调用：让存档里没流完的水继续按规则推进（水源不必登记）

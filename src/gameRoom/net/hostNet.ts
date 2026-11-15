@@ -9,7 +9,7 @@ import { chunk, palette, setWorldStateListener, world, place_meeting } from '../
 import type { BlockPos } from '../world.js';
 import { eventBus } from '../others/eventBus.js';
 import { setNetRole } from '../session.js';
-import { HOST_PLAYER_ID } from '../../../shared/netProtocol.js';
+import { HOST_PLAYER_ID, PlayerInputState } from '../../../shared/netProtocol.js';
 import type {
     HostToServerMessage,
     InventoryStateMessage,
@@ -29,17 +29,19 @@ let active: boolean = false;
 let peerCount: number = 0;
 let offEvents: (() => void) | null = null;
 let offChunks: (() => void) | null = null;
-let playerTimer: number | null = null;
 let inventoryTimer: number | null = null;
 let timeTimer: number | null = null;
 let diffTimer: number | null = null;
 let peerCountListener: PeerCountListener | null = null;
+let lastPlayerSendAt: number = 0;
 const pendingDiffs: Map<string, WorldDiffCell> = new Map();
 const unknownInputSessions: Set<string> = new Set();
 // 上一次随 diff/chunk 下发的调色板长度；调色板只增不减，长度不变时客户端无需重载
 let sentPaletteLength: number = -1;
 
-const PLAYER_INTERVAL_MS: number = 33;
+// 玩家状态挂在逻辑帧上发送，而不是用 setInterval：30Hz 的定时器既慢又有抖动，
+// 而 ack 延迟直接决定客户端能多快确认自己的预测。
+const PLAYER_SEND_INTERVAL_MS: number = 16;
 const INVENTORY_INTERVAL_MS: number = 500;
 const TIME_INTERVAL_MS: number = 1000;
 
@@ -58,6 +60,7 @@ function send(message: HostToServerMessage): void {
 }
 
 function makePlayerState(p: Players, playerId: string, selectedSlot: number): LanPlayerState {
+    const isHostPlayer: boolean = playerId === HOST_PLAYER_ID;
     return {
         playerId: playerId,
         hp: p.hp,
@@ -72,6 +75,11 @@ function makePlayerState(p: Players, playerId: string, selectedSlot: number): La
         rightOnMouse: p.rightOnMouse,
         state: p.state,
         selectedSlot: selectedSlot,
+        // 只 ack 真正被模拟过的 tick；坐标也必须是那一帧结束时的位置，否则客户端会拿
+        // "主机多走了几帧"的位置去比自己的历史，每个包都被往前拽一次。
+        ackInputTick: isHostPlayer ? 0 : p.ackTick,
+        ackX: isHostPlayer ? p.x : p.ackX,
+        ackY: isHostPlayer ? p.y : p.ackY,
     };
 }
 
@@ -119,6 +127,16 @@ function sendPlayerStates(): void {
         players: players,
     };
     send(message);
+}
+
+/** 主机逻辑帧结束时调用：把玩家状态按约 60Hz 推给客户端（没有 peer 时什么都不做）。 */
+export function hostNetTick(): void {
+    if (!active || !hasPeers()) {return;}
+
+    const now: number = Date.now();
+    if (now - lastPlayerSendAt < PLAYER_SEND_INTERVAL_MS) {return;}
+    lastPlayerSendAt = now;
+    sendPlayerStates();
 }
 
 function sendInventoryState(): void {
@@ -236,17 +254,8 @@ function sendSnapshotTo(sessionId: string): void {
     sendTime();
 }
 
-function handlePlayerInput(sessionId: string, input: {
-    left: number;
-    right: number;
-    jumpHeld: boolean;
-    jumpPressed: boolean;
-    acc: number;
-    face: number;
-    uiBlocked: boolean;
-}): void {
+function handlePlayerInput(sessionId: string, input: PlayerInputState): void {
     if (!remotePlayers.has(sessionId)) {
-        // 输入早于 peer:join 到达或来自已离开的会话；每个会话只提示一次，便于排查
         if (!unknownInputSessions.has(sessionId)) {
             unknownInputSessions.add(sessionId);
             console.warn('[lan] dropped player input from unknown session', sessionId);
@@ -263,6 +272,7 @@ function handlePlayerInput(sessionId: string, input: {
         acc: Math.max(0, Math.min(2, Number(input.acc) || 0)),
         face: input.face < 0 ? -1 : 1,
         uiBlocked: input.uiBlocked === true,
+        tick: input.tick,
     });
 }
 
@@ -341,11 +351,10 @@ export function startHosting(onPeerCount?: PeerCountListener): void {
         pendingDiffs.set(pos.x + ',' + pos.y, { x: pos.x, y: pos.y, index: index });
     });
 
-    diffTimer = apioxTime.setInt(flushDiffs, 100);
+    // 方块改动直接影响碰撞，晚 100ms 才下发会让客户端的预测在墙里多走一截
+    diffTimer = apioxTime.setInt(flushDiffs, 50);
 
-    playerTimer = apioxTime.setInt((): void => {
-        sendPlayerStates();
-    }, PLAYER_INTERVAL_MS);
+    lastPlayerSendAt = 0;
 
     inventoryTimer = apioxTime.setInt((): void => {
         if (hasPeers()) {sendInventoryState();}
@@ -376,10 +385,6 @@ export function stopHosting(): void {
         diffTimer = null;
     }
     pendingDiffs.clear();
-    if (playerTimer !== null) {
-        apioxTime.clearInt(playerTimer);
-        playerTimer = null;
-    }
     if (inventoryTimer !== null) {
         apioxTime.clearInt(inventoryTimer);
         inventoryTimer = null;

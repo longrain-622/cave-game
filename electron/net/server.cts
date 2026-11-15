@@ -154,6 +154,11 @@ export async function startHost(options: HostStartOptions): Promise<HostStartRes
             const sessionId: string = String(message?.sessionId ?? '');
             const input: any = message?.input;
             if (sessionId === '' || input === null || typeof input !== 'object') {return;}
+
+            const tick: number = Number(input.tick);
+            if (!Number.isFinite(tick) || tick <= 0) {return;}   // 非法 tick 直接丢弃
+
+
             emitEvent({
                 type: 'player:input',
                 sessionId: sessionId,
@@ -165,6 +170,7 @@ export async function startHost(options: HostStartOptions): Promise<HostStartRes
                     acc: Number(input.acc) || 0,
                     face: Number(input.face) || -1,
                     uiBlocked: Boolean(input.uiBlocked),
+                    tick: tick,
                 },
             });
         });

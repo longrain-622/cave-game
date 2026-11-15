@@ -48,6 +48,11 @@ export interface LanPlayerState {
     rightOnMouse: boolean;
     state: number;
     selectedSlot: number;
+    /** 主机真正消费过的最后一个输入 tick；0 表示还没消费过任何输入。 */
+    ackInputTick: number;
+    /** 主机消费 ackInputTick 那一帧结束时的权威位置，客户端回滚时拿它和本地历史比对。 */
+    ackX: number;
+    ackY: number;
 }
 
 /** 客户端移动/跳跃输入；由服务端注入 sessionId 后转给主机。 */
@@ -59,6 +64,7 @@ export interface PlayerInputState {
     acc: number;
     face: number;
     uiBlocked: boolean;
+    tick: number; // 客户端帧号 用于回滚重放对齐
 }
 
 export interface PlayerInputMessage extends PlayerInputState {

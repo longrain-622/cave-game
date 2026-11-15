@@ -16,10 +16,11 @@ const clientInput: PlayerInputState = {
     acc: 0,
     face: -1,
     uiBlocked: false,
+    tick: 0,
 };
 
 let clientInputDirty: boolean = false;
-let clientInputSeq: number = 0;
+let clientInputTickCount: number = 0;
 let clientInputFrames: number = 0;
 
 function markClientInputDirty(): void {
@@ -39,6 +40,9 @@ export function clientInputTick(): PlayerInputState {
         clientInputDirty = true;
     }
 
+    clientInputTickCount++; // 帧号每帧都递增，即使不发送；主机 ack 的就是这个 tick
+    clientInput.tick = clientInputTickCount;
+
     clientInputFrames++;
     const shouldSend: boolean = clientInputDirty
         || clientInput.jumpPressed
@@ -52,7 +56,7 @@ export function clientInputTick(): PlayerInputState {
 
         const message: PlayerInputMessage = {
             type: 'player:input',
-            seq: ++clientInputSeq,
+            seq: clientInputTickCount, // 复用 tick 做消息序号
             ...clientInput,
         };
         apioxNet.sendClientMessage(message);

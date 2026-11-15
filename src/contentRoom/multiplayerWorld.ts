@@ -114,6 +114,12 @@ function handleNetEvent(event: LanEvent): void {
 }
 
 async function refreshDiscoveryList(): Promise<void> {
+    if (!apioxNet.isAvailable()) {
+        refreshWorldList();
+        setStatus(getText('multiplayer.desktopOnly'));
+        return;
+    }
+
     try {
         await apioxNet.refreshDiscovery();
         discoveredWorlds = await apioxNet.getDiscoveredWorlds();
@@ -140,7 +146,11 @@ function parseManualAddress(raw: string): { address: string; port: number } | nu
     return { address: match[1], port: port };
 }
 
-function drawRowBackground(background: PIXI.Graphics, width: number, selected: boolean): void {
+function drawRowBackground(
+    background: PIXI.Graphics,
+    width: number,
+    selected: boolean
+): void {
     background.clear();
     if (!selected) {return;}
 
@@ -227,16 +237,25 @@ function createWorldRow(entry: LanWorldEntry, width: number): WorldRow {
     const background = new PIXI.Graphics();
     container.addChild(background);
 
-    const nameText = new PIXI.Text(entry.worldName, textStyle1(NAME_FONT_SIZE));
+    const nameText = new PIXI.Text(
+        entry.worldName,
+        textStyle1(NAME_FONT_SIZE)
+    );
     nameText.position.set(TEXT_LEFT, NAME_Y);
     container.addChild(nameText);
 
-    const subText = new PIXI.Text(entry.hostName + ' · ' + entry.players + '/' + entry.maxPlayers, textStyle1(SUB_FONT_SIZE));
+    const subText = new PIXI.Text(
+        entry.hostName + ' · ' + entry.players + '/' + entry.maxPlayers,
+        textStyle1(SUB_FONT_SIZE)
+    );
     subText.style.fill = '#aaaaaa';
     subText.position.set(TEXT_LEFT, SUB_Y);
     container.addChild(subText);
 
-    const addressText = new PIXI.Text(formatAddress(entry), textStyle1(SUB_FONT_SIZE));
+    const addressText = new PIXI.Text(
+        formatAddress(entry),
+        textStyle1(SUB_FONT_SIZE)
+    );
     addressText.style.fill = '#888888';
     addressText.anchor.set(1, 0);
     addressText.position.set(width - TEXT_LEFT, SUB_Y);
@@ -288,7 +307,10 @@ function renderWorldList(worlds: LanWorldEntry[]): void {
 
 function refreshWorldList(): void {
     currentWorlds = readLanWorlds();
-    if (selectedId !== null && !currentWorlds.some((entry: LanWorldEntry): boolean => entry.id === selectedId)) {
+    if (
+        selectedId !== null &&
+        !currentWorlds.some((entry: LanWorldEntry): boolean => entry.id === selectedId)
+    ) {
         selectedId = null;
     }
     renderWorldList(currentWorlds);
@@ -322,7 +344,10 @@ function toWorldArchive(snapshot: LanSnapshot): WorldArchive {
     };
 }
 
-async function enterWorldFromSnapshot(snapshot: LanSnapshot, sessionId: string): Promise<void> {
+async function enterWorldFromSnapshot(
+    snapshot: LanSnapshot,
+    sessionId: string
+): Promise<void> {
     if (enterGameCallback === null) {
         throw new Error('The game entry callback is not ready.');
     }
@@ -341,10 +366,21 @@ async function enterWorldFromSnapshot(snapshot: LanSnapshot, sessionId: string):
     enterGameCallback();
 }
 
-async function joinLanTarget(address: string, port: number, roomId?: string): Promise<void> {
+async function joinLanTarget(
+    address: string,
+    port: number,
+    roomId?: string
+): Promise<void> {
     if (joining || enteredGame) {return;}
 
     const u = getUi();
+    if (!apioxNet.isAvailable()) {
+        setStatus(getText('multiplayer.desktopOnly'));
+        u.joinBtn.domProperty('disabled', true);
+        u.directBtn.domProperty('disabled', true);
+        return;
+    }
+
     joining = true;
     u.joinBtn.domProperty('disabled', true);
     u.directBtn.domProperty('disabled', true);
@@ -427,6 +463,16 @@ export function showMultiplayerWorld(): void {
     }
 
     multiplayerVisible = true;
+
+    if (!apioxNet.isAvailable()) {
+        refreshWorldList();
+        setStatus(getText('multiplayer.desktopOnly'));
+        u.joinBtn.domProperty('disabled', true);
+        u.directBtn.domProperty('disabled', true);
+        u.refreshBtn.domProperty('disabled', true);
+        return;
+    }
+
     void apioxNet.startDiscovery().catch((error) => {
         console.warn('cannot start LAN discovery', error);
     });

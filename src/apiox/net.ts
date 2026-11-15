@@ -18,12 +18,12 @@ const recentEvents: LanEvent[] = [];
 // 只用于衔接"事件已到达、会话监听器尚未注册"的窗口；会话开始/结束都会清空
 const MAX_QUEUED_EVENTS: number = 300;
 
-function requireApi(): CavegameLanApi {
+function callApi<T>(action: (api: CavegameLanApi) => Promise<T>): Promise<T> {
     const api: CavegameLanApi | undefined = window.cavegameLan;
     if (api === undefined) {
-        throw new Error('LAN networking is only available in the Electron app.');
+        return Promise.reject(new Error('LAN networking is only available in the Electron app.'));
     }
-    return api;
+    return action(api);
 }
 
 function rememberEvent(event: LanEvent): void {
@@ -67,19 +67,19 @@ const apioxNet = {
     },
 
     startHost(options: HostStartOptions): Promise<HostStartResult> {
-        return requireApi().startHost(options);
+        return callApi((api: CavegameLanApi): Promise<HostStartResult> => api.startHost(options));
     },
 
     stopHost(): Promise<void> {
-        return requireApi().stopHost();
+        return callApi((api: CavegameLanApi): Promise<void> => api.stopHost());
     },
 
     join(options: JoinOptions): Promise<JoinResult> {
-        return requireApi().join(options);
+        return callApi((api: CavegameLanApi): Promise<JoinResult> => api.join(options));
     },
 
     leave(): Promise<void> {
-        return requireApi().leave();
+        return callApi((api: CavegameLanApi): Promise<void> => api.leave());
     },
 
     sendHostMessage(message: HostToServerMessage): void {
@@ -106,19 +106,19 @@ const apioxNet = {
     },
 
     startDiscovery(): Promise<void> {
-        return requireApi().startDiscovery();
+        return callApi((api: CavegameLanApi): Promise<void> => api.startDiscovery());
     },
 
     stopDiscovery(): Promise<void> {
-        return requireApi().stopDiscovery();
+        return callApi((api: CavegameLanApi): Promise<void> => api.stopDiscovery());
     },
 
     refreshDiscovery(): Promise<LanWorldEntry[]> {
-        return requireApi().refreshDiscovery();
+        return callApi((api: CavegameLanApi): Promise<LanWorldEntry[]> => api.refreshDiscovery());
     },
 
     getDiscoveredWorlds(): Promise<LanWorldEntry[]> {
-        return requireApi().getDiscoveredWorlds();
+        return callApi((api: CavegameLanApi): Promise<LanWorldEntry[]> => api.getDiscoveredWorlds());
     },
 
     /** 清空待回放的事件；新会话开始前调用，避免把上一局的状态/断开事件重放进来。 */

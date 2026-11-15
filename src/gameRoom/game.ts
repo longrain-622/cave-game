@@ -37,7 +37,9 @@ import { ApioxObject } from '../apiox/dom.js';
 import { notEventAudio } from './others/audioManager.js';
 import { eventBus } from './others/eventBus.js';
 import { isClient } from './session.js';
-import { clientNetTick } from './net/clientNet.js';
+import { clientNetTick, recordPredictedFrame } from './net/clientNet.js';
+import { hostNetTick } from './net/hostNet.js';
+import type { PlayerInputState } from '../../shared/netProtocol.js';
 import { checkEventBus } from '../others/eventFunctionUser.js';
 import { clientInputTick } from './input/keyboardInput.js';
 
@@ -73,6 +75,7 @@ function logicLoop(delta: number): void {
     if (player.hp > 0) {heartsAct(delta);}
     gameGuiLogicLoop(delta);
     notEventAudio();
+    hostNetTick();
 }
 
 function renderingLoop(): void {
@@ -102,7 +105,11 @@ function renderingLoop(): void {
 // 客户端：本地预测自己的移动，远端玩家与主机状态由网络层驱动
 function clientLogicLoop(delta: number): void {
     const input = clientInputTick();
+    // 预测会消费 jumpPressed（单帧事件），历史里必须留原值，否则回滚重放时跳跃会被吞掉
+    const recordedInput: PlayerInputState = { ...input };
+    player.rightOnMouse = mouse.x > player.screen_x + player.width / 2;
     applyClientPrediction(player, delta, input);
+    recordPredictedFrame(recordedInput, delta);
     clientNetTick(delta);
     blockFrameLoop(delta);
     if (player.hp > 0) {heartsAct(delta);}

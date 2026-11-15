@@ -1,12 +1,12 @@
 import { apioxNet } from '../../apiox/net.js';
 import { apioxTime } from '../../apiox/time.js';
 import { reloadPage } from '../../apiox/method.js';
-import { player, playerState, createPlayer, remotePlayers } from '../player.js';
+import { player, playerState, createPlayer, remotePlayers, restorePlayerState, capturePlayerState, applyClientPrediction, setPlayerReplayMode } from '../player.js';
 import type { Players } from '../player.js';
 import { inventory } from '../gui/gameGUI/inventory.js';
 import { Slots } from '../gui/gameGUI/inventoryConfig.js';
 import { clock } from '../nature/sky.js';
-import { chunk, isOutOfBounds, lightPos, loadPalette, place_meeting, pushChunkToWorld, world } from '../world.js';
+import { chunk, isOutOfBounds, lightPos, loadPalette, pushChunkToWorld, world } from '../world.js';
 import { offsetElements } from '../nature/offsetElements.js';
 import { getLanPlayers, getSessionId } from '../session.js';
 import { uistate } from '../gui/uiState.js';
@@ -16,27 +16,37 @@ import type {
     LanPlayerState,
     WorldChunkMessage,
     WorldDiffMessage,
+    PlayerInputState
 } from '../../../shared/netProtocol.js';
 
+// 回滚重放参数
+const MAX_HISTORY_FRAMES: number = 120; // 保留最近约 2 秒
+const ROLLBACK_EPSILON_PX: number = 0.5; // 小于它视为一致
+const ROLLBACK_SNAP_PX: number = 5 * 64; // 超过它直接瞬移
+const MAX_REPLAY_FRAMES: number = 60; // 单次重放上限，防卡顿后爆帧
+// 主机模拟的是"晚到一帧多"的输入，同一 tick 的位置天然会差出这段延迟的位移。
+// 容限按"ack 落后了几帧 × 该帧位移"估算，只把超出这段延迟的偏差当成真正的分歧。
+const ROLLBACK_ACK_FRAME_CAP: number = 6;
+const ROLLBACK_FALL_TOLERANCE_FRAMES: number = 1.5;
+
+interface HistoryEntry {
+    input: PlayerInputState;
+    delta: number;
+    state: Players;
+}
+
+const predictionHistory: Map<number, HistoryEntry> = new Map();
+let latestPredictedTick: number = 0;
+// 只有主机发来的 hp 才算数，用来识别"死亡→重生"这类必须整体对齐的跳变
+let lastHostHp: number = 20;
+
 const SNAP_DISTANCE_PX: number = 5 * 64;
-const INTERPOLATION_RATE: number = 0.35;
-// 每收到一个主机状态包，就把本地预测位置向主机权威位置收敛这个比例。
-// 30Hz 状态下误差会在约 0.2s 内收敛，且稳态时误差为 0，不会残留偏移。
-const CORRECTION_RATE: number = 0.25;
-// 单个状态包最多校正的像素，避免大误差一次拉回去产生瞬移感
-const CORRECTION_MAX_STEP_PX: number = 8;
-// 兜底：若连续校正一直被地形挡住，定时把累计漂移一次性抹平
-const DRIFT_GUARD_INTERVAL_MS: number = 3000;
-const DRIFT_SNAP_DISTANCE_PX: number = 2 * 64;
+const INTERPOLATION_RATE: number = 0.5;
 const REMOTE_TIMEOUT_MS: number = 8000;
 
 let active: boolean = false;
 let disconnected: boolean = false;
 let offEvents: (() => void) | null = null;
-let driftGuardTimer: number | null = null;
-let targetX: number = 0;
-let targetY: number = 0;
-let lastOwnStateAt: number = 0;
 const remoteTargets: Map<string, { x: number; y: number }> = new Map();
 const remoteSeen: Map<string, number> = new Map();
 
@@ -73,51 +83,74 @@ function ensureRemote(playerId: string): Players {
     return remote;
 }
 
-// 与 playerMove / playerJump 使用同样的探测点，保证校正不会把玩家推进方块
-function canShiftX(nextX: number, y: number, step: number): boolean {
-    const edgeX: number = nextX + (step > 0 ? 64 : 0);
-    return !place_meeting(edgeX, y + 120) && !place_meeting(edgeX, y + 20);
-}
+function applyOwnPlayerState(state: LanPlayerState): void {
+    // hp 只认主机：回放会重算历史，不能让摔落伤害在重放里再扣一次
+    const authoritativeHp: number = state.hp;
+    const respawned: boolean = lastHostHp <= 0 && authoritativeHp > 0;
+    lastHostHp = authoritativeHp;
+    player.hp = authoritativeHp;
+    uistate.deathUI_isOpening = authoritativeHp <= 0;
 
-function canShiftY(x: number, nextY: number, step: number): boolean {
-    if (step < 0) {return !place_meeting(x + 32, nextY);}
-    return !place_meeting(x + 8, nextY + 128) && !place_meeting(x + 56, nextY + 128);
-}
-
-function clampCorrectionStep(value: number): number {
-    return Math.max(-CORRECTION_MAX_STEP_PX, Math.min(CORRECTION_MAX_STEP_PX, value));
-}
-
-// 把本地预测位置向主机权威位置收敛；每个状态包执行一次，等于 30Hz 的定时校正
-function reconcileOwnPosition(): void {
-    const errorX: number = targetX - player.x;
-    const errorY: number = targetY - player.y;
-
-    if (Math.abs(errorX) > SNAP_DISTANCE_PX || Math.abs(errorY) > SNAP_DISTANCE_PX) {
-        player.x = targetX;
-        player.y = targetY;
+    // 重生 / 传送：主机直接改了坐标，ack 快照还是旧位置，比对根本看不出来，只能整体对齐。
+    // 旧历史已经不在同一坐标系里，清掉等 ack 追上来再继续比对。
+    if (respawned
+        || Math.abs(state.x - player.x) > ROLLBACK_SNAP_PX
+        || Math.abs(state.y - player.y) > ROLLBACK_SNAP_PX) {
+        player.x = state.x;
+        player.y = state.y;
+        predictionHistory.clear();
         return;
     }
 
-    const stepX: number = clampCorrectionStep(errorX * CORRECTION_RATE);
-    if (stepX !== 0 && canShiftX(player.x + stepX, player.y, stepX)) {
-        player.x += stepX;
+    const ackTick: number = state.ackInputTick;
+    const ackX: number = Number.isFinite(state.ackX) ? state.ackX : state.x;
+    const ackY: number = Number.isFinite(state.ackY) ? state.ackY : state.y;
+    const ackRecord: HistoryEntry | undefined = predictionHistory.get(ackTick);
+
+    // 没有可比对的基准（主机还没消费过输入，或刚清过历史）：直接接受本地预测
+    if (ackTick <= 0 || ackRecord === undefined) {
+        return;
     }
 
-    const stepY: number = clampCorrectionStep(errorY * CORRECTION_RATE);
-    if (stepY !== 0 && canShiftY(player.x, player.y + stepY, stepY)) {
-        player.y += stepY;
+    const dx: number = ackX - ackRecord.state.x;
+    const dy: number = ackY - ackRecord.state.y;
+    // 水平：主机拿到这段输入最多比本地晚 ack 深度那么多帧，容忍这段延迟内的位移；
+    // 垂直：重力连续变化，两边只差一个"相位"，一帧多的下落距离就够了。
+    const ackFrames: number = Math.min(ROLLBACK_ACK_FRAME_CAP, Math.max(1, latestPredictedTick - ackTick + 1));
+    const toleranceX: number = Math.max(ROLLBACK_EPSILON_PX, Math.abs(ackRecord.state.hsp * ackRecord.delta) * ackFrames);
+    const toleranceY: number = Math.max(ROLLBACK_EPSILON_PX, Math.abs(ackRecord.state.vsp * ackRecord.delta) * ROLLBACK_FALL_TOLERANCE_FRAMES);
+    if (Math.abs(dx) <= toleranceX && Math.abs(dy) <= toleranceY) {
+        return; // 预测有效，什么都不用做
     }
-}
 
-function applyOwnPlayerState(state: LanPlayerState): void {
-    // 自己的位置由本地预测推进，这里同步主机权威的 HP 并持续校正位置
-    player.hp = state.hp;
-    uistate.deathUI_isOpening = player.hp <= 0;
-    targetX = state.x;
-    targetY = state.y;
-    lastOwnStateAt = Date.now();
-    reconcileOwnPosition();
+    if (Math.abs(dx) > ROLLBACK_SNAP_PX || Math.abs(dy) > ROLLBACK_SNAP_PX) { // 偏差大到没法有意义地重放，直接对齐
+        player.x = state.x;
+        player.y = state.y;
+        predictionHistory.clear();
+        return;
+    }
+
+    ackRecord.state.x = ackX; // 用主机在该 tick 的权威位置覆盖历史快照
+    ackRecord.state.y = ackY;
+
+    restorePlayerState(player, ackRecord.state); // 回滚
+    player.hp = authoritativeHp;
+
+    // 重放 ackTick+1 .. latestPredictedTick，并同步历史
+    let replayed: number = 0;
+    setPlayerReplayMode(true);
+    for (let t = ackTick + 1; t <= latestPredictedTick; t++) {
+        const r: HistoryEntry | undefined = predictionHistory.get(t);
+        if (r === undefined) {break;}
+        applyClientPrediction(player, r.delta, { ...r.input });
+        r.state = capturePlayerState(player); // 保持历史与重放结果一致
+        replayed++;
+        if (replayed >= MAX_REPLAY_FRAMES) {break;}
+    }
+    setPlayerReplayMode(false);
+
+    player.hp = authoritativeHp;
+    uistate.deathUI_isOpening = authoritativeHp <= 0;
 }
 
 function applyPlayerState(state: LanPlayerState): void {
@@ -180,9 +213,7 @@ function applyWorldDiff(message: WorldDiffMessage): void {
 }
 
 function applyWorldChunk(message: WorldChunkMessage): void {
-    if (message.palette !== undefined) {
-        loadPalette(message.palette);
-    }
+    if (message.palette !== undefined) {loadPalette(message.palette);}
     pushChunkToWorld(message.chunkData, message.behind);
     chunk.num = message.chunkNum;
     chunk.start_x = message.chunkStartX;
@@ -190,9 +221,11 @@ function applyWorldChunk(message: WorldChunkMessage): void {
 
     if (!message.behind) {
         const offset: number = chunk.width * 64;
-        targetX += offset;
         for (const target of remoteTargets.values()) {
             target.x += offset;
+        }
+        for (const entry of predictionHistory.values()) {
+            entry.state.x += offset;
         }
     }
 
@@ -235,29 +268,6 @@ function handleEvent(event: LanEvent): void {
     }
 }
 
-// 兜底刷新：连续校正可能被地形挡住而残留漂移，定时检查并一次性对齐
-function startDriftGuard(): void {
-    if (driftGuardTimer !== null) {return;}
-    driftGuardTimer = apioxTime.setInt((): void => {
-        // 主机长时间没发状态时不要用旧目标硬拉，避免主机卡顿时把房客拽回去
-        if (Date.now() - lastOwnStateAt > DRIFT_GUARD_INTERVAL_MS) {return;}
-
-        const errorX: number = targetX - player.x;
-        const errorY: number = targetY - player.y;
-        if (Math.abs(errorX) <= DRIFT_SNAP_DISTANCE_PX && Math.abs(errorY) <= DRIFT_SNAP_DISTANCE_PX) {return;}
-
-        console.warn('[lan] forced position resync', Math.round(errorX), Math.round(errorY));
-        player.x = targetX;
-        player.y = targetY;
-    }, DRIFT_GUARD_INTERVAL_MS);
-}
-
-function stopDriftGuard(): void {
-    if (driftGuardTimer === null) {return;}
-    apioxTime.clearInt(driftGuardTimer);
-    driftGuardTimer = null;
-}
-
 export function startClientNet(): void {
     if (active) {return;}
     active = true;
@@ -266,6 +276,9 @@ export function startClientNet(): void {
     remotePlayers.clear();
     remoteTargets.clear();
     remoteSeen.clear();
+    predictionHistory.clear();
+    latestPredictedTick = 0;
+    lastHostHp = player.hp;
 
     const ownId: string | null = getSessionId();
     if (ownId !== null) {player.id = ownId;}
@@ -280,10 +293,6 @@ export function startClientNet(): void {
         remoteSeen.set(state.playerId, now);
     }
 
-    targetX = player.x;
-    targetY = player.y;
-    lastOwnStateAt = now;
-    startDriftGuard();
     offEvents = apioxNet.onEvent(handleEvent, true);
 }
 
@@ -327,8 +336,6 @@ export function stopClientNet(): void {
     if (!active) {return;}
     active = false;
 
-    stopDriftGuard();
-
     if (offEvents !== null) {
         offEvents();
         offEvents = null;
@@ -338,4 +345,20 @@ export function stopClientNet(): void {
     remoteTargets.clear();
     remoteSeen.clear();
     apioxNet.clearEventLog();
+}
+
+export function recordPredictedFrame(input: PlayerInputState, delta: number): void {
+    predictionHistory.set(input.tick, {
+        input: input,
+        delta: delta,
+        state: capturePlayerState(player),
+    });
+    if (input.tick > latestPredictedTick) {latestPredictedTick = input.tick;}
+
+    const cutoff: number = latestPredictedTick - MAX_HISTORY_FRAMES;
+    if (cutoff > 0) {
+        for (const t of predictionHistory.keys()) {
+            if (t < cutoff) {predictionHistory.delete(t);}
+        }
+    }
 }

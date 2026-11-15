@@ -15,6 +15,7 @@ export function offsetElements(behind: boolean): void {
 
         for (const remote of remotePlayers.values()) {
             remote.x += offset;
+            remote.ackX += offset; // 回滚基准要跟着世界坐标一起移，否则换区块后会被当成一次传送
         }
 
         for (let i = 0; i < animalArray.length; i++) {
