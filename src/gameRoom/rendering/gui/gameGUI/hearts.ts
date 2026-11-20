@@ -1,44 +1,9 @@
 import { player } from '../../../player.js';
 import { widgets } from '../../../gui/gameGUI/inventory.js';
+import { heartState } from '../../../gui/gameGUI/gameGuiState.js';
 import { guiTextures, gui_isDrawing } from '../application.js';
 import { heartContainer } from '../application.js';
 import * as PIXI from 'pixi.js';
-
-export interface HeartState {
-    lasthp: number;
-    timer: number;
-    drawWhite: boolean;
-    drawWhite_phaser: number;
-}
-
-export const heartState: HeartState = {
-    lasthp: 20,
-    timer: 0,
-    drawWhite: false,
-    drawWhite_phaser: 1,
-};
-
-// 心形血条的动画计时（血量变化时触发白闪）
-export function heartsAct(delta: number): void {
-    if (player.hp !== heartState.lasthp) {
-        heartState.drawWhite = true;
-        heartState.lasthp = player.hp;
-        heartState.drawWhite_phaser = 2;
-    }
-
-    if (heartState.drawWhite) {
-        heartState.timer += delta;
-        if (heartState.timer >= 6) {
-            heartState.drawWhite_phaser++;
-            heartState.timer = 0;
-        }
-        if (heartState.drawWhite_phaser > 4) {
-            heartState.drawWhite = false;
-            heartState.drawWhite_phaser = 1;
-            heartState.timer = 0;
-        }
-    }
-}
 
 // 心形纹理
 let heartTextures: {

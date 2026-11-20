@@ -1,4 +1,4 @@
-// 纯几何工具：不依赖 DOM、输入、UI 或渲染。
+// only math and logic
 export function point_coll_rect(
     x: number,
     y: number,

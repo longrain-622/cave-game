@@ -1,11 +1,47 @@
 // gameGuiState.ts
-// GUI 每帧逻辑与槽位几何：死亡状态、熔炉烧制、槽位命中测试。
+// GUI 每帧逻辑与槽位几何：死亡状态、心形血条动画、熔炉烧制、槽位命中测试。
 import { player } from '../../player.js';
 import { uistate } from '../uiState.js';
 import { furnaceLoop } from './blockGUI/furnace.js';
 import { room } from '../../../constants/generic.js';
 import { inventory } from './inventory.js';
 import { invenConfig, iC_hand, InventoryConfig } from './inventoryConfig.js';
+
+export interface HeartState {
+    lasthp: number;
+    timer: number;
+    drawWhite: boolean;
+    drawWhite_phaser: number;
+}
+
+export const heartState: HeartState = {
+    lasthp: 20,
+    timer: 0,
+    drawWhite: false,
+    drawWhite_phaser: 1,
+};
+
+// 心形血条的动画计时（血量变化时触发白闪）
+export function heartsAct(delta: number): void {
+    if (player.hp !== heartState.lasthp) {
+        heartState.drawWhite = true;
+        heartState.lasthp = player.hp;
+        heartState.drawWhite_phaser = 2;
+    }
+
+    if (heartState.drawWhite) {
+        heartState.timer += delta;
+        if (heartState.timer >= 6) {
+            heartState.drawWhite_phaser++;
+            heartState.timer = 0;
+        }
+        if (heartState.drawWhite_phaser > 4) {
+            heartState.drawWhite = false;
+            heartState.drawWhite_phaser = 1;
+            heartState.timer = 0;
+        }
+    }
+}
 
 export function gameGuiLogicLoop(delta: number): void {
     uistate.deathUI_isOpening = (player.hp <= 0);

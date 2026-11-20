@@ -8,7 +8,7 @@ import { resumeWaterFlow } from "./blockMecha/bmFunction.js";
 import { isClient } from "../session.js";
 
 // 温度类型常量
-const TEMP = {
+export const TEMP = {
     HOT: 1, NORMAL: 0, COLD: -1,
     NOISE_SCALE: 0.008, // 温度变化频率（越小越平缓，形成较大气候带）
     OCTAVES: 3, // 分形层数
@@ -19,7 +19,7 @@ const TEMP = {
     COLD_THRESHOLD: -0.25, // <为COLD
 }
 
-let lowest_point: number = 0; //地形最低点的纵坐标
+export let lowest_point: number = 0; // 地形最低点的纵坐标
 
 // 佩林噪声
 class PerlinNoise {
@@ -33,28 +33,23 @@ class PerlinNoise {
         this.init();
     }
 
-    // 初始化随机梯度
-    init(): void {
-        // 使用种子生成一个随机数序列
-        let r: number = (this.seed * 43758.5453) % 1;
+    init(): void { // 初始化随机梯度
+        let r: number = (this.seed * 43758.5453) % 1; // 使用种子生成一个随机数序列
         this.random = (): number => {
             r = (r * 43758.5453) % 1;
             return r;
         };
     }
 
-    // 线性插值
-    lerp(a: number, b: number, t: number): number {
+    lerp(a: number, b: number, t: number): number { // 线性插值
         return a + t * (b - a);
     }
 
-    // 平滑函数
-    fade(t: number): number {
+    fade(t: number): number { // 平滑函数
         return t * t * t * (t * (t * 6 - 15) + 10);
     }
 
-    // 一维佩林噪声，输入 x，输出范围约 [-1, 1]
-    noise(x: number): number {
+    noise(x: number): number { // 一维佩林噪声，输入 x，输出范围约 [-1, 1]
         const x0: number = Math.floor(x);
         const x1: number = x0 + 1;
         const tx: number = x - x0;
@@ -66,14 +61,17 @@ class PerlinNoise {
         return this.lerp(v0, v1, u);
     }
 
-    // 根据整数坐标生成随机梯度（-1 到 1 之间的随机数）
-    randomGradient(i: number): number {
+    randomGradient(i: number): number { // 根据整数坐标生成随机梯度（-1 到 1 之间的随机数）
         const val: number = Math.sin(i * 12.9898 + this.seed * 43758.5453) * 43758.5453;
         return (val - Math.floor(val)) * 2 - 1; // 映射到 [-1, 1]
     }
 
-    // 分形噪声（叠加多个频率）
-    fbm(x: number, octaves: number = 4, persistence: number = 0.5, lacunarity: number = 2.0): number {
+    fbm(
+        x: number,
+        octaves: number = 4,
+        persistence: number = 0.5,
+        lacunarity: number = 2.0
+    ): number { // 分形噪声（叠加多个频率）
         let value: number = 0;
         let amplitude: number = 1;
         let frequency: number = 1;
@@ -87,8 +85,12 @@ class PerlinNoise {
         return value / maxAmp; // 归一化到约 [-1, 1]
     }
 
-    // 二维噪声
-    private dotGridGradient(ix: number, iy: number, x: number, y: number): number {
+    private dotGridGradient(
+        ix: number,
+        iy: number,
+        x: number,
+        y: number
+    ): number { // 二维噪声
         let angle: number = Math.sin(ix * 12.9898 + iy * 78.233 + this.seed * 43758.5453) * 43758.5453;
         angle = angle - Math.floor(angle);
         angle = angle * 2 * Math.PI;
@@ -99,8 +101,7 @@ class PerlinNoise {
         return dx * gx + dy * gy;
     }
 
-    // 二维佩林噪声，输入 (x, y)，输出范围约 [-1, 1]
-    noise2D(x: number, y: number): number {
+    noise2D(x: number, y: number): number { // 二维佩林噪声，输入 (x, y)，输出范围约 [-1, 1]
         const x0: number = Math.floor(x);
         const x1: number = x0 + 1;
         const y0: number = Math.floor(y);
@@ -122,8 +123,13 @@ class PerlinNoise {
         return this.lerp(nx0, nx1, v);
     }
 
-    // 二维分形噪声（FBM）
-    fbm2D(x: number, y: number, octaves: number = 4, persistence: number = 0.5, lacunarity: number = 2.0): number {
+    fbm2D(
+        x: number,
+        y: number,
+        octaves: number = 4,
+        persistence: number = 0.5,
+        lacunarity: number = 2.0
+    ): number { // 二维分形噪声（FBM）
         let value: number = 0;
         let amplitude: number = 1;
         let frequency: number = 1;
@@ -139,7 +145,7 @@ class PerlinNoise {
 }
 
 // 创建噪声对象
-const seed: number = (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.seed) && !Number.isNaN(readingWorld.seed)) ? readingWorld.seed : Math.random();
+export const seed: number = (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.seed) && !Number.isNaN(readingWorld.seed)) ? readingWorld.seed : Math.random();
 const terrainNoise = new PerlinNoise(seed);
 const stoneNoise = new PerlinNoise(seed + 1); // 不同种子
 const temperatureNoise = new PerlinNoise(seed + 2); // 温度噪声，不同种子
@@ -426,7 +432,7 @@ function generateCacti(worlding: number[][], toIndex: (id: number) => number): v
     }
 }
 
-function createChunkAnyTime(): boolean | null {
+export function createChunkAnyTime(): boolean | null {
     let minX: number = player.x;
     let maxX: number = player.x;
     for (const remote of remotePlayers.values()) {
@@ -444,9 +450,8 @@ function createChunkAnyTime(): boolean | null {
     return null;
 }
 
-function createWorldMain(): void {
-    // 读取存档的 lowest_point
-    if (coverWhenSave && notNullUndefined(readingWorld)) {
+function main(): void {
+    if (coverWhenSave && notNullUndefined(readingWorld)) { // 读取存档的 lowest_point
         if ((!Number.isNaN(readingWorld.lowest_point)) && notNullUndefined(readingWorld.lowest_point)) {
             lowest_point = readingWorld.lowest_point;
             console.log('read the variable lowest_point ok');
@@ -456,8 +461,7 @@ function createWorldMain(): void {
         }
     }
 
-    // 读取存档的世界数组
-    if (!coverWhenSave) {
+    if (!coverWhenSave) { // 读取存档的世界数组
         resetPalette();
         for (let i = 0; i < 8; i++) {
             createChunk(chunk.start_x, true);
@@ -482,6 +486,4 @@ function createWorldMain(): void {
         if (!isClient()) {resumeWaterFlow();}
     }
 }
-createWorldMain();
-
-export { createChunkAnyTime, lowest_point, seed, TEMP };
+main();

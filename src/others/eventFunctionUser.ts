@@ -4,6 +4,11 @@ import { eventBusSwitch } from "../gameRoom/gameState.js";
 import "../gameRoom/others/audioManager.js";
 
 export function checkEventBus(): void {
+    if (eventBusSwitch.blockBreak.length > 0) {
+        for (const blockId of eventBusSwitch.blockBreak.splice(0)) {
+            eventBus.emit('block:break', blockId);
+        }
+    }
     if (eventBusSwitch.itemPickup > 0) {
         eventBusSwitch.itemPickup--;
         eventBus.emit('item:pickup');

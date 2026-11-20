@@ -5,9 +5,8 @@ import { player, createPlayer, remotePlayers, remoteInputs, createEmptyPlayerInp
 import type { Players } from '../player.js';
 import { inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { clock } from '../nature/sky.js';
-import { chunk, palette, setWorldStateListener, world, place_meeting } from '../world.js';
+import { chunk, palette, setWorldStateListener, setChunkCreateListener, world, place_meeting } from '../world.js';
 import type { BlockPos } from '../world.js';
-import { eventBus } from '../others/eventBus.js';
 import { setNetRole } from '../session.js';
 import { HOST_PLAYER_ID, PlayerInputState } from '../../../shared/netProtocol.js';
 import type {
@@ -28,7 +27,6 @@ type PeerCountListener = (count: number) => void;
 let active: boolean = false;
 let peerCount: number = 0;
 let offEvents: (() => void) | null = null;
-let offChunks: (() => void) | null = null;
 let inventoryTimer: number | null = null;
 let timeTimer: number | null = null;
 let diffTimer: number | null = null;
@@ -340,7 +338,7 @@ export function startHosting(onPeerCount?: PeerCountListener): void {
     setNetRole('host');
 
     offEvents = apioxNet.onEvent(handleEvent, true);
-    offChunks = eventBus.on('chunk:create', (behind: boolean): void => {
+    setChunkCreateListener((behind: boolean): void => {
         // 先发送左移前的方块变化，再发送区块；客户端按同样顺序应用。
         flushDiffs();
         sendChunk(behind);
@@ -375,10 +373,7 @@ export function stopHosting(): void {
         offEvents();
         offEvents = null;
     }
-    if (offChunks !== null) {
-        offChunks();
-        offChunks = null;
-    }
+    setChunkCreateListener(null);
     setWorldStateListener(null);
     if (diffTimer !== null) {
         apioxTime.clearInt(diffTimer);

@@ -112,8 +112,7 @@ export function initPlayerPosition(player: Players): void { // 初始化玩家�
     player.y = i * 64 - 256;
 }
 
-// 回滚重放期间不触发受击事件：重放只是重算历史，不该再放一次音效/抖屏
-let replaying: boolean = false;
+let replaying: boolean = false; // 回滚重放期间不触发受击事件：重放只是重算历史，不该再放一次音效/抖屏
 
 export function setPlayerReplayMode(on: boolean): void {
     replaying = on;
@@ -237,7 +236,7 @@ function playerJump(p: Players, delta: number): void { // 玩家跳跃（水中�
     } else {
         p.vsp += p.grav * delta;
     }
-    // 逐像素步进是为了不穿墙；步数必须按 delta 缩放，否则 60Hz 和 144Hz 的下落速度会差一倍多
+    // 逐像素步进是为了不穿墙；步数必须按 delta 缩放
     const movePx: number = p.vsp * delta + p.vyCarry;
     const steps: number = Math.round(movePx);
     p.vyCarry = movePx - steps;

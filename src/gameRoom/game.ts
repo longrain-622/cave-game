@@ -1,16 +1,15 @@
-import { player, playerLoop, updatePlayerState, remotePlayers, remoteInputs, stepRemotePlayer, createEmptyPlayerInput, applyClientPrediction } from './player.js';
+import { player, applyClientPrediction } from './player.js';
 import { room } from '../constants/generic.js';
-import { mouse, mouseAct } from './input/mouseInput.js';
+import { mouse } from './mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
 import { blockFrameLoop } from './nature/blockFrameState.js';
 import { updatePlayerRender } from './rendering/actors/playerRender.js';
+import { logicLoop } from './logicLoop.js';
 
-import { animalsLoop, natureSpawnAnimals } from './animals/animals.js';
-import { animalArray } from './animals/animalIds.js';
 import { drawAnimals } from './rendering/actors/animalRender.js';
 
-import { gameGuiLogicLoop } from './gui/gameGUI/gameGuiState.js';
-import { drawHeart, heartsAct } from './rendering/gui/gameGUI/hearts.js';
+import { heartsAct } from './gui/gameGUI/gameGuiState.js';
+import { drawHeart } from './rendering/gui/gameGUI/hearts.js';
 import { drawInventory } from './rendering/gui/gameGUI/inventory.js';
 import { drawWorkbench } from './rendering/gui/gameGUI/blockGUI/crafting_table.js';
 import { drawChest } from './rendering/gui/gameGUI/blockGUI/chest.js';
@@ -18,24 +17,16 @@ import { drawFurnace } from './rendering/gui/gameGUI/blockGUI/furnace.js';
 import { updatePauseMenu } from './rendering/gui/contentGUI/gameContent.js';
 import { floatContainer } from './rendering/gui/application.js';
 import { uistate } from './gui/uiState.js';
-import { dropArray, dropsX } from './dropped/droppedItem.js';
 import { drawDrops } from './rendering/items/dropRender.js';
 import { drawDeadPage } from './rendering/gui/gameGUI/death.js';
 import { updateDebugScreen } from './rendering/gui/contentGUI/debugScreen.js';
 
-import { particleArray, particleAct } from './particle.js';
 import { drawParticles } from './rendering/items/particleRender.js';
-import { skyLogicLoop } from './nature/sky.js';
 import { skyRendering } from './rendering/world/skyRender.js';
-import { createChunkAnyTime } from './nature/createWorld.js';
-import { offsetElements } from './nature/offsetElements.js';
-import { entityBlock_array, entityBlockLogic } from './nature/entityBlock.js';
 import { renderingEntityBlock } from './rendering/world/entityBlockRender.js';
-import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
 
 import { ApioxObject } from '../apiox/dom.js';
 import { notEventAudio } from './others/audioManager.js';
-import { eventBus } from './others/eventBus.js';
 import { isClient } from './session.js';
 import { clientNetTick, recordPredictedFrame } from './net/clientNet.js';
 import { hostNetTick } from './net/hostNet.js';
@@ -50,33 +41,6 @@ function main(): void {
     gameRoom.domstyle('height', String(room.height) + 'px');
 }
 main();
-
-function logicLoop(delta: number): void {
-    const newChunkBehind: boolean | null = createChunkAnyTime();
-    if (newChunkBehind !== null) {
-        offsetElements(newChunkBehind);
-        eventBus.emit('chunk:create', newChunkBehind);
-    }
-    blockFrameLoop(delta);
-    updatePlayerState(player);
-    playerLoop(delta, uistate.invenUI_isOpening(), mouse.x);
-    for (const remote of remotePlayers.values()) {
-        updatePlayerState(remote);
-        stepRemotePlayer(remote, delta, remoteInputs.get(remote.id) ?? createEmptyPlayerInput());
-    }
-    mouseAct(delta);
-    natureSpawnAnimals(delta);
-    if (animalArray.length > 0) {animalsLoop(delta);}
-    if (dropArray.length > 0) {dropsX(delta);}
-    if (particleArray.length > 0) {particleAct(delta);}
-    if (entityBlock_array.length > 0) {entityBlockLogic(delta);}
-    skyLogicLoop(delta);
-    lookBlocks(delta);
-    if (player.hp > 0) {heartsAct(delta);}
-    gameGuiLogicLoop(delta);
-    notEventAudio();
-    hostNetTick();
-}
 
 function renderingLoop(): void {
     updatePlayerRender();
@@ -102,10 +66,8 @@ function renderingLoop(): void {
     updateDebugScreen();
 }
 
-// 客户端：本地预测自己的移动，远端玩家与主机状态由网络层驱动
 function clientLogicLoop(delta: number): void {
     const input = clientInputTick();
-    // 预测会消费 jumpPressed（单帧事件），历史里必须留原值，否则回滚重放时跳跃会被吞掉
     const recordedInput: PlayerInputState = { ...input };
     player.rightOnMouse = mouse.x > player.screen_x + player.width / 2;
     applyClientPrediction(player, delta, input);
@@ -113,7 +75,6 @@ function clientLogicLoop(delta: number): void {
     clientNetTick(delta);
     blockFrameLoop(delta);
     if (player.hp > 0) {heartsAct(delta);}
-    notEventAudio();
 }
 
 function interactionLoop(): void {
@@ -125,7 +86,9 @@ export function gameLoop(delta: number): void {
         clientLogicLoop(delta);
     } else {
         logicLoop(delta);
+        hostNetTick();
     }
+    notEventAudio();
     interactionLoop();
     renderingLoop();
 }

@@ -55,6 +55,18 @@ export function setWorldStateListener(listener: ((pos: BlockPos, index: number) 
     onWorldStateChanged = listener;
 }
 
+// 区块生成后通知网络层；纯逻辑层只调用 notifyChunkCreate，由 hostNet 决定是否下发。
+// 必须在世界左移的同一帧、其他逻辑改动世界之前触发，否则 diff 会带着平移后的坐标提前下发。
+let chunkCreateListener: ((behind: boolean) => void) | null = null;
+export function setChunkCreateListener(listener: ((behind: boolean) => void) | null): void {
+    chunkCreateListener = listener;
+}
+export function notifyChunkCreate(behind: boolean): void {
+    if (chunkCreateListener !== null) {
+        chunkCreateListener(behind);
+    }
+}
+
 // stone_dark 被别的方块占用时退到背景层，格子再变回空气时又从背景层回到前景
 function keepStoneDark(old: BlockState | undefined, next: BlockState): BlockState {
     if (old && old.type === idOfBlock.stone_dark && next.type !== idOfBlock.stone_dark) {
