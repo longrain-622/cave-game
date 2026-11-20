@@ -59,12 +59,11 @@
     "connect": "Se connecter",
     "cancel": "Annuler",
     "selected": "Sélectionné",
-    "joinPending": "La connexion LAN sera ajoutée à l’étape suivante",
     "spectator": "Joueur",
     "connecting": "Connexion…",
     "connectFailed": "Échec de la connexion",
     "invalidAddress": "L’adresse doit être une IP ou IP:port",
-    "desktopOnly": "Le LAN n’est disponible que dans l’application de bureau Electron."
+    "desktopOnly": "Le multijoueur n’est disponible que dans l’application de bureau."
   },
   "loadPage": {
     "text": "Chargement",

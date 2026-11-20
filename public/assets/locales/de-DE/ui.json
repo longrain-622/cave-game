@@ -59,12 +59,11 @@
     "connect": "Verbinden",
     "cancel": "Abbrechen",
     "selected": "Ausgewählt",
-    "joinPending": "LAN-Verbindung wird im nächsten Schritt hinzugefügt",
     "spectator": "Spieler",
     "connecting": "Verbinde…",
     "connectFailed": "Verbindung fehlgeschlagen",
     "invalidAddress": "Adresse muss eine IP oder IP:Port sein",
-    "desktopOnly": "LAN ist nur in der Electron-Desktop-App verfügbar."
+    "desktopOnly": "Mehrspieler ist nur in der Desktop-App verfügbar."
   },
   "loadPage": {
     "text": "Lädt",

@@ -59,11 +59,10 @@
     "connect": "Connect",
     "cancel": "Cancel",
     "selected": "Selected",
-    "joinPending": "LAN connection will be added in the next step",
     "spectator": "Player",
     "connecting": "Connecting",
     "connectFailed": "Connection failed",
-    "desktopOnly": "LAN is only available in the Electron desktop app.",
+    "desktopOnly": "Multiplayer is only available in the desktop app.",
     "invalidAddress": "Address must be an IP or IP:port"
   },
   "loadPage": {

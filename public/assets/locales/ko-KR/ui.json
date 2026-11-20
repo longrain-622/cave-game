@@ -59,12 +59,11 @@
     "connect": "연결",
     "cancel": "취소",
     "selected": "선택됨",
-    "joinPending": "LAN 연결은 다음 단계에서 추가됩니다",
     "spectator": "플레이어",
     "connecting": "연결 중",
     "connectFailed": "연결 실패",
     "invalidAddress": "주소는 IP 또는 IP:포트 형식이어야 합니다",
-    "desktopOnly": "LAN 기능은 Electron 데스크톱 앱에서만 사용할 수 있습니다."
+    "desktopOnly": "멀티 플레이 기능은 데스크톱 앱에서만 사용할 수 있습니다."
   },
   "loadPage": {
     "text": "로딩 중",

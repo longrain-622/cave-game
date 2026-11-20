@@ -6,18 +6,19 @@ export let worldName: string = "New World";
 export function setWorldName(val: string): void { worldName = val; }
 export const sealevel: number = world_height / 2;
 
-// 定义区块对象
 interface Chunk {
     width: number;
     start_x: number;
     num: number;
-    lookRange: number;
-    left_number: number;
+    lookRange: number; // 渲染范围
+    left_number: number; // 左侧区块数量
 }
-export const chunk: Chunk = {
-    width: 16, start_x: 0,
-    num: 0, lookRange: 32, // 渲染范围
-    left_number: 0, // 左侧区块数量
+export const chunk: Chunk = { // 定义区块对象
+    width: 16,
+    start_x: 0,
+    num: 0,
+    lookRange: 32,
+    left_number: 0,
 }
 
 export let world: number[][] = Array.from({ length: world_height }, (): number[] => []);
@@ -29,15 +30,24 @@ export interface BlockPos {
     x: number; y: number;
 }
 
+/*
+    behind: 背后方块的类型 id，air 表示无背景
+    direction: 方向 0左或默认 1右
+    condition: 通用的方块附加状态，含义由方块类型决定，默认 0
+        水：0 水源、1~7 水平水流（数字越大水量越大）、8 竖直水流；水源与竖直水流不使用 direction
+*/
 export interface BlockState {
     type: number;
-    behind: number; // 背后方块的类型 id，air 表示无背景
-    direction: number; // 方向 0左或默认 1右
-    // 通用的方块附加状态，含义由方块类型决定，默认 0
-    // 水：0 水源、1~7 水平水流（数字越大水量越大）、8 竖直水流；水源与竖直水流不使用 direction
+    behind: number;
+    direction: number;
     condition: number;
 }
-export function newBlockState(type: number, behind: number = idOfBlock.air, direction: number = 0, condition: number = 0): BlockState {
+export function newBlockState(
+    type: number,
+    behind: number = idOfBlock.air,
+    direction: number = 0,
+    condition: number = 0
+): BlockState {
     return {
         type: type,
         behind: behind,
@@ -49,8 +59,7 @@ export function newBlockState(type: number, behind: number = idOfBlock.air, dire
 export const changePos: BlockPos[] = []; // 待处理的方块坐标
 export const lightPos: BlockPos[] = []; // 需要计算光照的
 
-// 主机联网时用于收集方块变化；单机/客户端保持 null。
-export let onWorldStateChanged: ((pos: BlockPos, index: number) => void) | null = null;
+export let onWorldStateChanged: ((pos: BlockPos, index: number) => void) | null = null; // 主机联网时用于收集方块变化；单机/客户端保持 null。
 export function setWorldStateListener(listener: ((pos: BlockPos, index: number) => void) | null): void {
     onWorldStateChanged = listener;
 }
@@ -67,19 +76,32 @@ export function notifyChunkCreate(behind: boolean): void {
     }
 }
 
-// stone_dark 被别的方块占用时退到背景层，格子再变回空气时又从背景层回到前景
-function keepStoneDark(old: BlockState | undefined, next: BlockState): BlockState {
-    if (old && old.type === idOfBlock.stone_dark && next.type !== idOfBlock.stone_dark) {
-        return newBlockState(next.type, idOfBlock.stone_dark, next.direction, next.condition);
+function keepStoneDark(old: BlockState | undefined, next: BlockState): BlockState { // stone_dark 被别的方块占用时退到背景层，格子再变回空气时又从背景层回到前景
+    if (
+        old && old.type === idOfBlock.stone_dark &&
+        next.type !== idOfBlock.stone_dark
+    ) {
+        return newBlockState(
+            next.type,
+            idOfBlock.stone_dark,
+            next.direction,
+            next.condition
+        );
     }
-    if (next.type === idOfBlock.air && next.behind === idOfBlock.stone_dark) {
-        return newBlockState(idOfBlock.stone_dark, next.behind, next.direction, next.condition);
+    if (next.type === idOfBlock.air &&
+        next.behind === idOfBlock.stone_dark
+    ) {
+        return newBlockState(
+            idOfBlock.stone_dark,
+            next.behind,
+            next.direction,
+            next.condition
+        );
     }
     return next;
 }
 
-// 所有修改 world 数组的操作必须使用该函数
-export function setWorldState(pos: BlockPos, state: BlockState): void {
+export function setWorldState(pos: BlockPos, state: BlockState): void { // 所有修改 world 数组的操作必须使用该函数
     if (isOutOfBounds(pos.y, pos.x)) {return;}
     const next: BlockState = keepStoneDark(getBlockState(world[pos.y][pos.x]), state);
     const idx: number = registerBlockState(next);
@@ -104,8 +126,7 @@ export function setWorldState(pos: BlockPos, state: BlockState): void {
     lightPos.push({ x: pos.x, y: pos.y + 1 });
 }
 
-// 检测点与对象的碰撞
-export function place_meeting(x: number, y: number): boolean {
+export function place_meeting(x: number, y: number): boolean { // 检测点与对象的碰撞
     const col: number = Math.floor(x / 64);
     const row: number = Math.floor(y / 64);
     if (isOutOfBounds(row, col)) {return true;} // 越界视为实体（与旧版 canOver(undefined) 一致）
@@ -129,30 +150,25 @@ export function isBlockFold(pos: BlockPos): boolean {
     return flat === 4;
 }
 
-// 读取 (x, y) 处方块的类型 id（世界格存的是调色板索引，运行时经调色板解析）
-export function blockTypeAt(x: number, y: number): number {
+export function blockTypeAt(x: number, y: number): number { // 读取 (x, y) 处方块的类型 id（世界格存的是调色板索引，运行时经调色板解析）
     if (isOutOfBounds(y, x)) {return -1;}
     return getBlockState(world[y][x]).type;
 }
 
-// 越界处按空气处理（只读常量，调用方不得修改）
-const airState: BlockState = newBlockState(idOfBlock.air);
+const airState: BlockState = newBlockState(idOfBlock.air); // 越界处按空气处理（只读常量，调用方不得修改）
 
-// 读取 (x, y) 处的完整方块状态（越界返回空气状态）
-export function blockStateAt(x: number, y: number): BlockState {
+export function blockStateAt(x: number, y: number): BlockState { // 读取 (x, y) 处的完整方块状态（越界返回空气状态）
     if (isOutOfBounds(y, x)) {return airState;}
     return getBlockState(world[y][x]);
 }
 
-// 只替换 type 的新状态 改变方块类型时统一用它
-export function stateWithType(x: number, y: number, type: number): BlockState {
+export function stateWithType(x: number, y: number, type: number): BlockState { // 只替换 type 的新状态 改变方块类型时统一用它
     const old: BlockState = blockStateAt(x, y);
     const newState: BlockState = newBlockState(type, old.behind, old.direction, old.condition);
     return newState;
 }
 
-// 该列生成时使用的全局 X 坐标
-export function worldXAt(col: number): number {
+export function worldXAt(col: number): number { // 该列生成时使用的全局 X 坐标
     return col - chunk.left_number * chunk.width;
 }
 
@@ -162,13 +178,11 @@ export function isOutOfBounds(row: number, col: number): boolean { // y, x
     return col < 0 || col >= rowLen;
 }
 
-// 区块数组须已是调色板索引（由生成方负责转换），本函数只做追加
-export function pushChunkToWorld(chunkArray: number[][], behind: boolean): void {
+export function pushChunkToWorld(chunkArray: number[][], behind: boolean): void { // 区块数组须已是调色板索引（由生成方负责转换），本函数只做追加
     const expectedLen: number = chunk.num * chunk.width;
     for (let i = 0; i < world_height; i++) {
-        // 截断污染：如果该行长度超过预期，说明被越界写入过
         if (world[i].length > expectedLen) {
-            world[i].length = expectedLen;
+            world[i].length = expectedLen; // 截断污染：如果该行长度超过预期，说明被越界写入过
         }
 
         if (behind) {
@@ -183,14 +197,18 @@ export function pushChunkToWorld(chunkArray: number[][], behind: boolean): void 
 export const palette: BlockState[] = []; // 状态实例数组，数组下标即索引
 export const paletteMap = new Map<number, number>(); // 状态编码 - 索引
 
-// type 之外的字段一律登记在此，位定义按声明顺序从低位占用
-// 用 Record 约束键集合：给 BlockState 加字段却忘了登记时，这一行会编译报错，不会静默丢掉字段
+/*
+    type 之外的字段一律登记在此，位定义按声明顺序从低位占用
+    用 Record 约束键集合：给 BlockState 加字段却忘了登记时，这一行会编译报错，不会静默丢掉字段
+    behind 存方块 id 会有负值，先加 offset 抬到非负区间，否则符号位会串进高位字段
+    behind: 背景方块 id，8 位可表示 -128 ~ 127
+    condition: 附加状态，4 位可表示 0 ~ 15
+*/
 type StateFieldKey = Exclude<keyof BlockState, 'type'>;
 const stateFields: Record<StateFieldKey, { bits: number; offset: number }> = {
-    // behind 存方块 id 会有负值，先加 offset 抬到非负区间，否则符号位会串进高位字段
-    behind: { bits: 8, offset: 128 }, // 背景方块 id，8 位可表示 -128 ~ 127
+    behind: { bits: 8, offset: 128 },
     direction: { bits: 2, offset: 0 },
-    condition: { bits: 4, offset: 0 }, // 附加状态，4 位可表示 0 ~ 15
+    condition: { bits: 4, offset: 0 },
 };
 
 function keyOf(state: BlockState): number {
@@ -201,8 +219,7 @@ function keyOf(state: BlockState): number {
     let shift: number = 0;
     for (const name of names) {
         const field: { bits: number; offset: number } = stateFields[name];
-        // 掩码让越界值只在自身字段内回绕，不会污染 type 与相邻字段
-        const value: number = (Number(state[name]) + field.offset) & ((1 << field.bits) - 1);
+        const value: number = (Number(state[name]) + field.offset) & ((1 << field.bits) - 1); // 掩码让越界值只在自身字段内回绕，不会污染 type 与相邻字段
         key |= value << shift;
         shift += field.bits;
     }
@@ -225,38 +242,31 @@ export function registerBlockState(state: BlockState): number {
     return idx;
 }
 
-// 通过索引获取方块状态（运行时读取使用）
-export function getBlockState(index: number): BlockState {
+export function getBlockState(index: number): BlockState { // 通过索引获取方块状态（运行时读取使用）
     return palette[index];
 }
 
-// 旧档的 behind 是布尔值，统一转成背景方块 id
-function normalizeBehind(val: number | boolean): number {
+function normalizeBehind(val: number | boolean): number { // 旧档的 behind 是布尔值，统一转成背景方块 id
     return typeof val === 'boolean' ? idOfBlock.air : val;
 }
 
-// 载入存档自带的调色板（每份存档独立一套），索引与存档内的世界格值对齐。
-export function loadPalette(states: BlockState[]): void {
+export function loadPalette(states: BlockState[]): void { // 载入存档自带的调色板（每份存档独立一套），索引与存档内的世界格值对齐。
     palette.length = 0;
     paletteMap.clear();
     for (let i = 0; i < states.length; i++) {
-        // 旧档的状态对象可能缺少后来新增的属性，用当前默认值补齐后入表
-        const state: BlockState = Object.assign(newBlockState(states[i].type), states[i]);
-        // 旧档没有数字 behind 的信息，布尔值只能还原成"无背景"
-        state.behind = normalizeBehind(state.behind as number | boolean);
+        const state: BlockState = Object.assign(newBlockState(states[i].type), states[i]); // 旧档的状态对象可能缺少后来新增的属性，用当前默认值补齐后入表
+        state.behind = normalizeBehind(state.behind as number | boolean); // 旧档没有数字 behind 的信息，布尔值只能还原成"无背景"
         palette.push(state);
         paletteMap.set(keyOf(state), i);
     }
 }
 
-// 新档开始时清空调色板
-export function resetPalette(): void {
+export function resetPalette(): void { // 新档开始时清空调色板
     palette.length = 0;
     paletteMap.clear();
 }
 
-// 旧存档迁移：世界数组里存的还是方块类型 id，逐格注册基础状态并改写为调色板索引
-export function migrateWorldToPalette(): void {
+export function migrateWorldToPalette(): void { // 旧存档迁移：世界数组里存的还是方块类型 id，逐格注册基础状态并改写为调色板索引
     const idToIndex: Map<number, number> = new Map();
     const toIndex: (id: number) => number = (id: number) => {
         let idx: number | undefined = idToIndex.get(id);

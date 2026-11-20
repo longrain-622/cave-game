@@ -59,11 +59,10 @@
     "connect": "连接",
     "cancel": "取消",
     "selected": "已选择",
-    "joinPending": "联机连接将在下一步接入",
     "spectator": "玩家",
     "connecting": "正在连接",
     "connectFailed": "连接失败",
-    "desktopOnly": "联机功能只能在 Electron 桌面版中使用。",
+    "desktopOnly": "多人游戏功能只能在桌面版中使用。",
     "invalidAddress": "地址格式应为 IP 或 IP:端口"
   },
   "loadPage": {

@@ -8,44 +8,47 @@ import { idOfBlock, canBehind } from '../nature/blockMecha/blocks.js';
 import { eventBus } from '../others/eventBus.js';
 import { applyLightTint, applyBackgroundLightTint } from './light.js';
 import { drawWaterSprite } from './blockFrames.js';
+import { itemTextureUrl_16 } from './items/itemTextures.js';
 
 import * as PIXI from 'pixi.js';
 import { apiMethod } from '../../apiox/method.js';
 import { apioxTime } from '../../apiox/time.js';
 
-// 方块贴图资源表（alias -> 路径），通过 PixiJS Assets 加载
-const blockAssets: Record<string, string> = {
-    destory: '/assets/images/games/blocks/destory/destory_strip10.png',
-    grass: '/assets/images/games/blocks/grass.png',
-    dirt: '/assets/images/games/blocks/dirt.png',
-    stone: '/assets/images/games/blocks/stone.png',
-    oak: '/assets/images/games/blocks/oak.png',
-    leaves: '/assets/images/games/blocks/leaves.png',
-    cobblestone: '/assets/images/games/blocks/cobblestone.png',
-    sand: '/assets/images/games/blocks/sand.png',
-    snowGrass: '/assets/images/games/blocks/grass_block_snow.png',
-    sandstone: '/assets/images/games/blocks/sandstone.png',
-    planks: '/assets/images/games/blocks/planks.png',
-    crafting_table: '/assets/images/games/blocks/crafting_table.png',
-    iron_ore: '/assets/images/games/blocks/ore/iron_ore.png',
-    coal_ore: '/assets/images/games/blocks/ore/coal_ore.png',
-    invicon_grass: '/assets/images/games/blocks/Invicon_Grass.png',
-    cactus: '/assets/images/games/blocks/cactus.png',
-    deadBush: '/assets/images/games/blocks/deadBush.png',
-    oak_door_bottom: '/assets/images/games/blocks/others/oak_door_bottom_closed.png',
-    oak_door_top: '/assets/images/games/blocks/others/oak_door_top_closed.png',
-    oak_door_bottom_open: '/assets/images/games/blocks/oak_door_bottom.png',
-    oak_door_top_open: '/assets/images/games/blocks/oak_door_top.png',
-    stone_dark: '/assets/images/games/blocks/others/stone_dark.png',
-    chest: '/assets/images/games/blocks/chest.png',
-    furnace: '/assets/images/games/blocks/furnace.png',
-    glass: '/assets/images/games/blocks/glass.png',
-    andesite: '/assets/images/games/blocks/andesite.png',
-    diorite: '/assets/images/games/blocks/diorite.png',
-    granite: '/assets/images/games/blocks/granite.png',
-    bedrock: '/assets/images/games/blocks/bedrock.png',
-    torch_turn: '/assets/images/games/blocks/torch_turn.png',
-    torch: '/assets/images/games/items/torch.png',
+const blockTextureUrl_16: string = '/assets/images/games/blocks/blocks_16.png';
+const blockTextureUrl_32: string = '/assets/images/games/blocks/blocks_32.png';
+const destroyFrameUrl: string = '/assets/images/games/blocks/destory/destory_strip10.png';
+const ITEM_ATLAS_16_TORCH: number = 15;
+
+const BLOCK_ATLAS_16: Record<string, number> = {
+    coal_ore: 0,
+    iron_ore: 1,
+    oak_door_bottom: 2,
+    oak_door_top: 3,
+    stone_dark: 4,
+    andesite: 5,
+    bedrock: 6,
+    cactus: 7,
+    cobblestone: 8,
+    crafting_table: 9,
+    deadBush: 10,
+    diorite: 11,
+    dirt: 12,
+    furnace: 13,
+    furnace_burning: 14,
+    glass: 15,
+    granite: 16,
+    grass: 17,
+    snowGrass: 18,
+    torch_turn: 19,
+    leaves: 20,
+    oak: 21,
+    oak_door_bottom_open: 22,
+    oak_door_top_open: 23,
+    planks: 24,
+    sand: 25,
+    sandstone: 26,
+    stone: 27,
+    chest: 28,
 };
 
 export let isDrawing: boolean = false;
@@ -62,13 +65,15 @@ let destroyFrames: PIXI.Texture[] = [];
 let bgContainer: PIXI.Container;
 let bgSprites: PIXI.Sprite[] = [];
 
-// Assets.load 按 url 返回纹理，转成 alias 索引便于 initBlockTextures 使用
-function toAliasTextures(textures: Record<string, PIXI.Texture>): Record<string, PIXI.Texture> {
-    const byAlias: Record<string, PIXI.Texture> = {};
-    for (const [alias, url] of Object.entries(blockAssets)) {
-        byAlias[alias] = textures[url];
-    }
-    return byAlias;
+function sliceAtlas(
+    baseTexture: PIXI.BaseTexture,
+    index: number,
+    frameSize: number
+): PIXI.Texture { // 从图集基纹理按索引裁剪
+    const cols: number = Math.floor(baseTexture.width / frameSize);
+    const x: number = (index % cols) * frameSize;
+    const y: number = Math.floor(index / cols) * frameSize;
+    return new PIXI.Texture(baseTexture, new PIXI.Rectangle(x, y, frameSize, frameSize));
 }
 
 function initApp(): void {
@@ -91,8 +96,7 @@ function initApp(): void {
     viewStyle.height = room.height + 'px';
     app.stage.sortableChildren = true;
 
-    // 天空图层
-    initSkyContainer(app.stage);
+    initSkyContainer(app.stage); // 天空图层
 
     gameRoom = apiMethod.select('.GameRoom');
     if (gameRoom) {
@@ -103,8 +107,7 @@ function initApp(): void {
 let fpsFrameCount: number = 0;
 let fpsWindowStart: number = 0;
 
-// 统计每秒真正画出的帧数
-function updateRenderFPS(): void {
+function updateRenderFPS(): void { // 统计每秒真正画出的帧数
     fpsFrameCount++;
     const elapsedMS: number = apioxTime.now() - fpsWindowStart;
     if (elapsedMS >= 1000) {
@@ -122,13 +125,11 @@ function initWorldLayer(): void {
     worldContainer.zIndex = 1;
     bgContainer.zIndex = 0;
 
-    // 预估最大可见方块数
     const maxTilesX: number = Math.ceil(room.width / 64) + 2;
     const maxTilesY: number = Math.ceil(room.height / 64) + 2;
-    const maxVisibleTiles: number = maxTilesX * maxTilesY;
+    const maxVisibleTiles: number = maxTilesX * maxTilesY; // 预估最大可见方块数
 
-    // Sprite 池
-    for (let i: number = 0; i < maxVisibleTiles; i++) {
+    for (let i: number = 0; i < maxVisibleTiles; i++) { // Sprite 池
         const sprite = new PIXI.Sprite(PIXI.Texture.EMPTY);
         sprite.width = 64;
         sprite.height = 64;
@@ -148,37 +149,41 @@ function initWorldLayer(): void {
 }
 
 function initBlockTextures(textures: Record<string, PIXI.Texture>): void {
-    blockTextures[idOfBlock.grass] = textures['grass'];
-    blockTextures[idOfBlock.dirt] = textures['dirt'];
-    blockTextures[idOfBlock.stone] = textures['stone'];
-    blockTextures[idOfBlock.oak] = textures['oak'];
-    blockTextures[idOfBlock.leaves] = textures['leaves'];
-    blockTextures[idOfBlock.cobblestone] = textures['cobblestone'];
-    blockTextures[idOfBlock.sand] = textures['sand'];
-    blockTextures[idOfBlock.snowGrass] = textures['snowGrass'];
-    blockTextures[idOfBlock.sandstone] = textures['sandstone'];
-    blockTextures[idOfBlock.planks] = textures['planks'];
-    blockTextures[idOfBlock.crafting_table] = textures['crafting_table'];
-    blockTextures[idOfBlock.iron_ore] = textures['iron_ore'];
-    blockTextures[idOfBlock.coal_ore] = textures['coal_ore'];
-    blockTextures[idOfBlock.invicon_grass] = textures['invicon_grass'];
-    blockTextures[idOfBlock.cactus] = textures['cactus'];
-    blockTextures[idOfBlock.deadBush] = textures['deadBush'];
-    blockTextures[idOfBlock.oak_door_bottom] = textures['oak_door_bottom'];
-    blockTextures[idOfBlock.oak_door_top] = textures['oak_door_top'];
-    blockTextures[idOfBlock.oak_door_bottom_open] = textures['oak_door_bottom_open'];
-    blockTextures[idOfBlock.oak_door_top_open] = textures['oak_door_top_open'];
-    blockTextures[idOfBlock.stone_dark] = textures['stone_dark'];
-    blockTextures[idOfBlock.chest] = textures['chest'];
-    blockTextures[idOfBlock.furnace] = textures['furnace'];
-    blockTextures[idOfBlock.glass] = textures['glass'];
-    blockTextures[idOfBlock.andesite] = textures['andesite'];
-    blockTextures[idOfBlock.diorite] = textures['diorite'];
-    blockTextures[idOfBlock.granite] = textures['granite'];
-    blockTextures[idOfBlock.bedrock] = textures['bedrock'];
-    blockTextures[idOfBlock.torch] = textures['torch']; // direction = 2
-    blockTextures['torch_turn'] = textures['torch_turn']; // direction = 0 or 1
-    blockTextures['destory'] = textures['destory'];
+    const block16Base: PIXI.BaseTexture = textures[blockTextureUrl_16].baseTexture;
+    const block32Base: PIXI.BaseTexture = textures[blockTextureUrl_32].baseTexture;
+    const item16Base: PIXI.BaseTexture = textures[itemTextureUrl_16].baseTexture;
+
+    blockTextures[idOfBlock.coal_ore] = sliceAtlas(block16Base, BLOCK_ATLAS_16.coal_ore, 16);
+    blockTextures[idOfBlock.iron_ore] = sliceAtlas(block16Base, BLOCK_ATLAS_16.iron_ore, 16);
+    blockTextures[idOfBlock.oak_door_bottom] = sliceAtlas(block16Base, BLOCK_ATLAS_16.oak_door_bottom, 16);
+    blockTextures[idOfBlock.oak_door_top] = sliceAtlas(block16Base, BLOCK_ATLAS_16.oak_door_top, 16);
+    blockTextures[idOfBlock.stone_dark] = sliceAtlas(block16Base, BLOCK_ATLAS_16.stone_dark, 16);
+    blockTextures[idOfBlock.andesite] = sliceAtlas(block16Base, BLOCK_ATLAS_16.andesite, 16);
+    blockTextures[idOfBlock.bedrock] = sliceAtlas(block16Base, BLOCK_ATLAS_16.bedrock, 16);
+    blockTextures[idOfBlock.cactus] = sliceAtlas(block16Base, BLOCK_ATLAS_16.cactus, 16);
+    blockTextures[idOfBlock.cobblestone] = sliceAtlas(block16Base, BLOCK_ATLAS_16.cobblestone, 16);
+    blockTextures[idOfBlock.crafting_table] = sliceAtlas(block16Base, BLOCK_ATLAS_16.crafting_table, 16);
+    blockTextures[idOfBlock.deadBush] = sliceAtlas(block16Base, BLOCK_ATLAS_16.deadBush, 16);
+    blockTextures[idOfBlock.diorite] = sliceAtlas(block16Base, BLOCK_ATLAS_16.diorite, 16);
+    blockTextures[idOfBlock.dirt] = sliceAtlas(block16Base, BLOCK_ATLAS_16.dirt, 16);
+    blockTextures[idOfBlock.furnace] = sliceAtlas(block16Base, BLOCK_ATLAS_16.furnace, 16);
+    blockTextures[idOfBlock.glass] = sliceAtlas(block16Base, BLOCK_ATLAS_16.glass, 16);
+    blockTextures[idOfBlock.granite] = sliceAtlas(block16Base, BLOCK_ATLAS_16.granite, 16);
+    blockTextures[idOfBlock.grass] = sliceAtlas(block16Base, BLOCK_ATLAS_16.grass, 16);
+    blockTextures[idOfBlock.snowGrass] = sliceAtlas(block16Base, BLOCK_ATLAS_16.snowGrass, 16);
+    blockTextures['torch_turn'] = sliceAtlas(block16Base, BLOCK_ATLAS_16.torch_turn, 16);
+    blockTextures[idOfBlock.leaves] = sliceAtlas(block16Base, BLOCK_ATLAS_16.leaves, 16);
+    blockTextures[idOfBlock.oak] = sliceAtlas(block16Base, BLOCK_ATLAS_16.oak, 16);
+    blockTextures[idOfBlock.oak_door_bottom_open] = sliceAtlas(block16Base, BLOCK_ATLAS_16.oak_door_bottom_open, 16);
+    blockTextures[idOfBlock.oak_door_top_open] = sliceAtlas(block16Base, BLOCK_ATLAS_16.oak_door_top_open, 16);
+    blockTextures[idOfBlock.planks] = sliceAtlas(block16Base, BLOCK_ATLAS_16.planks, 16);
+    blockTextures[idOfBlock.sand] = sliceAtlas(block16Base, BLOCK_ATLAS_16.sand, 16);
+    blockTextures[idOfBlock.sandstone] = sliceAtlas(block16Base, BLOCK_ATLAS_16.sandstone, 16);
+    blockTextures[idOfBlock.stone] = sliceAtlas(block16Base, BLOCK_ATLAS_16.stone, 16);
+    blockTextures[idOfBlock.chest] = sliceAtlas(block16Base, BLOCK_ATLAS_16.chest, 16);
+    blockTextures[idOfBlock.invicon_grass] = sliceAtlas(block32Base, 0, 32);
+    blockTextures[idOfBlock.torch] = sliceAtlas(item16Base, ITEM_ATLAS_16_TORCH, 16);
+    blockTextures['destory'] = textures[destroyFrameUrl];
 }
 
 export function genericTextStyle(fontSize: number=24): PIXI.TextStyle {
@@ -200,28 +205,29 @@ function main(): void {
     initApp();
     initWorldLayer();
 
-    // 加载方块贴图
-    PIXI.Assets.load<Record<string, PIXI.Texture>>(Object.values(blockAssets)).then((textures: Record<string, PIXI.Texture>) => {
-        initBlockTextures(toAliasTextures(textures));
+    PIXI.Assets.load<Record<string, PIXI.Texture>>([
+        blockTextureUrl_16,
+        blockTextureUrl_32,
+        itemTextureUrl_16,
+        destroyFrameUrl,
+    ]).then((textures: Record<string, PIXI.Texture>) => { // 加载方块贴图
+        initBlockTextures(textures);
         isDrawing = true;
 
         initSkyBackground();
         eventBus.emit('textures:ready'); // 通知依赖 blockTextures 的模块可以安全创建纹理了
 
-        // 鼠标 UI 容器
-        const mouseUIContainer = new PIXI.Container();
+        const mouseUIContainer = new PIXI.Container(); // 鼠标 UI 容器
         app.stage.addChild(mouseUIContainer);
         mouseUIContainer.zIndex = 2;
 
-        // 鼠标光标
-        cursorSprite = new PIXI.Graphics();
+        cursorSprite = new PIXI.Graphics(); // 鼠标光标
         cursorSprite.lineStyle(1, 0x000000, 0.7); // 黑色边框，宽度1
         cursorSprite.drawRect(0, 0, 64, 64); // 64x64空心矩形
         cursorSprite.visible = false;
         mouseUIContainer.addChild(cursorSprite);
 
-        // 破坏动画
-        const destroyBaseTex = (blockTextures['destory'] as PIXI.Texture).baseTexture;
+        const destroyBaseTex = (blockTextures['destory'] as PIXI.Texture).baseTexture; // 破坏动画
         destroyFrames = [];
         for (let i = 0; i < 10; i++) {
             const frame = new PIXI.Rectangle(i * 16, 0, 16, 16);

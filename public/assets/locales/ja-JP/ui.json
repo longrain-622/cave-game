@@ -59,12 +59,11 @@
     "connect": "接続",
     "cancel": "キャンセル",
     "selected": "選択中",
-    "joinPending": "LAN接続は次のステップで追加されます",
     "spectator": "プレイヤー",
     "connecting": "接続中",
     "connectFailed": "接続に失敗しました",
     "invalidAddress": "アドレスは IP または IP:ポートで指定してください",
-    "desktopOnly": "LAN機能は Electron デスクトップ版でのみ利用できます。"
+    "desktopOnly": "マルチプレイ機能はデスクトップ版でのみ利用できます。"
   },
   "loadPage": {
     "text": "読み込み中",

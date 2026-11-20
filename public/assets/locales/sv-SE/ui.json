@@ -59,12 +59,11 @@
     "connect": "Anslut",
     "cancel": "Avbryt",
     "selected": "Vald",
-    "joinPending": "LAN-anslutning läggs till i nästa steg",
     "spectator": "Spelare",
     "connecting": "Ansluter…",
     "connectFailed": "Anslutningen misslyckades",
     "invalidAddress": "Adressen måste vara en IP eller IP:port",
-    "desktopOnly": "LAN är endast tillgängligt i Electron-skrivbordsappen."
+    "desktopOnly": "Flerspelarläge är endast tillgängligt i skrivbordsappen."
   },
   "loadPage": {
     "text": "Laddar",
