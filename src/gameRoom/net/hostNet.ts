@@ -1,7 +1,7 @@
 import { apioxNet } from '../../apiox/net.js';
 import { apioxTime } from '../../apiox/time.js';
 import { buildWorldArchive } from '../../user/saveWorld.js';
-import { player, createPlayer, remotePlayers, remoteInputs, createEmptyPlayerInput } from '../player.js';
+import { player, createPlayer, remotePlayers, enqueueRemoteInput, clearRemoteInputQueue, clearAllRemoteInputQueues, resetRemoteInput, takeInputConsumedFlag, resetInputConsumedFlag } from '../player.js';
 import type { Players } from '../player.js';
 import { inventory, widgets } from '../gui/gameGUI/inventory.js';
 import { clock } from '../nature/sky.js';
@@ -31,17 +31,16 @@ let inventoryTimer: number | null = null;
 let timeTimer: number | null = null;
 let diffTimer: number | null = null;
 let peerCountListener: PeerCountListener | null = null;
-let lastPlayerSendAt: number = 0;
 const pendingDiffs: Map<string, WorldDiffCell> = new Map();
 const unknownInputSessions: Set<string> = new Set();
-// 上一次随 diff/chunk 下发的调色板长度；调色板只增不减，长度不变时客户端无需重载
-let sentPaletteLength: number = -1;
+let sentPaletteLength: number = -1; // 上一次随 diff/chunk 下发的调色板长度；调色板只增不减，长度不变时客户端无需重载
+let lastPlayerSendAt: number = 0;
 
 // 玩家状态挂在逻辑帧上发送，而不是用 setInterval：30Hz 的定时器既慢又有抖动，
 // 而 ack 延迟直接决定客户端能多快确认自己的预测。
-const PLAYER_SEND_INTERVAL_MS: number = 16;
 const INVENTORY_INTERVAL_MS: number = 500;
 const TIME_INTERVAL_MS: number = 1000;
+const PLAYER_KEEPALIVE_MS: number = 500;
 
 function notifyPeerCount(): void {
     if (peerCountListener !== null) {
@@ -73,11 +72,15 @@ function makePlayerState(p: Players, playerId: string, selectedSlot: number): La
         rightOnMouse: p.rightOnMouse,
         state: p.state,
         selectedSlot: selectedSlot,
-        // 只 ack 真正被模拟过的 tick；坐标也必须是那一帧结束时的位置，否则客户端会拿
-        // "主机多走了几帧"的位置去比自己的历史，每个包都被往前拽一次。
+        // 只 ack 真正被模拟过的 tick；坐标和物理状态也必须是那一帧结束时的值，否则客户端会拿
+        // "主机多走了几帧"的状态去比自己的历史，每个包都被往前拽一次。
         ackInputTick: isHostPlayer ? 0 : p.ackTick,
         ackX: isHostPlayer ? p.x : p.ackX,
         ackY: isHostPlayer ? p.y : p.ackY,
+        ackHsp: isHostPlayer ? p.hsp : p.ackHsp,
+        ackVsp: isHostPlayer ? p.vsp : p.ackVsp,
+        ackVyCarry: isHostPlayer ? p.vyCarry : p.ackVyCarry,
+        ackCanJump: isHostPlayer ? p.can_jump : p.ackCanJump,
     };
 }
 
@@ -113,26 +116,21 @@ function buildSnapshot(self: Players): LanSnapshot {
 
 function sendPlayerStates(): void {
     if (!hasPeers()) {return;}
-
-    const players: LanPlayerState[] = [makePlayerState(player, HOST_PLAYER_ID, widgets.select)];
-    for (const remote of remotePlayers.values()) {
-        players.push(makePlayerState(remote, remote.id, 0));
-    }
-
-    // 一帧只发一条消息：消息数不随玩家数量增长，客户端也能在同一帧内拿到完整快照
-    const message: PlayerStatesMessage = {
+    const players: LanPlayerState[] = buildPlayerList();
+    const message: PlayerStatesMessage = { // 一帧只发一条消息：消息数不随玩家数量增长，客户端也能在同一帧内拿到完整快照
         type: 'players:state',
         players: players,
     };
     send(message);
 }
 
-/** 主机逻辑帧结束时调用：把玩家状态按约 60Hz 推给客户端（没有 peer 时什么都不做）。 */
-export function hostNetTick(): void {
-    if (!active || !hasPeers()) {return;}
-
-    const now: number = Date.now();
-    if (now - lastPlayerSendAt < PLAYER_SEND_INTERVAL_MS) {return;}
+export function hostNetTick(): void { // 主机逻辑帧结束时调用：有输入被消费就立即推状态，否则按 500ms 保活
+    if (!active || !hasPeers()) { return; }
+    const consumed: boolean = takeInputConsumedFlag();
+    const now: number = apioxTime.now();
+    if (!consumed && now - lastPlayerSendAt < PLAYER_KEEPALIVE_MS) {
+        return;
+    }
     lastPlayerSendAt = now;
     sendPlayerStates();
 }
@@ -252,6 +250,20 @@ function sendSnapshotTo(sessionId: string): void {
     sendTime();
 }
 
+function sanitizeInput(input: PlayerInputState): PlayerInputState {
+    const tick: number = Math.floor(Number(input.tick));
+    return {
+        left: input.left > 0 ? 1 : 0,
+        right: input.right > 0 ? 1 : 0,
+        jumpHeld: input.jumpHeld === true,
+        jumpPressed: input.jumpPressed === true,
+        acc: Math.max(0, Math.min(2, Number(input.acc) || 0)),
+        face: input.face < 0 ? -1 : 1,
+        uiBlocked: input.uiBlocked === true,
+        tick: Number.isFinite(tick) && tick > 0 ? tick : 0, // 非整数 tick 会让 nextInputTick 永远匹配不上
+    };
+}
+
 function handlePlayerInput(sessionId: string, input: PlayerInputState): void {
     if (!remotePlayers.has(sessionId)) {
         if (!unknownInputSessions.has(sessionId)) {
@@ -260,18 +272,7 @@ function handlePlayerInput(sessionId: string, input: PlayerInputState): void {
         }
         return;
     }
-
-    const previous = remoteInputs.get(sessionId);
-    remoteInputs.set(sessionId, {
-        left: input.left > 0 ? 1 : 0,
-        right: input.right > 0 ? 1 : 0,
-        jumpHeld: input.jumpHeld === true,
-        jumpPressed: (previous?.jumpPressed ?? false) || input.jumpPressed === true,
-        acc: Math.max(0, Math.min(2, Number(input.acc) || 0)),
-        face: input.face < 0 ? -1 : 1,
-        uiBlocked: input.uiBlocked === true,
-        tick: input.tick,
-    });
+    enqueueRemoteInput(sessionId, sanitizeInput(input));
 }
 
 function handlePlayerRespawn(sessionId: string): void {
@@ -280,6 +281,7 @@ function handlePlayerRespawn(sessionId: string): void {
 
     remote.hp = 20;
     placeNearHost(remote);
+    resetRemoteInput(sessionId); // 传送后旧的输入坐标基准已经失效，从下一个到达的 tick 重新开始
     sendPlayerStates();
 }
 
@@ -290,7 +292,6 @@ function handleEvent(event: LanEvent): void {
         unknownInputSessions.delete(event.sessionId);
         const remote: Players = spawnRemotePlayer(event.sessionId);
         remotePlayers.set(event.sessionId, remote);
-        remoteInputs.set(event.sessionId, createEmptyPlayerInput());
         notifyPeerCount();
         sendSnapshotTo(event.sessionId);
         send({
@@ -304,7 +305,7 @@ function handleEvent(event: LanEvent): void {
     if (event.type === 'peer:leave') {
         if (!remotePlayers.has(event.sessionId)) {return;}
         remotePlayers.delete(event.sessionId);
-        remoteInputs.delete(event.sessionId);
+        clearRemoteInputQueue(event.sessionId);
         unknownInputSessions.delete(event.sessionId);
         peerCount = Math.max(0, peerCount - 1);
         notifyPeerCount();
@@ -330,16 +331,15 @@ export function startHosting(onPeerCount?: PeerCountListener): void {
     active = true;
     peerCount = 0;
     remotePlayers.clear();
-    remoteInputs.clear();
     unknownInputSessions.clear();
-    // 客户端加入时拿到的快照已带调色板；之后的增量只在调色板增长时下发
-    sentPaletteLength = palette.length;
+    clearAllRemoteInputQueues();
+    resetInputConsumedFlag();
+    sentPaletteLength = palette.length; // 客户端加入时拿到的快照已带调色板；之后的增量只在调色板增长时下发
     peerCountListener = onPeerCount ?? null;
     setNetRole('host');
 
     offEvents = apioxNet.onEvent(handleEvent, true);
-    setChunkCreateListener((behind: boolean): void => {
-        // 先发送左移前的方块变化，再发送区块；客户端按同样顺序应用。
+    setChunkCreateListener((behind: boolean): void => { // 先发送左移前的方块变化，再发送区块；客户端按同样顺序应用。
         flushDiffs();
         sendChunk(behind);
     });
@@ -349,9 +349,7 @@ export function startHosting(onPeerCount?: PeerCountListener): void {
         pendingDiffs.set(pos.x + ',' + pos.y, { x: pos.x, y: pos.y, index: index });
     });
 
-    // 方块改动直接影响碰撞，晚 100ms 才下发会让客户端的预测在墙里多走一截
-    diffTimer = apioxTime.setInt(flushDiffs, 50);
-
+    diffTimer = apioxTime.setInt(flushDiffs, 50); // 方块改动直接影响碰撞，晚 100ms 才下发会让客户端的预测在墙里多走一截
     lastPlayerSendAt = 0;
 
     inventoryTimer = apioxTime.setInt((): void => {
@@ -390,8 +388,9 @@ export function stopHosting(): void {
     }
 
     remotePlayers.clear();
-    remoteInputs.clear();
     unknownInputSessions.clear();
+    clearAllRemoteInputQueues();
+    resetInputConsumedFlag();
     sentPaletteLength = -1;
     peerCount = 0;
     peerCountListener = null;

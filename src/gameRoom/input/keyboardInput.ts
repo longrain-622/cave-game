@@ -19,49 +19,30 @@ const clientInput: PlayerInputState = {
     tick: 0,
 };
 
-let clientInputDirty: boolean = false;
 let clientInputTickCount: number = 0;
-let clientInputFrames: number = 0;
-
-function markClientInputDirty(): void {
-    clientInputDirty = true;
-}
-
-const CLIENT_INPUT_INTERVAL_FRAMES: number = 3; // 约 20Hz 的保活输入；按键变化会立即发送
 
 /**
- * 每帧收集客户端输入：按需发给主机，并返回用于本地预测的输入副本。
- * jumpPressed 是单帧事件，发送与本地预测都只消费一次。
+ * 每个客户端逻辑步收集一次输入：这一步的输入必须发给主机（主机按 tick 精确消费），
+ * 同时返回本地预测用的副本。jumpPressed 是单帧事件，发送与本地预测都只消费一次。
  */
 export function clientInputTick(): PlayerInputState {
     const blocked: boolean = uistate.invenUI_isOpening();
     if (blocked !== clientInput.uiBlocked) {
         clientInput.uiBlocked = blocked;
-        clientInputDirty = true;
     }
 
-    clientInputTickCount++; // 帧号每帧都递增，即使不发送；主机 ack 的就是这个 tick
+    clientInputTickCount++;
     clientInput.tick = clientInputTickCount;
-
-    clientInputFrames++;
-    const shouldSend: boolean = clientInputDirty
-        || clientInput.jumpPressed
-        || clientInputFrames >= CLIENT_INPUT_INTERVAL_FRAMES;
 
     const predictionInput: PlayerInputState = { ...clientInput };
 
-    if (shouldSend) {
-        clientInputDirty = false;
-        clientInputFrames = 0;
-
-        const message: PlayerInputMessage = {
-            type: 'player:input',
-            seq: clientInputTickCount, // 复用 tick 做消息序号
-            ...clientInput,
-        };
-        apioxNet.sendClientMessage(message);
-        clientInput.jumpPressed = false;
-    }
+    const message: PlayerInputMessage = {
+        type: 'player:input',
+        seq: clientInputTickCount,
+        ...clientInput,
+    };
+    apioxNet.sendClientMessage(message);
+    clientInput.jumpPressed = false;
 
     return predictionInput;
 }
@@ -74,7 +55,6 @@ function main(): void {
 
         if (isClient()) {
             clientInput.acc = 2;
-            markClientInputDirty();
             return;
         }
 
@@ -90,17 +70,14 @@ function main(): void {
                 case 'a':
                     clientInput.face = -1;
                     clientInput.left = 1;
-                    markClientInputDirty();
                     break;
                 case 'd':
                     clientInput.face = 1;
                     clientInput.right = 1;
-                    markClientInputDirty();
                     break;
                 case 'w': case ' ':
                     clientInput.jumpHeld = true;
                     clientInput.jumpPressed = true;
-                    markClientInputDirty();
                     break;
             }
             return;
@@ -127,11 +104,9 @@ function main(): void {
                     clientInput.left = 0;
                     clientInput.right = 0;
                     clientInput.acc = 0;
-                    markClientInputDirty();
                     break;
                 case 'w': case ' ':
                     clientInput.jumpHeld = false;
-                    markClientInputDirty();
                     break;
             }
             return;

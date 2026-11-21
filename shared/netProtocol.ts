@@ -53,6 +53,11 @@ export interface LanPlayerState {
     /** 主机消费 ackInputTick 那一帧结束时的权威位置，客户端回滚时拿它和本地历史比对。 */
     ackX: number;
     ackY: number;
+    /** ackInputTick 那一帧结束时的物理状态；客户端重放必须从这些值开始才能和主机一致。 */
+    ackHsp: number;
+    ackVsp: number;
+    ackVyCarry: number;
+    ackCanJump: boolean;
 }
 
 /** 客户端移动/跳跃输入；由服务端注入 sessionId 后转给主机。 */
@@ -227,7 +232,7 @@ export interface CavegameLanApi {
     leave(): Promise<void>;
     sendHostMessage(message: HostToServerMessage): void;
     sendClientMessage(message: ClientToServerMessage): void;
-    onEvent(callback: (event: LanEvent) => void, replayQueued?: boolean): void;
+    onEvent(callback: (event: LanEvent) => void, replayQueued?: boolean): () => void;
     startDiscovery(): Promise<void>;
     stopDiscovery(): Promise<void>;
     refreshDiscovery(): Promise<LanWorldEntry[]>;

@@ -407,12 +407,23 @@ function onReady(): void {
     });
 }
 
+function applyRuntimeSwitches(): void {
+    // 联机时主机窗口经常被遮挡或在后台：Chromium 默认会暂停被遮挡窗口的
+    // rAF，主机的逻辑循环随之停摆，客户端的输入会越积越多，表现为开局域网后越来越卡。
+    // webPreferences.backgroundThrottling 只能关掉定时器节流，遮挡/后台停帧需要这些开关。
+    app.commandLine.appendSwitch('disable-background-timer-throttling');
+    app.commandLine.appendSwitch('disable-renderer-backgrounding');
+    app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+    app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+}
+
 function main(): void {
     applyUserDataOverride();
     if (!acquireSingleInstance()) {
         return;
     }
 
+    applyRuntimeSwitches();
     app.setAppUserModelId(APP_ID);
     Menu.setApplicationMenu(null);
     registerAppScheme();

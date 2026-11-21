@@ -15,7 +15,7 @@ interface DebugMessage {
 }
 const debugMessage: DebugMessage = {
     title: 'CaveGame ' + version,
-    author: 'Made by Sinuxu.',
+    author: 'Made by Sinuxu Studios.',
     fps: '0 fps VSync',
     playerPosition: 'XY: 0 / 0'
 };

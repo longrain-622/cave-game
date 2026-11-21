@@ -24,7 +24,7 @@
     "2d"
   ],
   "author": {
-    "name": "Sinuxu Studio",
+    "name": "Sinuxu Studios",
     "email": "3685585221@qq.com"
   },
   "license": "MIT",
@@ -32,7 +32,7 @@
   "build": {
     "appId": "com.sinuxu.cavegame",
     "productName": "CaveGame",
-    "copyright": "Copyright © Sinuxu Studio",
+    "copyright": "Copyright © Sinuxu Studios",
     "asar": true,
     "directories": {
       "output": "release",

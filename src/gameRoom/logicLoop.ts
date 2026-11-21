@@ -4,7 +4,7 @@ import { createChunkAnyTime } from './nature/createWorld.js';
 import { offsetElements } from './nature/offsetElements.js';
 import { notifyChunkCreate } from './world.js';
 import { blockFrameLoop } from './nature/blockFrameState.js';
-import { player, playerLoop, updatePlayerState, remotePlayers, remoteInputs, stepRemotePlayer, createEmptyPlayerInput } from './player.js';
+import { player, playerLoop, updatePlayerState, remotePlayers, stepRemotePlayerFromQueue } from './player.js';
 import { mouse, mouseAct } from './mouse.js';
 import { uistate } from './gui/uiState.js';
 
@@ -46,7 +46,7 @@ export function logicStep(delta: number): void {
     playerLoop(delta, uistate.invenUI_isOpening(), mouse.x);
     for (const remote of remotePlayers.values()) {
         updatePlayerState(remote);
-        stepRemotePlayer(remote, delta, remoteInputs.get(remote.id) ?? createEmptyPlayerInput());
+        stepRemotePlayerFromQueue(remote, delta);
     }
     mouseAct(delta);
     natureSpawnAnimals(delta);

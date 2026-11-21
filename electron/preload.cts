@@ -20,10 +20,10 @@ function main(): void {
         sendClientMessage: (message: ClientToServerMessage): void => {
             ipcRenderer.send('lan:clientMessage', message);
         },
-        onEvent: (callback: (event: LanEvent) => void): void => {
-            ipcRenderer.on('lan:event', (_event, payload: LanEvent): void => {
-                callback(payload);
-            });
+        onEvent: (callback: (event: LanEvent) => void): (() => void) => {
+            const listener = (_event: unknown, payload: LanEvent): void => { callback(payload); };
+            ipcRenderer.on('lan:event', listener);
+            return () => { ipcRenderer.removeListener('lan:event', listener); };
         },
         startDiscovery: () => ipcRenderer.invoke('lan:startDiscovery'),
         stopDiscovery: () => ipcRenderer.invoke('lan:stopDiscovery'),

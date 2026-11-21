@@ -53,8 +53,12 @@ export interface Players {
     ackTick: number;
     ackX: number;
     ackY: number;
-    /** 垂直逐像素步进累计的小数余量，让下落距离不随帧率变化。 */
-    vyCarry: number;
+    ackHsp: number;
+    ackVsp: number;
+    ackVyCarry: number;
+    ackCanJump: boolean;
+    vyCarry: number; // 垂直逐像素步进累计的小数余量，让下落距离不随帧率变化
+    nextInputTick: number; // 主机期望消费的下一个 tick；0 表示尚未收到任何输入
 }
 
 export function createPlayer(id: string): Players {
@@ -91,14 +95,26 @@ export function createPlayer(id: string): Players {
         ackTick: 0,
         ackX: 0,
         ackY: 0,
+        ackHsp: 0,
+        ackVsp: 0,
+        ackVyCarry: 0,
+        ackCanJump: false,
         vyCarry: 0,
+        nextInputTick: 0,
     };
 
     return newPlayer;
 }
 
-function initPlayer(player: Players, readingWorld: WorldArchive | null): void {
-    if (coverWhenSave && notNullUndefined(readingWorld) && notNullUndefined(readingWorld.player)) {
+function initPlayer(
+    player: Players,
+    readingWorld: WorldArchive | null
+): void {
+    if (
+        coverWhenSave &&
+        notNullUndefined(readingWorld) &&
+        notNullUndefined(readingWorld.player)
+    ) {
         player.hp = readingWorld.player.hp;
         player.x = readingWorld.player.x;
         player.y = readingWorld.player.y;
@@ -120,25 +136,13 @@ export function setPlayerReplayMode(on: boolean): void {
 
 export function playerHurt(p: Players, howmany: number): void {
     p.hp -= howmany;
-    if (p === player && !replaying) {eventBusSwitch.playerHurt++;}
+    if (p === player && !replaying) {
+        eventBusSwitch.playerHurt++;
+    }
 }
 
-const player: Players = createPlayer(HOST_PLAYER_ID);
+export const player: Players = createPlayer(HOST_PLAYER_ID);
 export const remotePlayers: Map<string, Players> = new Map();
-export const remoteInputs: Map<string, PlayerInputState> = new Map();
-
-export function createEmptyPlayerInput(): PlayerInputState {
-    return {
-        left: 0,
-        right: 0,
-        jumpHeld: false,
-        jumpPressed: false,
-        acc: 0,
-        face: -1,
-        uiBlocked: false,
-        tick: 0,
-    };
-}
 
 export function capturePlayerState(p: Players): Players {
     return { ...p };
@@ -159,7 +163,11 @@ export function updatePlayerState(p: Players): void { // 刷新玩家状态
     const lastState: number = p.state;
     p.state = (headInWater || bodyInWater || feetInWater) ? playerState.swimming : playerState.normal;
 
-    if (p === player && lastState !== p.state && p.state === playerState.swimming) {
+    if (
+        p === player &&
+        lastState !== p.state &&
+        p.state === playerState.swimming
+    ) {
         eventBusSwitch.playerFallinWater++;
     }
 }
@@ -192,8 +200,7 @@ function playerMove(p: Players, delta: number): void { // 玩家移动
         }
     }
 
-    // 改变玩家腿部旋转方向
-    if (p.state === playerState.swimming) {
+    if (p.state === playerState.swimming) { // 改变玩家腿部旋转方向
         const kicking: boolean = p.left === 1 || p.right === 1 || p.jumpHeld;
         if (kicking || (p.leg_rad !== 0 && p.leg_rad < 2 * Math.PI)) {
             p.leg_rad += 0.4 * delta;
@@ -209,8 +216,7 @@ function playerMove(p: Players, delta: number): void { // 玩家移动
         }
     }
 
-    // 改变玩家手旋转方向
-    if (p.needRotateHand) {
+    if (p.needRotateHand) { // 改变玩家手旋转方向
         if (p.rightOnMouse) {p.isRotateRighthand = true;}
         else {p.isRotateRighthand = false;}
 
@@ -236,7 +242,7 @@ function playerJump(p: Players, delta: number): void { // 玩家跳跃（水中�
     } else {
         p.vsp += p.grav * delta;
     }
-    // 逐像素步进是为了不穿墙；步数必须按 delta 缩放
+
     const movePx: number = p.vsp * delta + p.vyCarry;
     const steps: number = Math.round(movePx);
     p.vyCarry = movePx - steps;
@@ -268,7 +274,10 @@ function playerJump(p: Players, delta: number): void { // 玩家跳跃（水中�
             }
         }
     }
-    if (!(place_meeting(p.x + 8, p.y + 128) || place_meeting(p.x + 56, p.y + 128))){
+    if (
+        !(place_meeting(p.x + 8, p.y + 128) ||
+        place_meeting(p.x + 56, p.y + 128))
+    ) {
         p.can_jump = false;
     }
 }
@@ -278,8 +287,11 @@ function main(): void {
 }
 main();
 
-// uiBlocked / pointerScreenX 由输入适配层传入；逻辑层不再 import 输入或 UI。
-function playerLoop(delta: number, uiBlocked: boolean, pointerScreenX: number): void {
+export function playerLoop(
+    delta: number,
+    uiBlocked: boolean,
+    pointerScreenX: number
+): void { // uiBlocked / pointerScreenX 由输入适配层传入；逻辑层不再 import 输入或 UI。
     player.rightOnMouse = pointerScreenX > player.screen_x + player.width / 2;
 
     if (!uiBlocked && player.hp > 0) {
@@ -289,10 +301,138 @@ function playerLoop(delta: number, uiBlocked: boolean, pointerScreenX: number): 
     if (player.hp > 0) {playerJump(player, delta);}
 }
 
-// 主机侧推进一个客户端玩家；输入来自网络，位置/HP 仍由主机权威计算。
-export function stepRemotePlayer(p: Players, delta: number, input: PlayerInputState): void {
-    const newInputTick: boolean = input.tick !== p.ackTick;
+export function stepRemotePlayer(
+    p: Players,
+    delta: number,
+    input: PlayerInputState
+): void { // 用一个输入推进一帧；主机和客户端预测共用这一套物理，保证两边可复现。
+    applyRemoteInput(p, delta, input);
+}
 
+export function applyClientPrediction(
+    p: Players,
+    delta: number,
+    input: PlayerInputState
+): void { // 客户端本地预测：与主机共用同一套物理，ack 只由主机消费输入时产生。
+    updatePlayerState(p);
+    stepRemotePlayer(p, delta, input);
+}
+
+const remoteInputQueues: Map<string, Map<number, PlayerInputState>> = new Map();
+let inputConsumedSinceLastAck: boolean = false;
+
+// 主机每逻辑步默认只消费 1 个输入；有积压时多消费几个追赶，避免一次卡顿造成永久延迟。
+const REMOTE_INPUT_CATCHUP_THRESHOLD: number = 4;
+const REMOTE_INPUT_CATCHUP_STEPS: number = 3;
+// 队列上限（约 10 秒输入）；超出说明主机长时间没有跑逻辑，只能丢掉旧输入跳过去。
+const REMOTE_INPUT_QUEUE_LIMIT: number = 600;
+// 溢出时保留最近约 2 秒输入，追赶几十帧就能消化，避免直接瞬移太远。
+const REMOTE_INPUT_KEEP_ON_OVERFLOW: number = 120;
+// 客户端重连/重载后 tick 会从头计数，回退超过这段才当作新的 tick 序列。
+const REMOTE_INPUT_TICK_REGRESSION: number = 120;
+
+export function takeInputConsumedFlag(): boolean {
+    const consumed: boolean = inputConsumedSinceLastAck;
+    inputConsumedSinceLastAck = false;
+    return consumed;
+}
+
+export function resetInputConsumedFlag(): void {
+    inputConsumedSinceLastAck = false;
+}
+
+function normalizeInputTick(tick: number): number {
+    if (!Number.isFinite(tick)) {return 0;}
+    const value: number = Math.floor(tick);
+    return value > 0 ? value : 0;
+}
+
+function smallestQueuedTick(q: Map<number, PlayerInputState>, minExclusive: number): number {
+    let smallest: number = 0;
+    for (const tick of q.keys()) {
+        if (tick <= minExclusive) {continue;}
+        if (smallest === 0 || tick < smallest) {smallest = tick;}
+    }
+    return smallest;
+}
+
+export function enqueueRemoteInput(
+    sessionId: string,
+    input: PlayerInputState
+): void {
+    const remote: Players | undefined = remotePlayers.get(sessionId);
+    if (remote === undefined) {return;}
+
+    const tick: number = normalizeInputTick(input.tick);
+    if (tick === 0) {return;} // 非法 tick 直接丢弃
+    const normalized: PlayerInputState = input.tick === tick ? input : { ...input, tick: tick };
+
+    if (remote.nextInputTick !== 0 && tick < remote.nextInputTick - REMOTE_INPUT_TICK_REGRESSION) {
+        resetRemoteInput(sessionId); // 客户端重连/tick 回退：重置该 session 的队列与 ack 基准
+    }
+
+    let q: Map<number, PlayerInputState> | undefined = remoteInputQueues.get(sessionId);
+    if (q === undefined) {
+        q = new Map();
+        remoteInputQueues.set(sessionId, q);
+    }
+    if (remote.nextInputTick === 0) {
+        remote.nextInputTick = tick; // 首次到达的 tick 作为起点
+    }
+    if (tick < remote.nextInputTick) {return;} // 已过期
+    if (!q.has(tick)) {q.set(tick, normalized);}
+
+    pruneRemoteInputQueue(remote, q);
+}
+
+/**
+ * 队列超限时只保留最新的几个输入并跳过去。
+ * 正在等待的 tick 绝不能被悄悄删掉，否则消费端会永远等一个不会出现的输入。
+ */
+function pruneRemoteInputQueue(
+    remote: Players,
+    q: Map<number, PlayerInputState>
+): void {
+    if (q.size <= REMOTE_INPUT_QUEUE_LIMIT) {return;}
+
+    const ticks: number[] = Array.from(q.keys()).sort((a: number, b: number): number => a - b);
+    const keepFrom: number = ticks.length - REMOTE_INPUT_KEEP_ON_OVERFLOW;
+    for (let i = 0; i < keepFrom; i++) {
+        q.delete(ticks[i]);
+    }
+
+    const nextTick: number = smallestQueuedTick(q, 0);
+    remote.nextInputTick = nextTick;
+    remote.ackTick = 0; // 中间输入被跳过了，旧 ack 不能作为比较基准
+}
+
+export function resetRemoteInput(sessionId: string): void {
+    remoteInputQueues.delete(sessionId);
+    const remote: Players | undefined = remotePlayers.get(sessionId);
+    if (remote === undefined) {return;}
+    remote.nextInputTick = 0;
+    remote.ackTick = 0;
+    remote.ackX = remote.x;
+    remote.ackY = remote.y;
+    remote.ackHsp = remote.hsp;
+    remote.ackVsp = remote.vsp;
+    remote.ackVyCarry = remote.vyCarry;
+    remote.ackCanJump = remote.can_jump;
+}
+
+export function clearRemoteInputQueue(sessionId: string): void {
+    remoteInputQueues.delete(sessionId);
+}
+
+export function clearAllRemoteInputQueues(): void {
+    remoteInputQueues.clear();
+}
+
+function applyRemoteInput(
+    p: Players,
+    delta: number,
+    input: PlayerInputState
+): void {
     p.left = input.left;
     p.right = input.right;
     p.jumpHeld = input.jumpHeld;
@@ -303,28 +443,50 @@ export function stepRemotePlayer(p: Players, delta: number, input: PlayerInputSt
         p.vsp = p.jumpspeed;
         p.can_jump = false;
     }
+    if (!input.uiBlocked && p.hp > 0) {playerMove(p, delta);}
+    if (p.hp > 0) { playerJump(p, delta); }
+}
 
-    if (!input.uiBlocked && p.hp > 0) {
-        playerMove(p, delta);
-    }
+/**
+ * 主机每逻辑步调用一次：严格按 tick 顺序消费，每个 tick 只应用一次。
+ * 队列有积压时一个逻辑步可以多消费几个输入追赶；缺少下一个 tick 时跳到最近的可用输入，
+ * 避免因为丢掉一个输入就让远端玩家永久冻结。
+ */
+export function stepRemotePlayerFromQueue(
+    p: Players,
+    delta: number
+): void {
+    if (p.nextInputTick === 0) {return;}
+    const q: Map<number, PlayerInputState> | undefined = remoteInputQueues.get(p.id);
+    if (q === undefined) {return;}
 
-    if (p.hp > 0) {playerJump(p, delta);}
-    input.jumpPressed = false;
+    const maxSteps: number = q.size > REMOTE_INPUT_CATCHUP_THRESHOLD ? REMOTE_INPUT_CATCHUP_STEPS : 1;
+    let steps: number = 0;
 
-    // 记录"这个 tick 被模拟完一帧之后"的位置：客户端历史里的同一 tick 就是这个语义，
-    // 拿它做回滚基准才不会把主机多走的几帧当成误差。
-    if (newInputTick) {
-        p.ackTick = input.tick;
+    while (steps < maxSteps) {
+        let tick: number = p.nextInputTick;
+        if (tick === 0) {break;}
+        let input: PlayerInputState | undefined = q.get(tick);
+        if (input === undefined) {
+            tick = smallestQueuedTick(q, tick); // 断档：跳到最近的可用 tick
+            if (tick === 0) {break;} // 后续输入还没到，本帧先不动
+            p.nextInputTick = tick;
+            input = q.get(tick);
+            if (input === undefined) {break;}
+        }
+
+        q.delete(tick);
+        updatePlayerState(p); // 每个输入对应客户端的一帧，必须先刷新游泳/普通状态再走物理，否则追赶时会和客户端不一致
+        applyRemoteInput(p, delta, input);
+        p.nextInputTick = tick + 1;
+        p.ackTick = tick;
         p.ackX = p.x;
         p.ackY = p.y;
+        p.ackHsp = p.hsp;
+        p.ackVsp = p.vsp;
+        p.ackVyCarry = p.vyCarry;
+        p.ackCanJump = p.can_jump;
+        inputConsumedSinceLastAck = true;
+        steps++;
     }
 }
-
-// 客户端本地预测：输入立即推进自己的角色；主机状态不一致时由网络层回滚到该 tick 再重放。
-// 与主机共用同一套物理，正常网络延迟下两边位置基本一致。
-export function applyClientPrediction(p: Players, delta: number, input: PlayerInputState): void {
-    updatePlayerState(p);
-    stepRemotePlayer(p, delta, input);
-}
-
-export { player, playerLoop };

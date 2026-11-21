@@ -20,7 +20,8 @@
 
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "allowJs": false
   },
   "include": ["electron/**/*.cts", "scripts/**/*.mts", "shared/**/*.ts"],
   "exclude": ["node_modules", "electron-build", "dist", "release"]

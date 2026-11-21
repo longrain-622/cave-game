@@ -1,6 +1,6 @@
 # CaveGame
 
-A 2D pixel-style fan game of Minecraft, developed by [Sinuxu Studio](https://gitee.com/longrain622/cave-game).
+A 2D pixel-style fan game of Minecraft, developed by [Sinuxu Studios](https://gitee.com/longrain622/cave-game).
 
 This game is open source and free of charge. It involves no monetization and no virtual currency system, and is dedicated to providing players with a pure, free experience of creation and exploration.
 

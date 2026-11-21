@@ -8,19 +8,19 @@ let loadedText: string = 'Okay';
 const loadingTextObj = new ApioxObject('loadingText');
 const speakerObj = new ApioxObject('loadingSpeaker');
 
-//加载随机提示
+// 加载随机提示
 async function loadLoadingTip() {
   try {
     const tips = await apioxHttp.get<any>(`assets/locales/${getLang()}/loading.json`);
     const randomTip = tips[Math.floor(Math.random() * tips.length)];
     speakerObj.domProperty('textContent', randomTip);
   } catch {
-    speakerObj.domProperty('textContent', 'Sinuxu made');
+    speakerObj.domProperty('textContent', 'Sinuxu Studios made');
   }
 }
 loadLoadingTip();
 
-//获取国际化文本
+// 获取国际化文本
 apioxHttp.get<any>(`assets/locales/${getLang()}/ui.json`)
   .then(data => {
     loadText = data.loadPage.text;
@@ -31,7 +31,7 @@ apioxHttp.get<any>(`assets/locales/${getLang()}/ui.json`)
     loadingTextObj.domProperty('textContent', loadText);
   });
 
-//动态点动画
+// 动态点动画
 let dotCounter: number = 0;
 let dotTimer: number;
 

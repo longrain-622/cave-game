@@ -158,7 +158,6 @@ export async function startHost(options: HostStartOptions): Promise<HostStartRes
             const tick: number = Number(input.tick);
             if (!Number.isFinite(tick) || tick <= 0) {return;}   // 非法 tick 直接丢弃
 
-
             emitEvent({
                 type: 'player:input',
                 sessionId: sessionId,

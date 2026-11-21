@@ -24,10 +24,6 @@ const MAX_HISTORY_FRAMES: number = 120; // 保留最近约 2 秒
 const ROLLBACK_EPSILON_PX: number = 0.5; // 小于它视为一致
 const ROLLBACK_SNAP_PX: number = 5 * 64; // 超过它直接瞬移
 const MAX_REPLAY_FRAMES: number = 60; // 单次重放上限，防卡顿后爆帧
-// 主机模拟的是"晚到一帧多"的输入，同一 tick 的位置天然会差出这段延迟的位移。
-// 容限按"ack 落后了几帧 × 该帧位移"估算，只把超出这段延迟的偏差当成真正的分歧。
-const ROLLBACK_ACK_FRAME_CAP: number = 6;
-const ROLLBACK_FALL_TOLERANCE_FRAMES: number = 1.5;
 
 interface HistoryEntry {
     input: PlayerInputState;
@@ -114,13 +110,19 @@ function applyOwnPlayerState(state: LanPlayerState): void {
 
     const dx: number = ackX - ackRecord.state.x;
     const dy: number = ackY - ackRecord.state.y;
-    // 水平：主机拿到这段输入最多比本地晚 ack 深度那么多帧，容忍这段延迟内的位移；
-    // 垂直：重力连续变化，两边只差一个"相位"，一帧多的下落距离就够了。
-    const ackFrames: number = Math.min(ROLLBACK_ACK_FRAME_CAP, Math.max(1, latestPredictedTick - ackTick + 1));
-    const toleranceX: number = Math.max(ROLLBACK_EPSILON_PX, Math.abs(ackRecord.state.hsp * ackRecord.delta) * ackFrames);
-    const toleranceY: number = Math.max(ROLLBACK_EPSILON_PX, Math.abs(ackRecord.state.vsp * ackRecord.delta) * ROLLBACK_FALL_TOLERANCE_FRAMES);
-    if (Math.abs(dx) <= toleranceX && Math.abs(dy) <= toleranceY) {
+    // 主机消费 ackInputTick 后模拟出的状态和客户端 history[ackInputTick] 是同一模拟步，
+    // 正常应完全一致；这里只留浮点误差余量，不能随延迟放大，否则会放过真正的分歧。
+    if (Math.abs(dx) <= ROLLBACK_EPSILON_PX && Math.abs(dy) <= ROLLBACK_EPSILON_PX) {
         return; // 预测有效，什么都不用做
+    }
+
+    // 主机落后太多（重放上限补不到最新一帧）时，继续回滚重放会让历史与实时状态错位，
+    // 直接按主机当前位置整体对齐，避免每帧做大量重放。
+    if (latestPredictedTick - ackTick > MAX_REPLAY_FRAMES) {
+        player.x = state.x;
+        player.y = state.y;
+        predictionHistory.clear();
+        return;
     }
 
     if (Math.abs(dx) > ROLLBACK_SNAP_PX || Math.abs(dy) > ROLLBACK_SNAP_PX) { // 偏差大到没法有意义地重放，直接对齐
@@ -130,8 +132,12 @@ function applyOwnPlayerState(state: LanPlayerState): void {
         return;
     }
 
-    ackRecord.state.x = ackX; // 用主机在该 tick 的权威位置覆盖历史快照
+    ackRecord.state.x = ackX; // 用主机在该 tick 的权威状态覆盖历史快照
     ackRecord.state.y = ackY;
+    if (Number.isFinite(state.ackHsp)) {ackRecord.state.hsp = state.ackHsp;}
+    if (Number.isFinite(state.ackVsp)) {ackRecord.state.vsp = state.ackVsp;}
+    if (Number.isFinite(state.ackVyCarry)) {ackRecord.state.vyCarry = state.ackVyCarry;}
+    if (typeof state.ackCanJump === 'boolean') {ackRecord.state.can_jump = state.ackCanJump;}
 
     restorePlayerState(player, ackRecord.state); // 回滚
     player.hp = authoritativeHp;
@@ -162,7 +168,7 @@ function applyPlayerState(state: LanPlayerState): void {
     const remote: Players = ensureRemote(state.playerId);
     applyPlayerFields(remote, state);
     remoteTargets.set(state.playerId, { x: state.x, y: state.y });
-    remoteSeen.set(state.playerId, Date.now());
+    remoteSeen.set(state.playerId, apioxTime.now());
 
     if (Math.abs(remote.x - state.x) > SNAP_DISTANCE_PX || Math.abs(remote.y - state.y) > SNAP_DISTANCE_PX) {
         remote.x = state.x;
@@ -178,7 +184,7 @@ function applyPlayerJoin(state: LanPlayerState): void {
     remote.x = state.x;
     remote.y = state.y;
     remoteTargets.set(state.playerId, { x: state.x, y: state.y });
-    remoteSeen.set(state.playerId, Date.now());
+    remoteSeen.set(state.playerId, apioxTime.now());
 }
 
 function applyPlayerLeave(playerId: string): void {
@@ -282,7 +288,7 @@ export function startClientNet(): void {
 
     const ownId: string | null = getSessionId();
     if (ownId !== null) {player.id = ownId;}
-    const now: number = Date.now();
+    const now: number = apioxTime.now();
     for (const state of getLanPlayers()) {
         if (state.playerId === ownId) {continue;}
         const remote: Players = ensureRemote(state.playerId);
@@ -316,7 +322,7 @@ export function clientNetTick(delta: number): void {
         }
     }
 
-    const now: number = Date.now();
+    const now: number = apioxTime.now();
     for (const [playerId] of remotePlayers) {
         const seen: number = remoteSeen.get(playerId) ?? 0;
         if (now - seen > REMOTE_TIMEOUT_MS) {
@@ -328,7 +334,7 @@ export function clientNetTick(delta: number): void {
 export function requestRespawn(): void {
     apioxNet.sendClientMessage({
         type: 'player:respawn',
-        seq: Date.now(),
+        seq: apioxTime.now(),
     });
 }
 
