@@ -4,7 +4,7 @@ import { mouse } from './mouse.js';
 import { updateWorldPixi, updateMouseSprites } from './rendering/rendering.js';
 import { blockFrameLoop } from './nature/blockFrameState.js';
 import { updatePlayerRender } from './rendering/actors/playerRender.js';
-import { logicLoop } from './logicLoop.js';
+import { logicStep, runFixedSteps } from './logicLoop.js';
 
 import { drawAnimals } from './rendering/actors/animalRender.js';
 
@@ -66,13 +66,12 @@ function renderingLoop(): void {
     updateDebugScreen();
 }
 
-function clientLogicLoop(delta: number): void {
+function clientLogicStep(delta: number): void {
     const input = clientInputTick();
     const recordedInput: PlayerInputState = { ...input };
     player.rightOnMouse = mouse.x > player.screen_x + player.width / 2;
     applyClientPrediction(player, delta, input);
     recordPredictedFrame(recordedInput, delta);
-    clientNetTick(delta);
     blockFrameLoop(delta);
     if (player.hp > 0) {heartsAct(delta);}
 }
@@ -83,9 +82,10 @@ function interactionLoop(): void {
 
 export function gameLoop(delta: number): void {
     if (isClient()) {
-        clientLogicLoop(delta);
+        runFixedSteps(delta, clientLogicStep);
+        clientNetTick(delta);
     } else {
-        logicLoop(delta);
+        runFixedSteps(delta, logicStep);
         hostNetTick();
     }
     notEventAudio();

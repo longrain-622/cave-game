@@ -1,0 +1,1 @@
+set CAVEGAME_INSTANCE=A && npm run electron:dev

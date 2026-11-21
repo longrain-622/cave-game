@@ -1,5 +1,5 @@
 // logicLoop.ts
-// This file maintains a pure logic function logicLoop, and the file itself is also a pure logic file.
+// This file maintains pure logic functions logicLoop, runFixedSteps and logicStep, and the file itself is also a pure logic file.
 import { createChunkAnyTime } from './nature/createWorld.js';
 import { offsetElements } from './nature/offsetElements.js';
 import { notifyChunkCreate } from './world.js';
@@ -19,7 +19,23 @@ import { skyLogicLoop } from './nature/sky.js';
 import { entityBlock_array, entityBlockLogic } from './nature/entityBlock.js';
 import { lookBlocks } from './nature/blockMecha/blockMechanism.js';
 
-export function logicLoop(delta: number): void {
+const logicStepDelta: number = 1;
+const maxFrameSteps: number = 15; // The maximum number of logic steps that can be added in a single frame
+let accumulator: number = 0; // Steps accumulated in real time that haven't been used up logically yet
+
+export function runFixedSteps(
+    delta: number,
+    step: (stepDelta: number) => void
+): void { // Run the logic step with this accumulator
+    if (!Number.isFinite(delta) || delta <= 0) {return;}
+    accumulator += Math.min(delta, maxFrameSteps * logicStepDelta);
+    while (accumulator >= logicStepDelta) {
+        accumulator -= logicStepDelta;
+        step(logicStepDelta);
+    }
+}
+
+export function logicStep(delta: number): void {
     const newChunkBehind: boolean | null = createChunkAnyTime();
     if (newChunkBehind !== null) {
         offsetElements(newChunkBehind);
